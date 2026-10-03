@@ -1,6 +1,6 @@
-# Klar-sjekk – spesifikasjon
+# Control – spesifikasjon
 
-Versjon 1.0 · 3. oktober 2026 · eier: Daniel
+Versjon 1.1 · 3. oktober 2026 · eier: Daniel (1.1: navnet Control, svar på Q1–Q3 og Q9, testverktøy, flytting av gamle data)
 Grunnlag: designbrief (2. okt. 2026) og designcanvas versjon 18 (interaktiv prototype).
 
 > **For Claude Code.** Denne fila er gjeldende sannhet for hva som skal bygges. `HISTORIKK.md` forklarer hvordan vi kom hit og hvilke ideer som er forkastet. Er noe uklart eller i konflikt, gjelder denne fila. Spørsmål merket **ÅPENT** (§15) skal du spørre Daniel om; inntil han har svart, bruker du standardvalget i §15-tabellen. Testscenarioet i §19 forutsetter disse standardene. Referanser (prototype, skjermbilder, original brief) ligger i `docs/referanse/`.
@@ -9,7 +9,7 @@ Grunnlag: designbrief (2. okt. 2026) og designcanvas versjon 18 (interaktiv prot
 
 ## 0. Kort fortalt
 
-Klar-sjekk er én addon for **World of Warcraft: Forever** som viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk.
+Control er én addon for **World of Warcraft: Forever** som viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk.
 
 - En rund **medaljong** (64 px) står alene på skjermen. Tallet i midten sier hvor mange ting som trenger oppmerksomhet, og ringen lyser **rødt**, **oransje** eller ikke i det hele tatt.
 - Mangler en **tier I**-buff (eller den går snart ut), dukker en **knapp** opp ved siden av medaljongen. Trykk, så er buffen på, og knappen forsvinner.
@@ -50,7 +50,7 @@ Fakta (kilder i §20, sjekket 3. okt. 2026):
 - Forever **deler UI-arkitekturen med Mainline** og har «de aller fleste API-ene fra 12.1.5».
 - Forever får **de samme addon-begrensningene som Midnight** («secret values»), og de holdes i takt med retail-patcher (12.1, 12.2 …).
 
-Konsekvenser for Klar-sjekk (detaljer i §12):
+Konsekvenser for Control (detaljer i §12):
 
 - Buffer kan være **hemmelige** for addons i kamp, i encounter/dungeon-kart og PvP. Vi leser utenfor kamp og teller ned selv.
 - **Beskyttede knapper** (som kaster spells eller bruker items) kan ikke vises, skjules, flyttes eller få nytt mål i kamp. Det som står ute når kampen starter, står fast til kampen er over.
@@ -60,7 +60,7 @@ Konsekvenser for Klar-sjekk (detaljer i §12):
 
 | # | Hva | Hvorfor |
 |---|-----|---------|
-| V1 | Interface-nummer for TOC (`/dump select(4, GetBuildInfo())`) og navnet på AddOns-mappa for Forever | TOC og installasjon |
+| V1 | Interface-nummer for TOC (`/dump select(4, GetBuildInfo())`) og navnet på AddOns-mappa for Forever. Kjent fra før (2. okt.): betaen ligger i `_classic_beta_`, interface 16001, build 70170; kan endre seg ved lansering | TOC og installasjon |
 | V2 | Kan vi lese egne buffer (navn, spellId, `expirationTime`) utenfor kamp? Er de hemmelige i kamp? | Hele regelmotoren |
 | V3 | Kan vi lese party-medlemmers buffer utenfor kamp? | Gruppebuffer (PB) |
 | V4 | Gir `UNIT_SPELLCAST_SUCCEEDED` for `player` spellId i kamp, eller bare at noe ble kastet? | Registrere trykk i kamp |
@@ -78,7 +78,7 @@ UI-tekst er norsk bokmål. Kode, filnavn og identifikatorer er engelske. Bruk de
 
 | Norsk (UI og samtale) | Kode | Betyr |
 |---|---|---|
-| Klar-sjekk | `KlarSjekk` | Addonen |
+| Control | `Control` | Addonen |
 | knappen, medaljongen | `Medallion` | Den runde 64 px-knappen |
 | ringen | `StatusRing` | Fargeringen i medaljongen (rød/oransje/ingen) |
 | sonene | `Zone` (`up`/`down`/`left`/`right`) | De fire kilene i ringen |
@@ -153,12 +153,12 @@ UI-tekst er norsk bokmål. Kode, filnavn og identifikatorer er engelske. Bruk de
 
 En oppføring kan altså ha **to deler** (buff og lager) som slås sammen til ett varsel (§6.2).
 
-### 5.2 Lagret (SavedVariablesPerCharacter: `KlarSjekkCharDB`)
+### 5.2 Lagret (SavedVariablesPerCharacter: `ControlCharDB`)
 
 Alt lagres per karakter (spells og ting er forskjellige per klasse).
 
 ```lua
-KlarSjekkCharDB = {
+ControlCharDB = {
   schema = 1,
   self = {                       -- MB, i rekkefølge
     { id = "e1", type = "spell",    spellId = 1126, short = "MotW", auraNames = {"Mark of the Wild", "Gift of the Wild"}, tier = 1 },
@@ -179,7 +179,7 @@ KlarSjekkCharDB = {
   },
   durations = { [1126] = 1800 }, -- sist sette full varighet per aura (for estimat i kamp)
   cityWatch = { cities = { "Stormwind City", "Ironforge", "Darnassus" } },
-  undo = nil,                    -- sist fjernede oppføring (for /klar angre)
+  undo = nil,                    -- sist fjernede oppføring (for /control angre)
 }
 ```
 
@@ -253,7 +253,7 @@ Dette gir disse avgjorte reglene:
 | Én oppføring med både buff- og lager-del | Den verste av de to |
 | Gruppebuff som mangler på minst én som følges | **Rød** |
 
-> **ÅPENT Q1:** Prototypen gir **rødt** når en buffting (eliksir, flask, mat) ikke er på, selv om lageret er fullt. Daniel har sagt at rødt er for spells du kan gi deg selv og for ting som er tomme, og ga «4/5 defense potion» som eksempel på oransje. Bekreft om buffting som ikke er på skal være rød (som nå) eller bare styres av lageret (oransje/rød) mens knappen fortsatt dukker opp. Standard inntil svar: rød, som prototypen.
+> **AVGJORT Q1 (3. okt.): rød, som prototypen.** Opprinnelig spørsmål: Prototypen gir **rødt** når en buffting (eliksir, flask, mat) ikke er på, selv om lageret er fullt. Daniel har sagt at rødt er for spells du kan gi deg selv og for ting som er tomme, og ga «4/5 defense potion» som eksempel på oransje. Bekreft om buffting som ikke er på skal være rød (som nå) eller bare styres av lageret (oransje/rød) mens knappen fortsatt dukker opp. Standard inntil svar: rød, som prototypen.
 
 ### 6.3 Kan trykkes
 
@@ -478,8 +478,8 @@ Alt gjøres med musa direkte på medaljongen og knappene. Ingen innstillingsvind
 | Bytte tier | **Høyreklikk** på en knapp hvor som helst, eller dra den til den andre raden | Flytter I ↔ II. En tier I som mangler, dukker opp ved knappen med en gang. |
 | Ønsket antall | **Musehjul** over en buffting eller lagerting (Shift = 5) | «har/vil ha» endres med en gang. Minst 1. |
 | Legge til | **Dra** en spell fra spellboken eller et item fra baggen og slipp på en sidemeny eller i menyen | Havner sist i tier II på riktig side. Spell på gruppesiden = gruppebuff. Item som gir en buff = buffting, ellers lagerting. |
-| Slette | **Dra en knapp ut** av sidemenyen/menyen og slipp utenfor | «Slipp for å fjerne» ved musa mens du drar. I chatten: «[Klar-sjekk] Thorns er fjernet. Skriv /klar angre for å få den tilbake.» |
-| Angre sletting | `/klar angre` | Oppføringen kommer tilbake på samme plass. |
+| Slette | **Dra en knapp ut** av sidemenyen/menyen og slipp utenfor | «Slipp for å fjerne» ved musa mens du drar. I chatten: «[Control] Thorns er fjernet. Skriv /control angre for å få den tilbake.» |
+| Angre sletting | `/control angre` | Oppføringen kommer tilbake på samme plass. |
 | Bytte rekkefølge | Dra en knapp til en ny plass i samme rad | Gul strek der den lander. |
 | Fold ut/inn side | Klikk venstre/høyre sone | §7.4 |
 | Meny | Klikk nedre sone | §7.6 |
@@ -493,7 +493,7 @@ Alt gjøres med musa direkte på medaljongen og knappene. Ingen innstillingsvind
 
 **Kamp:** dra, slette, bytte tier, flytte og skalere er av i kamp (beskyttede rammer). Klikk for å kaste virker.
 
-**Slash-kommandoer:** `/klar angre` (fra briefen). Forslag i tillegg: `/klar` (åpne/lukke menyen), `/klar lås`, `/klar nullstill` (posisjon og skala), `/klar debug` (skriv tilstand i chatten).
+**Slash-kommandoer:** `/control` og kortformen `/ctl`. `/control angre` (fra briefen). Forslag i tillegg: `/control` (åpne/lukke menyen), `/control lås`, `/control nullstill` (posisjon og skala), `/control debug` (skriv tilstand i chatten).
 
 ---
 
@@ -536,7 +536,9 @@ Alt gjøres med musa direkte på medaljongen og knappene. Ingen innstillingsvind
 - Blessing of X ↔ Greater Blessing of X
 - Mat: buffen heter «Well Fed» uansett hvilken mat (V7)
 
-Sjekk navnene i Forever. Tabellen er data, ikke logikk.
+Sjekk navnene i Forever. Tabellen er data, ikke logikk. Likeverdige buffer fylles inn automatisk (Q9).
+
+**Gruppeversjonen foreslås bare når den lønner seg** (Daniel, 3. okt.): knappen for en gruppebuff kaster gruppeversjonen (Gift of the Wild, Prayer of Fortitude, Arcane Brilliance …) bare når du er i party, **flere enn 2** av dem som følges mangler buffen, og du har reagensen i baggen. Ellers kaster den enkeltversjonen (Mark of the Wild osv.) på neste som mangler. Begge teller som «på». Valget gjøres utenfor kamp, sammen med målet (§9.3).
 
 ---
 
@@ -617,7 +619,7 @@ Utenfor kamp: bekreft med `UNIT_AURA` (buffen er faktisk på) før knappen fjern
 
 ## 13. Visuell stil
 
-Klar-sjekk skal se ut som en del av spillets eget UI (vinduene for karakter, Reputation og First Aid): mørk brun bakgrunn, dobbel bronsekant, gule kategorilinjer og hvit tekst med svart skygge. Ingen pergament, ingen tunge ornamenter. I spillet brukes spillets egne skrifter, teksturer og ikoner.
+Control skal se ut som en del av spillets eget UI (vinduene for karakter, Reputation og First Aid): mørk brun bakgrunn, dobbel bronsekant, gule kategorilinjer og hvit tekst med svart skygge. Ingen pergament, ingen tunge ornamenter. I spillet brukes spillets egne skrifter, teksturer og ikoner.
 
 ### 13.1 Farger
 
@@ -677,7 +679,7 @@ Norsk bokmål, kort, uten emoji. Tall før ord. «har/vil ha» for antall. Tider
 
 - Byvakt, noe mangler: «Du forlater Stormwind» + «Runecloth Bandage 0/10 · Superior Defense 4/5»
 - Byvakt, alt klart: «Alt med»
-- Dra ut: «Slipp for å fjerne», så i chatten «[Klar-sjekk] <navn> er fjernet. Skriv /klar angre for å få den tilbake.»
+- Dra ut: «Slipp for å fjerne», så i chatten «[Control] <navn> er fjernet. Skriv /control angre for å få den tilbake.»
 - Tom sidemeny, første rute: «Dra en spell eller en ting fra baggen hit» (MB) / «Dra en buff du kan gi, fra spellboken hit» (PB)
 - Tom tier-rad i menyen: «Dra en buff eller ting hit» (MB) / «Dra en buff du kan gi hit» (PB)
 - Statuslinje: «Mangler», «Status», «Gruppa», «Alt med», «Alle har det de skal»
@@ -695,15 +697,16 @@ Spør Daniel. Inntil han har svart, bruk standardvalget i høyre kolonne (og si 
 
 | # | Spørsmål | Standard inntil avklart |
 |---|---|---|
-| **Q1** | Skal en buffting (eliksir/flask/mat) som ikke er på, være **rød**, eller skal fargen bare styres av lageret (oransje under, rød tom), mens knappen fortsatt dukker opp i tier I? | Rød (som prototypen) |
-| **Q2** | Skal tallet telle **alt** som mangler helt eller delvis (nå), eller bare det du kan trykke på nå (da viser ringfargen lagervarsler alene)? | Alt |
-| **Q3** | Er 40 s riktig terskel for «snart ute» når knappen skal dukke opp? For 30-min-buffer kan lengre være nyttig (f.eks. 60 s eller en andel av varigheten). | 40 s |
+| **Q1** | Skal en buffting (eliksir/flask/mat) som ikke er på, være **rød**, eller skal fargen bare styres av lageret? | **Avgjort 3. okt.: rød** |
+| **Q2** | Skal tallet telle **alt** som mangler helt eller delvis, eller bare det du kan trykke på nå? | **Avgjort 3. okt.: alt** |
+| **Q3** | Er 40 s riktig terskel for «snart ute»? | **Avgjort 3. okt.: 40 s** |
 | **Q4** | Trengs nivå 2-varselet (nedtellingsikon midt på skjermen) når tier I-knappen uansett dukker opp ved medaljongen med stor nedtelling? | Bygg det sist, bak en innstilling |
 | **Q5** | Hvor skal skala-hjørnene sitte i den nye modellen (ytterhjørnene på tray/sidemeny, eller rundt medaljongen)? | Ytterhjørnene på sidemenyen når den er åpen |
-| **Q6** | Fjerne en by fra Byvakt: hvordan? | Høyreklikk på bynavnet i menyen + `/klar angre` |
+| **Q6** | Fjerne en by fra Byvakt: hvordan? | Høyreklikk på bynavnet i menyen + `/control angre` |
 | **Q7** | Hvordan velges hvem en gruppebuff følges på? | Klikk på navnene i tooltip-lista eller i menyen for å slå av/på |
 | **Q8** | Medlem ute av rekkevidde: ukjent (dempet) eller mangler (rød)? | Ukjent, dempet rute, teller ikke |
-| **Q9** | Skal kjente likeverdige buffer (§9.5) fylles inn automatisk, eller velges? | Automatisk |
+| **Q9** | Skal kjente likeverdige buffer (§9.5) fylles inn automatisk, eller velges? | **Avgjort 3. okt.: automatisk.** Gruppeversjonen kastes bare i party når flere enn 2 mangler (§9.5) |
+| **Q10** | Skal lista fra den gamle Klar-sjekk (1.0, `KlarsjekkDB`) flyttes over? | **Avgjort 3. okt.: ja**, som MB tier II, én gang, mens den gamle addonen fortsatt er lastet |
 
 ---
 
@@ -721,8 +724,8 @@ Spør Daniel. Inntil han har svart, bruk standardvalget i høyre kolonne (og si 
 ## 17. Teknisk arkitektur (anbefalt)
 
 ```
-KlarSjekk/
-  KlarSjekk.toc            ## Interface: <V1>  ## SavedVariablesPerCharacter: KlarSjekkCharDB
+Control/
+  Control.toc            ## Interface: <V1>  ## SavedVariablesPerCharacter: ControlCharDB
   Locale/nbNO.lua          alle UI-tekster
   Core.lua                 navnerom, events, init, slash, kø for kamp (RunAfterCombat)
   Data.lua                 skjema, migrering, standarder, likeverdige buffer (§9.5), byer per fraksjon
@@ -737,11 +740,10 @@ KlarSjekk/
   UI/Menu.lua              menyen med delene
   CityWatch.lua            Byvakt
   Alerts.lua               nivå 2 og 3
-spec/                      busted-tester for Rules.lua (og Track.lua der det går)
-.luacheckrc
+tests/                     tester i Lua 5.1 via Python + lupa (python tests/run.py); se HISTORIKK §6
 ```
 
-- Lua 5.1, ingen globale variabler utenom `KlarSjekkCharDB` og slash-kommandoen. Bruk `local addonName, ns = ...`.
+- Lua 5.1, ingen globale variabler utenom `ControlCharDB` og slash-kommandoen. Bruk `local addonName, ns = ...`.
 - Ingen biblioteker er nødvendige. LibStub/Ace er greit hvis det forenkler, men ikke et krav.
 - `Rules.lua` skal ikke kalle WoW-API. Den får inn oppføringer og tilstand, og gir ut alt UI-et trenger (som `renderVals()` i prototypen).
 - Én tegnerunde: tilstand endres → `ns:Refresh()` (throttlet) → regler → UI oppdaterer det som har endret seg.
@@ -752,13 +754,13 @@ spec/                      busted-tester for Rules.lua (og Track.lua der det gå
 
 | Fase | Innhold | Ferdig når |
 |---|---|---|
-| **0. Sjekk spillet** | Tom addon med TOC og `/klar debug` som skriver ut svar på V1–V9 (der det går med kode). | Daniel har kjørt den i Forever (beta eller live) og svarene er skrevet inn i `HISTORIKK.md` › Verifisert. |
-| **1. Regler** | `Rules.lua` + tester for alt i §6 og scenarioet i §19. | `busted` grønn. Tallene i §19 stemmer. |
+| **0. Sjekk spillet** | Tom addon med TOC og `/control debug` som skriver ut svar på V1–V9 (der det går med kode). | Daniel har kjørt den i Forever (beta eller live) og svarene er skrevet inn i `HISTORIKK.md` › Verifisert. |
+| **1. Regler** | `Rules.lua` + tester for alt i §6 og scenarioet i §19. | `python tests/run.py` grønn. Tallene i §19 stemmer. |
 | **2. Medaljong** | Tall, ring, hover-symboler, soner, midten, flytting, lås, klemming, lagring av posisjon. | Kan flyttes og låses. Tall og ring følger testdata. |
 | **3. Mine buffer** | Lesing av egne auraer og bagger. Sikre knapper. Tray for tier I. Klikk kaster/bruker, bekreftelse, knappen forsvinner. | MotW og en flask: mangler → står ute → klikk → på → borte, tallet går ned. |
 | **4. Sidemenyer** | Begge sider, statuslinje, tooltip, høyreklikk tier, musehjul antall. | Som `04-begge-sider-apne.png`. |
 | **5. Gruppebuffer** | Party-lesing, ruter, neste mål, «bare på». | MotW til en kompis: ruta fylles, knappen borte når alle har den. |
-| **6. Meny** | Delene i §7.6, dra inn, dra ut, `/klar angre`, rekkefølge, bytt sider, menyretning. | Som `05-sider-og-meny-apne.png`. |
+| **6. Meny** | Delene i §7.6, dra inn, dra ut, `/control angre`, rekkefølge, bytt sider, menyretning. | Som `05-sider-og-meny-apne.png`. |
 | **7. Kamp** | Fryse layout, kø, estimat, registrering i kamp, dempede ruter, sverd. | Trykk i kamp teller ned. Etter kampen stemmer alt med virkeligheten. |
 | **8. Byvakt og varsler** | §10 og §11. | Gå ut av Stormwind med 0 bandasjer: rød tekst + lyd én gang. |
 | **9. Skala og finpuss** | §7.9, animasjoner, ytelse. | 70–150 %, ingen merkbar FPS-kostnad. |

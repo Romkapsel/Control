@@ -123,3 +123,9 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | Dato | Beslutning | Hvem |
 |---|---|---|
 | 2026-10-03 | Spesifikasjon v1.0 skrevet fra designcanvas v18 | Daniel + Claude |
+| 2026-10-03 | Addonen heter **Control** (mappe, TOC, `ControlCharDB`, `/control` og `/ctl`). Utvikling i `Documents\Control`; den gamle Klar-sjekk og Buffknapp røres ikke | Daniel |
+| 2026-10-03 | Q1 rød, Q2 alt, Q3 40 s, Q9 automatisk (standardvalgene) | Daniel |
+| 2026-10-03 | Gruppeversjonen (Gift of the Wild osv.) kastes bare i party når flere enn 2 mangler buffen og reagensen finnes; ellers enkeltversjonen (SPEC §9.5) | Daniel |
+| 2026-10-03 | Lista fra gamle Klar-sjekk flyttes over som MB tier II (Q10) | Daniel |
+| 2026-10-03 | Tester kjøres i Lua 5.1 via Python + lupa (`python tests/run.py`) i stedet for busted/luacheck, som ikke er installert. Samme oppsett som wow-forever (300+ tester) | Daniel + Claude |
+| 2026-10-03 | Mappa kobles inn i spillet med en junction fra `_classic_beta_\Interface\AddOns\Control` | Daniel + Claude |
