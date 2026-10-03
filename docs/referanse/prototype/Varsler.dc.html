@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<title>Klar-sjekk – varsler</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&amp;family=Marcellus&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFD100}a:hover{color:#FFF3B0}
+.an{font-family:'Archivo Narrow',sans-serif}
+.verden{background:radial-gradient(55% 50% at 78% 75%,rgba(98,116,62,.55),rgba(0,0,0,0) 70%),radial-gradient(45% 45% at 15% 90%,rgba(74,86,50,.6),rgba(0,0,0,0) 70%),radial-gradient(70% 60% at 60% 5%,rgba(46,60,50,.9),rgba(0,0,0,0) 70%),linear-gradient(180deg,#1d281f 0%,#2a3525 55%,#20271a 100%);border-radius:6px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6)}
+.tekst{text-shadow:0 0 2px #000,1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,0 2px 6px rgba(0,0,0,.8)}
+.kat{height:24px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 10px;background:linear-gradient(180deg,#3d2c19 0%,#271b10 100%);border:1px solid #6a4d27;border-radius:3px;box-shadow:inset 0 1px 0 rgba(255,214,150,.14),0 1px 0 #000;font-family:'Marcellus',serif;font-size:13.5px;color:#FFD100;text-shadow:1px 1px 0 #000}
+</style>
+</helmet>
+<div style="width: 1280px; height: 768px; box-sizing: border-box; background: #0f120e; padding: 32px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; font-family: 'Marcellus', serif; color: #ECE6D8">
+
+  <div class="verden">
+    <div class="kat" style="position: absolute; left: 18px; top: 16px">Nivå 2 · En buff du hadde, går ut</div>
+    <div class="an tekst" style="position: absolute; left: 20px; bottom: 16px; font-size: 13.5px; color: #C8CDBE">Ingen lyd · forsvinner når du fornyer</div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: -10px">
+      <div style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 4px; border: 1px solid #000; background: radial-gradient(circle at 35% 28%, #b9d46a 0%, #5d7a22 45%, #1c2808 100%); box-shadow: 0 0 0 2px #FF8C1A, 0 0 12px 3px rgba(255,140,26,.55), inset 0 0 0 1px rgba(255,255,255,.18), inset 0 0 10px rgba(0,0,0,.55); display: flex; align-items: center; justify-content: center">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F6EBCB" stroke-width="1.9" stroke-linecap="round" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><path d="M4.5 19.5C9 15 14 10 19.5 4.5"></path><path d="M8.6 15.4L5.4 14.6M11.4 12.6l.8-3.4M14 10l-3.2-.8M16.4 7.6l.8-3.4"></path></svg>
+      </div>
+      <div class="an tekst" style="font-size: 20px; font-weight: 700; color: #FF8C1A; font-variant-numeric: tabular-nums">0:38</div>
+    </div>
+  </div>
+
+  <div class="verden">
+    <div class="kat" style="position: absolute; left: 18px; top: 16px">Nivå 3 · Byvakt, noe er tomt</div>
+    <div class="an tekst" style="position: absolute; left: 20px; bottom: 16px; font-size: 13.5px; color: #C8CDBE; display: flex; align-items: center; gap: 6px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C8CDBE" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4V5z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path></svg>
+      Én lyd · aldri gjentatt
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: -10px">
+      <div class="tekst" style="font-size: 28px; color: #FF2020">Du forlater Stormwind</div>
+      <div class="tekst" style="font-size: 17px"><span style="color: #ECE6D8">Runecloth Bandage </span><span class="an" style="font-size: 19px; font-weight: 700; color: #FF2020">0/10</span><span style="color: #A0A0A0">  ·  </span><span style="color: #ECE6D8">Superior Defense </span><span class="an" style="font-size: 19px; font-weight: 700; color: #FF8C1A">4/5</span></div>
+    </div>
+  </div>
+
+  <div class="verden">
+    <div class="kat" style="position: absolute; left: 18px; top: 16px">Nivå 3 · Byvakt, noe er under (oransje)</div>
+    <div class="an tekst" style="position: absolute; left: 20px; bottom: 16px; font-size: 13.5px; color: #C8CDBE">Ingen lyd</div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: -10px">
+      <div class="tekst" style="font-size: 28px; color: #FF8C1A">Du forlater Stormwind</div>
+      <div class="tekst" style="font-size: 17px"><span style="color: #ECE6D8">Superior Defense </span><span class="an" style="font-size: 19px; font-weight: 700; color: #FF8C1A">4/5</span></div>
+    </div>
+  </div>
+
+  <div class="verden">
+    <div class="kat" style="position: absolute; left: 18px; top: 16px">Nivå 3 · Byvakt, alt klart</div>
+    <div class="an tekst" style="position: absolute; left: 20px; bottom: 16px; font-size: 13.5px; color: #C8CDBE">Ingen lyd · kort, tones ut</div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; margin-top: -10px">
+      <div class="tekst" style="font-size: 28px; color: #40BF40">Alt med</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":768}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

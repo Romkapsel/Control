@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<title>Buff- og item-knapp</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&amp;family=Marcellus&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: relative; width: 40px; height: 40px; transform: scale({{scale}}); opacity: {{op}}; font-family: 'Archivo Narrow', sans-serif; color: #FFFFFF">
+  <div style="position: absolute; inset: 0; box-sizing: border-box; border: 1px solid #000; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; background: {{bg}}; box-shadow: {{ring}}">
+    <span style="display: flex; margin-top: {{glyphMt}}px; filter: {{glyphFilter}}">
+      <sc-if value="{{kPaw}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="#F6EBCB" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><ellipse cx="12" cy="16" rx="4.6" ry="3.9"></ellipse><circle cx="6.2" cy="10.6" r="2.1"></circle><circle cx="9.9" cy="6.9" r="2.1"></circle><circle cx="14.1" cy="6.9" r="2.1"></circle><circle cx="17.8" cy="10.6" r="2.1"></circle></svg></sc-if>
+      <sc-if value="{{kThorn}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F6EBCB" stroke-width="1.9" stroke-linecap="round" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><path d="M4.5 19.5C9 15 14 10 19.5 4.5"></path><path d="M8.6 15.4L5.4 14.6M11.4 12.6l.8-3.4M14 10l-3.2-.8M16.4 7.6l.8-3.4"></path></svg></sc-if>
+      <sc-if value="{{kFood}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><ellipse cx="14.6" cy="9.4" rx="5.6" ry="4.5" transform="rotate(-45 14.6 9.4)" fill="#F6EBCB"></ellipse><path d="M10.8 13.2L6.6 17.4" stroke="#F6EBCB" stroke-width="2.4" stroke-linecap="round"></path><circle cx="5.6" cy="16.3" r="1.6" fill="#F6EBCB"></circle><circle cx="7.7" cy="18.4" r="1.6" fill="#F6EBCB"></circle></svg></sc-if>
+      <sc-if value="{{kElixir}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F6EBCB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><path d="M7.6 14.5h8.8l1.6 2.8a1.5 1.5 0 0 1-1.3 2.2H7.3a1.5 1.5 0 0 1-1.3-2.2z" fill="#F6EBCB" fill-opacity=".55" stroke="none"></path><path d="M9.5 3.5h5M10.5 3.5v5.2L5.8 16.9a2.4 2.4 0 0 0 2.1 3.6h8.2a2.4 2.4 0 0 0 2.1-3.6l-4.7-8.2V3.5"></path></svg></sc-if>
+      <sc-if value="{{kFlaske}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F6EBCB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><path d="M7.2 13.5h9.6v5.4a1.6 1.6 0 0 1-1.6 1.6H8.8a1.6 1.6 0 0 1-1.6-1.6z" fill="#F6EBCB" fill-opacity=".55" stroke="none"></path><path d="M9.5 2.8h5M10.4 2.8v5.6L7 11.6v7.3a1.6 1.6 0 0 0 1.6 1.6h6.8a1.6 1.6 0 0 0 1.6-1.6v-7.3l-3.4-3.2V2.8"></path><path d="M9.6 5.6h4.8"></path></svg></sc-if>
+      <sc-if value="{{kPotion}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F6EBCB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><path d="M6.6 15a5.4 5.4 0 0 0 10.8 0z" fill="#F6EBCB" fill-opacity=".55" stroke="none"></path><path d="M10 3h4M10.5 3v5.2a6.2 6.2 0 1 0 3 0V3"></path></svg></sc-if>
+      <sc-if value="{{kBandage}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F6EBCB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><circle cx="9" cy="13" r="5.2"></circle><circle cx="9" cy="13" r="1.7"></circle><path d="M9 7.8h10.5v10.4H9M13.5 10.6h3.5M13.5 15.4h3.5"></path></svg></sc-if>
+      <sc-if value="{{kStone}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F6EBCB" stroke-width="1.7" stroke-linejoin="round" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><path d="M12 3.2l7.2 5.1-2.7 9.5H7.5L4.8 8.3z"></path><path d="M4.8 8.3h14.4M12 3.2L9.6 8.3 12 17.8l2.4-9.5z"></path></svg></sc-if>
+      <sc-if value="{{kStar}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2z" fill="#F6EBCB"></path></svg></sc-if>
+      <sc-if value="{{kShield}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F6EBCB" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round" style="filter: drop-shadow(0 1px 0 rgba(0,0,0,.85))"><path d="M12 3l7 2.8v5.4c0 4.3-2.9 7.6-7 9.8-4.1-2.2-7-5.5-7-9.8V5.8z"></path><path d="M12 8v8M8.5 11.5h7"></path></svg></sc-if>
+    </span>
+    <sc-if value="{{hasDrain}}" hint-placeholder-val="{{ true }}">
+      <span style="position: absolute; left: 0; right: 0; top: 0; height: {{drain}}%; background: rgba(8,6,4,.66); box-shadow: 0 1px 0 rgba(255,236,170,.45)"></span>
+    </sc-if>
+    <sc-if value="{{small}}" hint-placeholder-val="{{ true }}">
+      <span style="position: absolute; left: 0; right: 0; bottom: 1px; text-align: center; font-size: 12px; white-space: nowrap; font-weight: 700; line-height: 13px; text-shadow: 0 0 2px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000">{{tid}}</span>
+    </sc-if>
+    <sc-if value="{{big}}" hint-placeholder-val="{{ false }}">
+      <span style="position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); text-align: center; font-size: 16px; white-space: nowrap; font-weight: 700; line-height: 18px; text-shadow: 0 0 3px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000">{{tid}}</span>
+    </sc-if>
+    <sc-if value="{{tag}}" hint-placeholder-val="{{ false }}">
+      <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 13px; background: rgba(0,0,0,.72); text-align: center; font-size: 11.5px; white-space: nowrap; font-weight: 700; line-height: 13px">{{tid}}</span>
+    </sc-if>
+    <sc-if value="{{hasGruppe}}" hint-placeholder-val="{{ false }}">
+      <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 11px; background: rgba(0,0,0,.72); display: flex; align-items: center; justify-content: center; gap: 2px; opacity: {{pipOp}}"><sc-for list="{{pips}}" as="q" hint-placeholder-count="4"><span style="width: 5px; height: 5px; box-sizing: border-box; background: {{q.bg}}; box-shadow: {{q.ring}}"></span></sc-for></span>
+    </sc-if>
+    <sc-if value="{{hasAntall}}" hint-placeholder-val="{{ false }}">
+      <span style="position: absolute; right: 2px; top: 0; font-size: 12px; font-weight: 700; line-height: 13px; color: {{antallColor}}; text-shadow: 0 0 2px #000, 1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000">{{antall}}</span>
+    </sc-if>
+    <span style="position: absolute; inset: 0; border-radius: 3px; background: {{over}}; box-shadow: {{overRing}}"></span>
+  </div>
+  <sc-if value="{{glow}}" hint-placeholder-val="{{ false }}">
+    <span class="kpuls" style="position: absolute; inset: -1px; border-radius: 5px; pointer-events: none; box-shadow: 0 0 0 1px #000, inset 0 0 0 2px #FFE98A, 0 0 10px 3px rgba(255,209,0,.75); animation: kpuls 2.4s ease-in-out infinite"></span>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"kind":{"editor":"enum","options":["paw","thorn","food","elixir","flaske","potion","bandage","stone","star","shield"],"default":"thorn"},"st":{"editor":"enum","options":["aktiv","snart","gatt","ikke"],"default":"aktiv"},"tid":{"editor":"text","default":"9 min"},"rest":{"editor":"range","min":0,"max":100,"step":1,"unit":"%","default":90},"antall":{"editor":"text","default":""},"effekt":{"editor":"enum","options":["ingen","mus","trykket","dra"],"default":"ingen"},"stille":{"editor":"boolean","default":false},"gruppe":{"editor":"text","default":""},"kamp":{"editor":"boolean","default":false},"$preview":{"width":40,"height":40}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const kind = this.props.kind ?? 'thorn';
+    const st = this.props.st ?? 'aktiv';
+    const tid = this.props.tid ?? '9 min';
+    const rest = Math.max(0, Math.min(100, Number(this.props.rest ?? 90)));
+    const antall = this.props.antall == null ? '' : String(this.props.antall);
+    const effekt = this.props.effekt ?? 'ingen';
+    const stille = !!this.props.stille;
+    const gruppe = this.props.gruppe == null ? '' : String(this.props.gruppe).replace(/[^01]/g, '');
+    const hasGruppe = !!gruppe;
+    const kamp = !!this.props.kamp;
+    const gruppeMangler = gruppe.indexOf('0') !== -1;
+    const BG = {
+      paw: 'radial-gradient(circle at 35% 28%, #c993e6 0%, #6a2e8c 45%, #2a0f3a 100%)',
+      thorn: 'radial-gradient(circle at 35% 28%, #b9d46a 0%, #5d7a22 45%, #1c2808 100%)',
+      food: 'radial-gradient(circle at 35% 28%, #f2b066 0%, #a4521a 45%, #3a1606 100%)',
+      elixir: 'radial-gradient(circle at 35% 28%, #8fe0a0 0%, #2f8a4a 45%, #0b2a14 100%)',
+      flaske: 'radial-gradient(circle at 35% 28%, #f59a86 0%, #a8302a 45%, #300806 100%)',
+      potion: 'radial-gradient(circle at 35% 28%, #8aa6ff 0%, #3048b8 45%, #0c1446 100%)',
+      bandage: 'radial-gradient(circle at 35% 28%, #d8c49a 0%, #8a744a 45%, #2e2412 100%)',
+      stone: 'radial-gradient(circle at 35% 28%, #d6d6e0 0%, #707486 45%, #1c1e28 100%)',
+      star: 'radial-gradient(circle at 35% 28%, #a6c8ff 0%, #4a6fd0 45%, #121e52 100%)',
+      shield: 'radial-gradient(circle at 35% 28%, #f3e6a8 0%, #b0902e 45%, #3a2a08 100%)'
+    };
+    const mangler = st === 'gatt' || st === 'ikke';
+    const tom = antall === '0' || antall === '×0' || antall.indexOf('0/') === 0;
+    const dra = effekt === 'dra';
+    const ring = '0 0 0 1px #4d4535, inset 0 0 0 1px rgba(255,255,255,.14), inset 0 0 9px rgba(0,0,0,.55)';
+    return {
+      bg: BG[kind] || BG.thorn,
+      ring: dra ? ring + ', 0 8px 16px rgba(0,0,0,.65)' : ring,
+      tid: tid,
+      drain: 100 - rest,
+      hasDrain: !hasGruppe && !mangler && rest < 100,
+      small: !hasGruppe && st === 'aktiv' && !!tid,
+      big: !hasGruppe && st === 'snart' && !!tid,
+      tag: !hasGruppe && mangler && !!tid,
+      glow: (hasGruppe ? gruppeMangler : mangler) && !stille,
+      glyphMt: hasGruppe ? -5 : st === 'snart' ? 0 : mangler ? -6 : -9,
+      hasGruppe: hasGruppe,
+      pips: gruppe.split('').map((c) => (c === '1' ? { bg: '#F6EBCB', ring: '0 0 0 1px #000' } : { bg: 'rgba(0,0,0,.5)', ring: 'inset 0 0 0 1px #FFE98A' })),
+      pipOp: kamp ? 0.45 : 1,
+      glyphFilter: tom ? 'grayscale(1) brightness(.7)' : 'none',
+      antall: antall,
+      hasAntall: !!antall,
+      antallColor: tom ? '#A0A0A0' : '#FFFFFF',
+      kPaw: kind === 'paw', kThorn: kind === 'thorn', kFood: kind === 'food', kElixir: kind === 'elixir',
+      kFlaske: kind === 'flaske', kPotion: kind === 'potion', kBandage: kind === 'bandage', kStone: kind === 'stone',
+      kStar: kind === 'star', kShield: kind === 'shield',
+      scale: effekt === 'trykket' ? 0.93 : 1,
+      op: dra ? 0.88 : 1,
+      over: effekt === 'mus' ? 'rgba(255,255,255,.12)' : effekt === 'trykket' ? 'radial-gradient(circle, rgba(255,243,176,.75), rgba(255,209,0,0) 72%)' : 'transparent',
+      overRing: effekt === 'mus' ? 'inset 0 0 0 1px rgba(255,236,170,.75)' : 'none'
+    };
+  }
+}
+</script>
+</body>
+</html>

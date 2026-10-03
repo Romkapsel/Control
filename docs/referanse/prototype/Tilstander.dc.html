@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<title>Klar-sjekk – tilstander</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&amp;family=Marcellus&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFD100}a:hover{color:#FFF3B0}
+.an{font-family:'Archivo Narrow',sans-serif}
+.ramme{background:radial-gradient(140% 60% at 50% 0%,rgba(96,70,40,.26),rgba(0,0,0,0) 70%),linear-gradient(180deg,#201812 0%,#130e0a 100%);border:2px solid;border-color:#9a7a3e #6e5328 #4f3a1a #6e5328;box-shadow:0 0 0 1px #000,inset 0 0 0 1px #000,inset 0 1px 0 1px rgba(255,220,160,.07),0 6px 16px rgba(0,0,0,.6)}
+.kat{height:24px;box-sizing:border-box;display:flex;align-items:center;padding:0 10px;background:linear-gradient(180deg,#3d2c19 0%,#271b10 100%);border:1px solid #6a4d27;border-radius:3px;box-shadow:inset 0 1px 0 rgba(255,214,150,.14),0 1px 0 #000;font-family:'Marcellus',serif;font-size:13.5px;color:#FFD100;text-shadow:1px 1px 0 #000}
+.tomrute{width:40px;height:40px;box-sizing:border-box;border-radius:4px;border:1px solid #000;background:#0b0907;box-shadow:0 0 0 1px #3a3328,inset 0 0 9px rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;flex:none}
+.trinn{width:64px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.trinn-tekst{font-size:12.5px;color:#FFD100;text-align:center;text-shadow:1px 1px 0 #000;line-height:1.25}
+.pil{width:16px;height:40px;display:flex;align-items:center;justify-content:center;flex:none}
+.bronse{width:64px;height:64px;box-sizing:border-box;border-radius:50%;padding:4px;background:linear-gradient(150deg,#f0cf86 0%,#b58a40 28%,#6a4a1c 62%,#a07a38 100%);box-shadow:0 0 0 1px #000,0 4px 10px rgba(0,0,0,.75),inset 0 0 0 1px rgba(255,236,190,.35)}
+.sv{width:100%;height:100%;box-sizing:border-box;border-radius:50%;background:#000;padding:1px}
+.ring{width:100%;height:100%;box-sizing:border-box;border-radius:50%;padding:2px}
+.kjerne{position:relative;width:100%;height:100%;box-sizing:border-box;border-radius:50%;background:radial-gradient(circle at 42% 35%,#3b2f22 0%,#17110c 62%,#0b0806 100%);box-shadow:inset 0 2px 6px rgba(0,0,0,.85)}
+.tall-midt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Marcellus',serif;font-size:25px;line-height:1;padding-top:2px;box-sizing:border-box;color:#FFD100;text-shadow:0 0 2px #000,1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000}
+.sym{position:absolute;filter:drop-shadow(1px 1px 0 #000)}
+.s-opp{left:18.5px;top:3px}.s-ned{left:18.5px;top:34px}.s-v{left:3px;top:18.5px}.s-h{left:34px;top:18.5px}
+.midt{position:absolute;left:50%;top:50%;margin:-11px 0 0 -11px}
+.bue{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from -55deg,rgba(255,240,180,0) 0deg,rgba(255,240,180,.95) 55deg,rgba(255,240,180,0) 110deg,rgba(255,240,180,0) 360deg);-webkit-mask:radial-gradient(circle closest-side,transparent 25px,#000 26px);mask:radial-gradient(circle closest-side,transparent 25px,#000 26px);mix-blend-mode:screen}
+.prikk{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:radial-gradient(circle,rgba(255,233,150,.9),rgba(255,209,0,0) 70%)}
+.merke{position:absolute;right:-2px;bottom:-1px;min-width:20px;height:18px;box-sizing:border-box;padding:0 5px;border-radius:3px;background:#0d0a08;border:1px solid #c9a24a;box-shadow:0 0 0 1px #000;font-family:'Archivo Narrow',sans-serif;font-size:13px;font-weight:700;line-height:16px;text-align:center;text-shadow:1px 1px 0 #000}
+@keyframes kpuls{0%,100%{box-shadow:0 0 0 1px #000,inset 0 0 0 2px #FFE98A,0 0 6px 1px rgba(255,209,0,.55)}50%{box-shadow:0 0 0 1px #000,inset 0 0 0 2px #FFF6C8,0 0 14px 5px rgba(255,209,0,.9)}}
+@media (prefers-reduced-motion: reduce){.kpuls{animation:none !important}}
+</style>
+</helmet>
+<div style="width: 900px; height: 640px; box-sizing: border-box; background: radial-gradient(55% 45% at 80% 75%, rgba(98,116,62,.45), rgba(0,0,0,0) 70%), radial-gradient(70% 55% at 30% 10%, rgba(46,60,50,.85), rgba(0,0,0,0) 70%), linear-gradient(180deg, #1d281f 0%, #26311f 100%); color: #ECE6D8; font-family: 'Marcellus', serif; padding: 26px 44px; display: flex; flex-direction: column; gap: 14px">
+  <div class="kat" style="width: 300px">Knappen: ringen og de fire sonene</div>
+  <div style="display: flex; gap: 22px; align-items: flex-start; padding-left: 4px; padding-top: 8px">
+    <sc-for list="{{knapper}}" as="k" hint-placeholder-count="8">
+      <div style="width: 78px; display: flex; flex-direction: column; align-items: center; gap: 12px">
+        <div style="position: relative; width: 64px; height: 64px; transform: scale({{k.scale}})">
+          <div class="bronse" style="filter: {{k.filter}}">
+            <div class="sv">
+              <div class="ring" style="background: {{k.ring}}; box-shadow: {{k.glow}}">
+                <div class="kjerne">
+                  <div class="tall-midt" style="opacity: {{k.numOp}}"><sc-if value="{{k.hasNum}}" hint-placeholder-val="{{ true }}"><span>{{k.n}}</span></sc-if><sc-if value="{{k.ok}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" style="opacity: .6"><path d="M6.5 12.5l3.6 3.6L17.5 8.5" fill="none" stroke="#000" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"></path><path d="M6.5 12.5l3.6 3.6L17.5 8.5" fill="none" stroke="#C9A24A" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></sc-if></div>
+                  <svg class="sym s-opp" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{k.uC}}" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" style="opacity: {{k.uOp}}; transform: scale({{k.uS}})"><rect x="5" y="11" width="14" height="10" rx="1.5"></rect><path d="M8 11V7a4 4 0 0 1 7.6-1.8"></path></svg>
+                  <svg class="sym s-ned" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{k.dC}}" stroke-width="3" stroke-linecap="round" style="opacity: {{k.dOp}}; transform: scale({{k.dS}})"><path d="M5 7h14M5 12h14M5 17h14"></path></svg>
+                  <svg class="sym s-v" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{k.lC}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="opacity: {{k.lOp}}; transform: scale({{k.lS}})"><path d="M8.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2.8 19.5c.6-3 2.8-4.6 5.7-4.6s5.1 1.6 5.7 4.6M15.8 11a3 3 0 1 0 0-6M17 15c2.2.3 3.8 1.8 4.2 4.5"></path></svg>
+                  <svg class="sym s-h" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="{{k.rC}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="opacity: {{k.rOp}}; transform: scale({{k.rS}})"><path d="M12 11.5a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2zM5 20.5c.7-3.6 3.6-5.6 7-5.6s6.3 2 7 5.6"></path></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="bue" style="opacity: {{k.arcOp}}; transform: rotate({{k.arcDeg}}deg)"></div>
+          <div class="prikk" style="opacity: {{k.arcOp}}; transform: rotate({{k.arcDeg}}deg) translateY(-38px)"></div>
+          <sc-if value="{{k.locked}}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; left: 24px; top: 24px; filter: drop-shadow(1px 1px 0 #000)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFF3B0" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="1.5"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+          </sc-if>
+        </div>
+        <div style="font-size: 12.5px; color: #FFD100; text-align: center; text-shadow: 1px 1px 0 #000; line-height: 1.25">{{k.label}}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="kat" style="width: 300px; margin-top: 4px">Knapper: hvor i prosessen</div>
+  <div style="display: flex; gap: 10px; align-items: flex-start; padding-left: 14px">
+    <div class="trinn"><dc-import name="BuffKnapp" kind="thorn" st="aktiv" tid="10 min" rest="100" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Nettopp kastet</div></div>
+    <div class="pil"><svg width="10" height="12" viewBox="0 0 10 12"><path d="M1 1l7 5-7 5z" fill="#FFD100" stroke="#000" stroke-width="1"></path></svg></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="thorn" st="aktiv" tid="6 min" rest="60" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Tømmes ovenfra</div></div>
+    <div class="pil"><svg width="10" height="12" viewBox="0 0 10 12"><path d="M1 1l7 5-7 5z" fill="#FFD100" stroke="#000" stroke-width="1"></path></svg></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="thorn" st="aktiv" tid="2 min" rest="20" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Lite igjen</div></div>
+    <div class="pil"><svg width="10" height="12" viewBox="0 0 10 12"><path d="M1 1l7 5-7 5z" fill="#FFD100" stroke="#000" stroke-width="1"></path></svg></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="thorn" st="snart" tid="0:38" rest="6" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Snart ute: stor nedtelling</div></div>
+    <div class="pil"><svg width="10" height="12" viewBox="0 0 10 12"><path d="M1 1l7 5-7 5z" fill="#FFD100" stroke="#000" stroke-width="1"></path></svg></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="thorn" st="gatt" tid="gått ut" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Gått ut: lyser</div></div>
+    <div style="width: 1px; height: 64px; background: #4a3920; box-shadow: 1px 0 0 #000; margin: 0 10px"></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="paw" st="ikke" tid="ikke på" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Ikke på: rødt, lyser</div></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="elixir" st="aktiv" tid="48 min" rest="80" antall="3/4" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Eliksir: tid og lager (3/4 = oransje)</div></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="potion" st="aktiv" tid="1/6" rest="17" stille="{{ true }}" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Lager 1/6: oransje</div></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="bandage" st="ikke" tid="0/10" stille="{{ true }}" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Tom: rødt, lyser ikke</div></div>
+  </div>
+
+  <div class="kat" style="width: 440px; margin-top: 4px">Tier I som mangler står ved knappen · alt i sidemenyen</div>
+  <div style="display: flex; gap: 52px; align-items: flex-start; padding-left: 22px; padding-top: 10px">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="position: relative; width: 248px; height: 64px">
+        <div class="ramme" style="position: absolute; left: 0; top: 4px; box-sizing: border-box; border-radius: 4px; display: flex; gap: 6px; padding: 6px 6px 6px 50px">
+          <dc-import name="BuffKnapp" kind="paw" st="ikke" tid="ikke på" hint-size="40px,40px"></dc-import>
+          <dc-import name="BuffKnapp" kind="flaske" st="ikke" tid="ikke på" antall="2" hint-size="40px,40px"></dc-import>
+        </div>
+        <div style="position: absolute; left: -18px; top: 0; width: 64px; height: 64px">
+          <div class="bronse"><div class="sv"><div class="ring" style="background: #FF2020; box-shadow: 0 0 10px 2px rgba(255,32,32,.7)"><div class="kjerne"><div class="tall-midt">5</div></div></div></div></div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #FFD100; text-shadow: 1px 1px 0 #000; line-height: 1.3; padding-left: 4px">I hvile: bare tier I som mangler står ute.<br>Trykk, så er den på og forsvinner</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="position: relative; width: 432px; height: 92px">
+        <div class="ramme" style="position: absolute; left: 0; top: 4px; width: 432px; box-sizing: border-box; border-radius: 4px; display: flex; flex-direction: column">
+          <div style="display: flex; gap: 6px; padding: 6px 6px 6px 50px">
+            <dc-import name="BuffKnapp" kind="paw" st="ikke" tid="ikke på" hint-size="40px,40px"></dc-import>
+            <dc-import name="BuffKnapp" kind="thorn" st="aktiv" tid="6 min" rest="60" hint-size="40px,40px"></dc-import>
+            <dc-import name="BuffKnapp" kind="flaske" st="ikke" tid="ikke på" antall="2" hint-size="40px,40px"></dc-import>
+            <div style="width: 2px; height: 40px; flex: none; margin: 0 2px; background: linear-gradient(90deg, #000 0 1px, #4a3920 1px 2px)"></div>
+            <dc-import name="BuffKnapp" kind="elixir" st="aktiv" tid="48 min" rest="80" antall="3/4" hint-size="40px,40px"></dc-import>
+            <dc-import name="BuffKnapp" kind="shield" st="ikke" tid="ikke på" antall="4/5" hint-size="40px,40px"></dc-import>
+            <dc-import name="BuffKnapp" kind="bandage" st="ikke" tid="0/10" stille="{{ true }}" hint-size="40px,40px"></dc-import>
+            <dc-import name="BuffKnapp" kind="potion" st="aktiv" tid="5" rest="100" stille="{{ true }}" hint-size="40px,40px"></dc-import>
+            <div class="tomrute"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E5446" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+          </div>
+          <div style="height: 2px; margin: 0 6px 0 50px; background: linear-gradient(180deg, #000 0 1px, #4a3920 1px 2px)"></div>
+          <div style="height: 30px; padding: 0 12px 0 50px; display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-shadow: 1px 1px 0 #000">
+            <span style="font-size: 11px; color: #FFD100">Mangler</span>
+            <span style="font-size: 12.5px"><span style="color: #FF2020">MotW</span><span style="color: #808080"> · </span><span style="color: #FF2020">Flask</span><span style="color: #808080"> · </span><span style="color: #FF2020">Defense</span> <span class="an" style="font-size: 14px; font-weight: 600; color: #FF8C1A">4/5</span><span style="color: #808080"> · </span>Bandage <span class="an" style="font-size: 14px; font-weight: 600; color: #FF2020">0/10</span><span style="color: #808080"> · </span>Mongoose <span class="an" style="font-size: 14px; font-weight: 600; color: #FF8C1A">3/4</span></span>
+          </div>
+        </div>
+        <div style="position: absolute; left: -18px; top: 0; width: 64px; height: 64px">
+          <div class="bronse"><div class="sv"><div class="ring" style="background: #FF2020; box-shadow: 0 0 10px 2px rgba(255,32,32,.7)"><div class="kjerne"><div class="tall-midt">5</div></div></div></div></div>
+        </div>
+      </div>
+      <div style="font-size: 13px; color: #FFD100; text-shadow: 1px 1px 0 #000; padding-left: 4px">Foldet ut: alt, med timere og lager. Ting som bare er lager, lyser aldri</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":900,"height":640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const R = '#FF2020', O = '#FF8C1A';
+    const RG = '0 0 10px 2px rgba(255,32,32,.7)', OG = '0 0 10px 2px rgba(255,140,26,.65)';
+    const k = (o) => Object.assign({ ring: '#000', glow: 'none', numOp: 1, hasNum: false, ok: true, n: '', arcOp: 0, arcDeg: 0, locked: false, scale: 1, filter: 'none',
+      uOp: 0, uS: 1, uC: '#C9A24A', dOp: 0, dS: 1, dC: '#C9A24A', lOp: 0, lS: 1, lC: '#C9A24A', rOp: 0, rS: 1, rC: '#C9A24A' }, o);
+    const hov = (dir, deg) => {
+      const o = { scale: 1.06, filter: 'brightness(1.15)', numOp: 0, arcOp: 1, arcDeg: deg };
+      ['u', 'd', 'l', 'r'].forEach((x) => { const on = x === dir; o[x + 'Op'] = on ? 1 : 0.45; o[x + 'S'] = on ? 1.25 : 1; o[x + 'C'] = on ? '#FFF3B0' : '#C9A24A'; });
+      return o;
+    };
+    const red = { ring: R, glow: RG, hasNum: true, ok: false, n: '3' };
+    return {
+      knapper: [
+        k({ label: 'Alt ok: ingen lys' }),
+        k({ label: 'Noe under: oransje', ring: O, glow: OG, hasNum: true, ok: false, n: '1' }),
+        k(Object.assign({ label: 'Noe mangler: rødt' }, red)),
+        k(Object.assign({ label: 'Mus venstre: gruppa' }, red, hov('l', -90))),
+        k(Object.assign({ label: 'Mus høyre: mine' }, red, hov('r', 90))),
+        k(Object.assign({ label: 'Mus ned: menyen' }, red, hov('d', 180))),
+        k(Object.assign({ label: 'Mus opp: lås' }, red, hov('u', 0))),
+        k(Object.assign({ label: 'Låst: mus i midten' }, red, { locked: true, numOp: 0 }))
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

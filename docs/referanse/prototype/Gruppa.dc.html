@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<title>Klar-sjekk – gruppa og mine</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@400;500;600;700&amp;family=Marcellus&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFD100}a:hover{color:#FFF3B0}
+.an{font-family:'Archivo Narrow',sans-serif}
+.sh{text-shadow:1px 1px 0 #000}
+.ramme{background:radial-gradient(140% 60% at 50% 0%,rgba(96,70,40,.26),rgba(0,0,0,0) 70%),linear-gradient(180deg,#201812 0%,#130e0a 100%);border:2px solid;border-color:#9a7a3e #6e5328 #4f3a1a #6e5328;box-shadow:0 0 0 1px #000,inset 0 0 0 1px #000,inset 0 1px 0 1px rgba(255,220,160,.07),0 6px 16px rgba(0,0,0,.6)}
+.kat{height:24px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 10px;background:linear-gradient(180deg,#3d2c19 0%,#271b10 100%);border:1px solid #6a4d27;border-radius:3px;box-shadow:inset 0 1px 0 rgba(255,214,150,.14),0 1px 0 #000;font-family:'Marcellus',serif;font-size:13.5px;color:#FFD100;text-shadow:1px 1px 0 #000}
+.etikett{position:absolute;height:24px;box-sizing:border-box;display:inline-flex;align-items:center;padding:0 10px;background:linear-gradient(180deg,#3d2c19 0%,#271b10 100%);border:1px solid #6a4d27;border-radius:3px;box-shadow:inset 0 1px 0 rgba(255,214,150,.14),0 1px 0 #000;font-family:'Marcellus',serif;font-size:13.5px;color:#FFD100;text-shadow:1px 1px 0 #000}
+.anker{position:absolute;width:64px;height:64px}
+.stump{position:absolute;top:4px;box-sizing:border-box;border-radius:4px;display:flex;gap:6px}
+.stump.h{left:18px;padding:6px 6px 6px 50px}
+.stump.v{right:18px;padding:6px 50px 6px 6px;flex-direction:row-reverse}
+.bar{position:absolute;top:4px;box-sizing:border-box;border-radius:4px;display:flex;flex-direction:column}
+.bar.h{left:18px}.bar.v{right:18px}
+.rad-k{display:flex;gap:6px}
+.h .rad-k{padding:6px 6px 6px 50px}
+.v .rad-k{padding:6px 50px 6px 6px;flex-direction:row-reverse}
+.fure{height:2px;background:linear-gradient(180deg,#000 0 1px,#4a3920 1px 2px)}
+.h .fure{margin:0 6px 0 50px}.v .fure{margin:0 50px 0 6px}
+.rad-t{height:30px;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-shadow:1px 1px 0 #000;font-size:12.5px}
+.h .rad-t{padding:0 12px 0 50px}.v .rad-t{padding:0 50px 0 12px;flex-direction:row-reverse}
+.lbl{font-size:11px;color:#FFD100;flex:none}
+.tall{font-family:'Archivo Narrow',sans-serif;font-size:14px;font-weight:600}
+.skille{width:2px;height:40px;flex:none;margin:0 2px;background:linear-gradient(90deg,#000 0 1px,#4a3920 1px 2px)}
+.tomrute{width:40px;height:40px;box-sizing:border-box;border-radius:4px;border:1px solid #000;background:#0b0907;box-shadow:0 0 0 1px #3a3328,inset 0 0 9px rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;flex:none}
+.med{position:absolute;left:0;top:0;width:64px;height:64px;z-index:3}
+.bronse{width:64px;height:64px;box-sizing:border-box;border-radius:50%;padding:4px;background:linear-gradient(150deg,#f0cf86 0%,#b58a40 28%,#6a4a1c 62%,#a07a38 100%);box-shadow:0 0 0 1px #000,0 4px 10px rgba(0,0,0,.75),inset 0 0 0 1px rgba(255,236,190,.35)}
+.sv{width:100%;height:100%;box-sizing:border-box;border-radius:50%;background:#000;padding:1px}
+.ring{width:100%;height:100%;box-sizing:border-box;border-radius:50%;padding:2px}
+.kjerne{position:relative;width:100%;height:100%;box-sizing:border-box;border-radius:50%;background:radial-gradient(circle at 42% 35%,#3b2f22 0%,#17110c 62%,#0b0806 100%);box-shadow:inset 0 2px 6px rgba(0,0,0,.85)}
+.tall-midt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Marcellus',serif;font-size:25px;line-height:1;padding-top:2px;box-sizing:border-box;color:#FFD100;text-shadow:0 0 2px #000,1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000}
+.sym{position:absolute;filter:drop-shadow(1px 1px 0 #000)}
+.s-opp{left:18.5px;top:3px}.s-ned{left:18.5px;top:34px}.s-v{left:3px;top:18.5px}.s-h{left:34px;top:18.5px}
+.bue{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from -55deg,rgba(255,240,180,0) 0deg,rgba(255,240,180,.95) 55deg,rgba(255,240,180,0) 110deg,rgba(255,240,180,0) 360deg);-webkit-mask:radial-gradient(circle closest-side,transparent 25px,#000 26px);mask:radial-gradient(circle closest-side,transparent 25px,#000 26px);mix-blend-mode:screen}
+.prikk{position:absolute;left:50%;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:radial-gradient(circle,rgba(255,233,150,.9),rgba(255,209,0,0) 70%)}
+.tiernr{width:22px;height:40px;flex:none;display:flex;align-items:center;justify-content:center;font-family:'Marcellus',serif;font-size:15px;color:#FFD100;text-shadow:1px 1px 0 #000;box-shadow:1px 0 0 #3a2c18,2px 0 0 #000;margin-right:4px}
+.tierrad{display:flex;align-items:center;gap:6px;padding:3px 2px 3px 4px}
+.tt{position:absolute;box-sizing:border-box;padding:8px 10px 9px;background:rgba(9,10,20,.95);border:1px solid #60636f;border-radius:5px;box-shadow:0 0 0 1px #000,inset 0 0 0 1px rgba(255,255,255,.06),0 6px 14px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:3px;z-index:6;font-family:'Marcellus',serif}
+.wknapp{height:22px;padding:0 10px;background:linear-gradient(180deg,#4a3a28 0%,#241a10 100%);border:1px solid #7a6040;border-radius:4px;box-shadow:inset 0 1px 0 rgba(255,220,160,.18),0 0 0 1px #000;font-family:'Marcellus',serif;font-size:12px;color:#FFD100;text-shadow:1px 1px 0 #000;white-space:nowrap}
+.tekst{font-family:'Archivo Narrow',sans-serif;font-size:14px;color:#C8CDBE;line-height:1.4;text-shadow:1px 1px 0 #000}
+.trinn{width:96px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.trinn-tekst{font-size:12.5px;color:#FFD100;text-align:center;text-shadow:1px 1px 0 #000;line-height:1.25}
+@keyframes kpuls{0%,100%{box-shadow:0 0 0 1px #000,inset 0 0 0 2px #FFE98A,0 0 6px 1px rgba(255,209,0,.55)}50%{box-shadow:0 0 0 1px #000,inset 0 0 0 2px #FFF6C8,0 0 14px 5px rgba(255,209,0,.9)}}
+@media (prefers-reduced-motion: reduce){.kpuls{animation:none !important}}
+</style>
+</helmet>
+<div style="width: 1280px; height: 760px; box-sizing: border-box; position: relative; overflow: hidden; background: radial-gradient(55% 50% at 78% 75%, rgba(98,116,62,.5), rgba(0,0,0,0) 70%), radial-gradient(45% 45% at 15% 90%, rgba(74,86,50,.55), rgba(0,0,0,0) 70%), radial-gradient(70% 60% at 50% 0%, rgba(46,60,50,.9), rgba(0,0,0,0) 70%), linear-gradient(180deg, #1d281f 0%, #2a3525 55%, #20271a 100%); color: #ECE6D8; font-family: 'Marcellus', serif">
+
+  <div class="etikett" style="left: 40px; top: 24px">Hvile: knappen alene, pluss tier I som mangler eller snart går ut</div>
+  <div class="anker" style="left: 380px; top: 72px">
+    <div class="ramme stump v">
+      <dc-import name="BuffKnapp" kind="paw" gruppe="0110" hint-size="40px,40px"></dc-import>
+    </div>
+    <div class="ramme stump h">
+      <dc-import name="BuffKnapp" kind="paw" st="ikke" tid="ikke på" hint-size="40px,40px"></dc-import>
+      <dc-import name="BuffKnapp" kind="thorn" st="snart" tid="0:38" rest="6" hint-size="40px,40px"></dc-import>
+    </div>
+    <div class="med"><div class="bronse"><div class="sv"><div class="ring" style="background: #FF2020; box-shadow: 0 0 10px 2px rgba(255,32,32,.7)"><div class="kjerne"><div class="tall-midt">6</div></div></div></div></div></div>
+  </div>
+  <div class="tekst" style="position: absolute; left: 40px; top: 150px; width: 760px">Gruppe-knappene viser én rute per medlem: fylt har buffen, tom med gul kant mangler den. Trykk, så kastes den på neste som mangler; når alle har den, forsvinner knappen. Thorns til Brakk er tier II og ligger bare i sidemenyen.</div>
+
+  <div class="etikett" style="left: 40px; top: 206px">Begge foldet ut: tier II kommer fram, hver side vokser bort fra knappen</div>
+  <div class="anker" style="left: 380px; top: 254px">
+    <div class="ramme bar v" style="width: 294px">
+      <div class="rad-k">
+        <dc-import name="BuffKnapp" kind="paw" gruppe="0110" hint-size="40px,40px"></dc-import>
+        <div class="skille"></div>
+        <dc-import name="BuffKnapp" kind="thorn" gruppe="0" hint-size="40px,40px"></dc-import>
+        <div class="tomrute"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E5446" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+        <div class="tomrute"></div>
+        <div class="tomrute"></div>
+      </div>
+      <div class="fure"></div>
+      <div class="rad-t"><span class="lbl">Mangler</span><span><span style="color: #A0A0A0">MotW: </span><span class="tall">Brakk, Vesla</span><span style="color: #808080"> · </span><span style="color: #A0A0A0">Thorns: </span><span class="tall">Brakk</span></span></div>
+    </div>
+    <div class="ramme bar h" style="width: 432px">
+      <div class="rad-k">
+        <dc-import name="BuffKnapp" kind="paw" st="ikke" tid="ikke på" hint-size="40px,40px"></dc-import>
+        <dc-import name="BuffKnapp" kind="thorn" st="snart" tid="0:38" rest="6" hint-size="40px,40px"></dc-import>
+        <dc-import name="BuffKnapp" kind="flaske" st="aktiv" tid="98 min" rest="82" antall="2" hint-size="40px,40px"></dc-import>
+        <div class="skille"></div>
+        <dc-import name="BuffKnapp" kind="food" st="aktiv" tid="12 min" rest="80" antall="6" hint-size="40px,40px"></dc-import>
+        <dc-import name="BuffKnapp" kind="elixir" st="aktiv" tid="48 min" rest="80" antall="3" hint-size="40px,40px"></dc-import>
+        <dc-import name="BuffKnapp" kind="bandage" st="ikke" tid="0/10" hint-size="40px,40px"></dc-import>
+        <dc-import name="BuffKnapp" kind="shield" st="aktiv" tid="4/5" rest="80" hint-size="40px,40px"></dc-import>
+        <div class="tomrute"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5E5446" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+      </div>
+      <div class="fure"></div>
+      <div class="rad-t"><span class="lbl">Mangler</span><span>MotW<span style="color: #808080"> · </span>Bandage <span class="tall" style="color: #FF2020">0/10</span><span style="color: #808080"> · </span>Defense <span class="tall" style="color: #FF8C1A">4/5</span></span></div>
+    </div>
+    <div class="med"><div class="bronse"><div class="sv"><div class="ring" style="background: #FF2020; box-shadow: 0 0 10px 2px rgba(255,32,32,.7)"><div class="kjerne"><div class="tall-midt">6</div></div></div></div></div></div>
+  </div>
+
+  <div class="etikett" style="left: 40px; top: 392px">Gruppe-knappen</div>
+  <div style="position: absolute; left: 40px; top: 436px; display: flex; gap: 22px; align-items: flex-start">
+    <div class="trinn"><dc-import name="BuffKnapp" kind="paw" gruppe="1111" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Alle har den</div></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="paw" gruppe="0110" hint-size="40px,40px"></dc-import><div class="trinn-tekst">2 av 4 mangler: lyser</div></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="thorn" gruppe="0" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Bare tanken følges</div></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="paw" gruppe="01" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Questing med en kompis</div></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="paw" gruppe="0110" kamp="{{ true }}" hint-size="40px,40px"></dc-import><div class="trinn-tekst">I kamp: sist kjente, dempet</div></div>
+    <div class="trinn"><dc-import name="BuffKnapp" kind="thorn" gruppe="0" effekt="trykket" hint-size="40px,40px"></dc-import><div class="trinn-tekst">Tier II: bare i sidemenyen</div></div>
+  </div>
+  <div class="tekst" style="position: absolute; left: 40px; top: 548px; width: 760px">Klikk kaster på den neste som mangler, i rekkefølgen gruppa står. Den neste settes mens du er ute av kamp. I kamp kan addonen verken lese buffene eller bytte mål, så knappen kaster på den som manglet sist den kunne se, og rutene står dempet til kampen er over.</div>
+  <div class="tekst" style="position: absolute; left: 40px; top: 640px; width: 760px">Legge til: dra en buff du kan gi fra spellboken til gruppesiden. Fjerne: dra den ut. Høyreklikk bytter tier, som på din egen side. I menyen kan en gruppebuff settes til å følges bare på noen, for eksempel Thorns bare på tanken.</div>
+
+  <div style="position: absolute; left: 880px; top: 72px; width: 40px; height: 40px">
+    <dc-import name="BuffKnapp" kind="paw" gruppe="0110" effekt="mus" hint-size="40px,40px"></dc-import>
+    <div class="tt" style="left: -6px; top: 52px; width: 236px">
+      <div class="sh" style="font-size: 14px; color: #FFFFFF">Mark of the Wild</div>
+      <div class="an" style="font-size: 13.5px; color: #FFFFFF">2 av 4 mangler</div>
+      <div class="an" style="display: flex; gap: 8px; font-size: 13px"><span style="flex: 1; color: #C79C6E">Brakk (tank)</span><span style="color: #FF2020">mangler</span></div>
+      <div class="an" style="display: flex; gap: 8px; font-size: 13px"><span style="flex: 1; color: #69CCF0">Lirael</span><span style="color: #A0A0A0">har</span></div>
+      <div class="an" style="display: flex; gap: 8px; font-size: 13px"><span style="flex: 1; color: #FFFFFF">Tosk</span><span style="color: #A0A0A0">har</span></div>
+      <div class="an" style="display: flex; gap: 8px; font-size: 13px"><span style="flex: 1; color: #FFF569">Vesla</span><span style="color: #FF2020">mangler</span></div>
+      <div class="an" style="font-size: 13px; color: #40BF40">Klikk: kast på Brakk</div>
+      <div class="an" style="font-size: 13px; color: #A0A0A0">I kamp: kaster på den som manglet før kampen</div>
+      <div class="an" style="font-size: 13px; color: #A0A0A0">Høyreklikk: bytt tier (nå I)</div>
+    </div>
+  </div>
+
+  <div class="ramme" style="position: absolute; left: 880px; top: 360px; width: 340px; box-sizing: border-box; border-radius: 5px; padding: 9px 8px 8px">
+    <div class="kat"><span style="display: flex; align-items: center; gap: 7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFD100" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM2.8 19.5c.6-3 2.8-4.6 5.7-4.6s5.1 1.6 5.7 4.6M15.8 11a3 3 0 1 0 0-6M17 15c2.2.3 3.8 1.8 4.2 4.5"></path></svg>Til gruppa</span><span class="an" style="font-size: 12px; color: #A0A0A0">venstre</span></div>
+    <div class="an sh" style="font-size: 12.5px; color: #A0A0A0; padding: 5px 4px 1px 6px">Følger med på: <span style="color: #C79C6E">Brakk</span> · <span style="color: #69CCF0">Lirael</span> · <span style="color: #FFFFFF">Tosk</span> · <span style="color: #FFF569">Vesla</span></div>
+    <div class="tierrad"><div class="tiernr">I</div><dc-import name="BuffKnapp" kind="paw" gruppe="0110" hint-size="40px,40px"></dc-import></div>
+    <div class="tierrad"><div class="tiernr">II</div><dc-import name="BuffKnapp" kind="thorn" gruppe="0" hint-size="40px,40px"></dc-import><span class="an sh" style="font-size: 12.5px; color: #A0A0A0">bare <span style="color: #C79C6E">Brakk</span></span></div>
+        <div class="kat" style="margin-top: 6px"><span style="display: flex; align-items: center; gap: 7px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFD100" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h14l-3-3M20 16H6l3 3"></path></svg>Retning</span></div>
+    <div style="display: flex; align-items: center; gap: 8px; padding: 7px 4px 1px 8px">
+      <div class="an sh" style="flex: 1; font-size: 13px; color: #C8CDBE">Gruppa <span style="color: #FFD100">til venstre</span> · mine <span style="color: #FFD100">til høyre</span></div>
+      <div class="wknapp" style="display: flex; align-items: center">Bytt sider</div>
+    </div>
+  </div>
+  <div class="tekst" style="position: absolute; left: 880px; top: 650px; width: 340px">Står knappen langt til høyre på skjermen, bytter du sider. Symbolene i knappen følger med: ett hode er dine, to hoder er gruppa.</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
