@@ -129,3 +129,4 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | 2026-10-03 | Lista fra gamle Klar-sjekk flyttes over som MB tier II (Q10) | Daniel |
 | 2026-10-03 | Tester kjøres i Lua 5.1 via Python + lupa (`python tests/run.py`) i stedet for busted/luacheck, som ikke er installert. Samme oppsett som wow-forever (300+ tester) | Daniel + Claude |
 | 2026-10-03 | Mappa kobles inn i spillet med en junction fra `_classic_beta_\Interface\AddOns\Control` | Daniel + Claude |
+| 2026-10-03 | Fase 0 bygget: `Control.toc` (interface 16001) + `Debug.lua` (`/control debug`, `debug knapp`, `debug tøm`). 30/30 tester. Junction opprettet. Venter på Daniels test i spillet | Claude |

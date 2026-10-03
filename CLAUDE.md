@@ -23,6 +23,7 @@ Control viser hva du mangler av buffer og ting, og lar deg fikse det med ett kli
 - **Hemmelige verdier:** sjekk `issecretvalue(v)` før du regner med, sammenligner eller bruker en verdi fra aura-, enhets- eller kast-API-er. Fall tilbake til sist kjente verdi.
 - **Aldri** kast eller bruk noe automatisk. Bare sikre knapper (`SecureActionButtonTemplate`) som spilleren klikker på.
 - Throttle omregning og bruk én felles ticker for nedtellinger, ikke `OnUpdate` per knapp.
+- **Lua-feller vi har gått i:** `ok and x or y` gir `y` når `x` er `nil`/`false` (bruk en hjelper som `try(ok, v)`). `string.lower()` kan ødelegge «æøå»; sammenlign norsk tekst uten å endre den.
 - Kjør `python tests/run.py` før du sier at noe er ferdig (Lua 5.1 via `lupa`; busted og luacheck er ikke installert på Daniels maskin, se HISTORIKK §6).
 
 ## Kommandoer

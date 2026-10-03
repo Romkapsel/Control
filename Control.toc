@@ -1,0 +1,8 @@
+## Interface: 16001
+## Title: Control
+## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk. (Fase 0: /control debug)
+## Author: Daniel
+## Version: 0.0.1
+## SavedVariablesPerCharacter: ControlCharDB
+
+Debug.lua
