@@ -245,13 +245,13 @@ Dette gir disse avgjorte reglene:
 
 | Situasjon | Farge |
 |---|---|
-| En buff du kan gi deg selv (spell) mangler eller har gått ut | **Rød.** «Ingen unnskyldning.» |
-| En ting på lista er tom (0) | **Rød** |
+| **Tier I (må ha):** buff som mangler eller har gått ut, eller en ting som er tom | **Rød** (Daniel 4. okt: tieren styrer fargen) |
+| **Tier II (fint å ha):** det samme | **Oransje** |
 | Lager under ønsket (f.eks. 1/6, 3/4) | **Oransje** |
 | En buff går snart ut | **Oransje** |
 | Alt ok | Ingen farge |
 | Én oppføring med både buff- og lager-del | Den verste av de to |
-| Gruppebuff som mangler på minst én som følges | **Rød** |
+| Gruppebuff som mangler på minst én som følges | **Rød** i tier I, **oransje** i tier II |
 
 > **AVGJORT Q1 (3. okt.): rød, som prototypen.** Opprinnelig spørsmål: Prototypen gir **rødt** når en buffting (eliksir, flask, mat) ikke er på, selv om lageret er fullt. Daniel har sagt at rødt er for spells du kan gi deg selv og for ting som er tomme, og ga «4/5 defense potion» som eksempel på oransje. Bekreft om buffting som ikke er på skal være rød (som nå) eller bare styres av lageret (oransje/rød) mens knappen fortsatt dukker opp. Standard inntil svar: rød, som prototypen.
 
@@ -268,7 +268,7 @@ end
 
 ### 6.4 Tier: hvor en oppføring vises
 
-Tier bestemmer **bare hvor** en oppføring vises, aldri fargen.
+Tier bestemmer **hvor** en oppføring vises, og (fra 4. okt) **hvor alvorlig** det er når den mangler: rød i tier I, oransje i tier II (§6.2).
 
 | Tier | Ved knappen (Tray) | I sidemenyen | I menyen |
 |---|---|---|---|
@@ -285,7 +285,7 @@ Tier bestemmer **bare hvor** en oppføring vises, aldri fargen.
 ```lua
 count = antall MB-oppføringer med severity > 0          -- alle tier
       + antall PB-oppføringer der minst én som følges mangler
-ring  = verste severity over alt (PB som mangler teller som 2)
+ring  = verste severity over alt (PB følger tier som resten)
 ```
 
 - Tallet teller **alt som mangler helt eller delvis**, altså det samme som sidemenyene viser i statuslinja. Står knappen alene med et tall, er det et tegn på å åpne sidene. Se **ÅPENT Q2**.
@@ -804,11 +804,11 @@ Bruk dette som fixture i testene for `Rules.lua`. Det er samme data som prototyp
 | Klikk MotW (meg) | MotW-gruppe ‖ Flask | **6** | rød |
 | Klikk Flask (3 → 2, fortsatt nok) | MotW-gruppe ‖ – | **5** | rød |
 | Klikk MotW-gruppe (Brakk får) | MotW-gruppe (Vesla mangler) ‖ – | **5** | rød |
-| Klikk MotW-gruppe (Vesla får) | – ‖ – (knappen alene) | **4** | rød (Thorns til Brakk, Defense ikke på, Bandage 0/10) |
+| Klikk MotW-gruppe (Vesla får) | – ‖ – (knappen alene) | **4** | oransje (alt som gjenstår er tier II: Thorns til Brakk, Defense ikke på, Bandage 0/10, Mongoose 3/4) |
 
 De 4 som er igjen: Thorns til Brakk (PB, tier II), Mongoose 3/4, Defense ikke på 4/5, Bandage 0/10.
 
-Statuslinje MB ved start: `Mangler  MotW · Flask · Defense 4/5 · Bandage 0/10 · +1`
+Statuslinje MB ved start: `Mangler  MotW · Flask · Mongoose 3/4 · Defense 4/5 · +1` (endret 4. okt: tier II er oransje)
 Statuslinje PB ved start: `Mangler  MotW: Brakk, Vesla · Thorns: Brakk`
 
 Høyreklikk Defense til tier I → Defense dukker opp ved knappen med en gang (ikke på, har 4).

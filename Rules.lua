@@ -41,12 +41,16 @@ end
 
 ------------------------------------------------------------------------
 -- Alvorlighet (SPEC §6.2): 0 = ok, 1 = oransje, 2 = rød
+-- Tieren sier hvor viktig noe er (Daniel 4. okt): det som mangler helt (buff ikke på, tomt), er rødt i tier I
+-- («må ha») og oransje i tier II («fint å ha»). Under ønsket antall og snart ute er alltid oransje.
 ------------------------------------------------------------------------
+
+local function missingSev(e) return e.tier == 1 and SEV_BAD or SEV_WARN end
 
 function Rules.buffSeverity(e, st)
   if e.type == "item" or e.type == "partyspell" then return SEV_OK end
   local s = st and st.status
-  if s == "missing" or s == "expired" then return SEV_BAD end -- buffting som ikke er på: rød (Q1)
+  if s == "missing" or s == "expired" then return missingSev(e) end
   if s == "expiring" then return SEV_WARN end
   return SEV_OK
 end
@@ -54,7 +58,7 @@ end
 function Rules.stockSeverity(e, st)
   if not hasStock(e) then return SEV_OK end
   local count = (st and st.count) or 0
-  if count <= 0 then return SEV_BAD end
+  if count <= 0 then return missingSev(e) end
   if count < (e.want or 1) then return SEV_WARN end
   return SEV_OK
 end
@@ -65,7 +69,7 @@ end
 
 function Rules.severity(e, st)
   if e.type == "partyspell" then
-    return #Rules.partyMissing(st) > 0 and SEV_BAD or SEV_OK -- SPEC §6.5: gruppebuff som mangler teller som 2
+    return #Rules.partyMissing(st) > 0 and missingSev(e) or SEV_OK
   end
   return math.max(Rules.buffSeverity(e, st), Rules.stockSeverity(e, st))
 end
@@ -241,10 +245,9 @@ function Rules.render(model, L, opts)
     if s > ring then ring = s end
   end
   for _, e in ipairs(partyList) do
-    if #Rules.partyMissing(st[e.id]) > 0 then
-      count = count + 1
-      ring = SEV_BAD
-    end
+    local s = Rules.severity(e, st[e.id])
+    if s > 0 then count = count + 1 end
+    if s > ring then ring = s end
   end
 
   local newTray = { self = tray(selfList, st), party = tray(partyList, st) }
