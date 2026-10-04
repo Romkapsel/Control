@@ -12,7 +12,7 @@ local SIZE = 64
 local HUB_R = 11      -- midten (22 px)
 local OUTER_R = 33    -- utenfor ringen teller ikke
 local SYM_OFFSET = 17 -- symbolene ut mot kanten av kjernen
-local DOT_R = 27      -- lysprikken på ringen
+local DOT_R = 29      -- lysprikken på bronsekanten, utenfor symbolene
 local ZONE_ANGLE = { up = 90, right = 0, down = -90, left = 180 }
 
 ------------------------------------------------------------------------
@@ -93,30 +93,47 @@ local function add(f, p)
   return p
 end
 
-local function drawLock(f, s, open)
-  add(f, Style.Rect(f, "OVERLAY", 2, 9 * s, 7 * s, C.goldDim, 1, 0, -2 * s))
-  add(f, Style.Line(f, "OVERLAY", 2, -3 * s, 1 * s, -3 * s, 5 * s, 1.6 * s, C.goldDim))
-  if open then
-    add(f, Style.Line(f, "OVERLAY", 2, -3.6 * s, 5 * s, 2.5 * s, 6.5 * s, 1.6 * s, C.goldDim))
-  else
-    add(f, Style.Line(f, "OVERLAY", 2, -3.6 * s, 5 * s, 3.6 * s, 5 * s, 1.6 * s, C.goldDim))
-    add(f, Style.Line(f, "OVERLAY", 2, 3 * s, 5 * s, 3 * s, 1 * s, 1.6 * s, C.goldDim))
+-- Symbolene er tynne konturer som i designet (SPEC §7.1), ikke fylte flater.
+local STROKE = 1.3
+
+local function polyline(f, pts, t, c)
+  for i = 2, #pts do
+    add(f, Style.Line(f, "OVERLAY", 2, pts[i - 1][1], pts[i - 1][2], pts[i][1], pts[i][2], t, c))
   end
+end
+
+local function drawLock(f, s, open)
+  local c, t = C.goldDim, STROKE * s
+  local w, h, by = 4.5 * s, 3.5 * s, -2.2 * s -- kroppen: halv bredde, halv høyde, midtpunkt
+  polyline(f, { { -w, by - h }, { w, by - h }, { w, by + h }, { -w, by + h }, { -w, by - h } }, t, c)
+  local lift = open and 1.6 * s or 0
+  local sx, top, r = 2.8 * s, 5.6 * s + lift, 1.3 * s
+  local right = open and { sx, top - 2.6 * s } or { sx, by + h }
+  polyline(f, { { -sx, by + h }, { -sx, top - r }, { -sx + r, top }, { sx - r, top }, { sx, top - r }, right }, t, c)
+  add(f, Style.Disc(f, "OVERLAY", 2, 1.8 * s, c, 1, 0, by)) -- nøkkelhull
 end
 
 local function drawMenu(f)
   for _, y in ipairs({ 3.5, 0, -3.5 }) do
-    add(f, Style.Line(f, "OVERLAY", 2, -4.5, y, 4.5, y, 1.6, C.goldDim))
+    add(f, Style.Line(f, "OVERLAY", 2, -4.5, y, 4.5, y, STROKE, C.goldDim))
   end
 end
 
-local function drawHead(f, x, s)
-  add(f, Style.Disc(f, "OVERLAY", 2, 5 * s, C.goldDim, 1, x, 3 * s))
-  add(f, Style.Rect(f, "OVERLAY", 2, 8 * s, 4 * s, C.goldDim, 1, x, -3 * s))
+-- Hode som ring og skuldre som bue. Det indre av hodet har kjernens farge og farges ikke ved mus over.
+local function drawPerson(f, x, s)
+  local c, t = C.goldDim, STROKE * s
+  add(f, Style.Disc(f, "OVERLAY", 2, 6.6 * s, c, 1, x, 3.2 * s))
+  Style.Disc(f, "OVERLAY", 3, 6.6 * s - 2 * t, C.core, 1, x, 3.2 * s)
+  local pts = {}
+  for i = 0, 6 do
+    local a = math.pi * i / 6
+    pts[#pts + 1] = { x + 5 * s * math.cos(a), -7 * s + 4.8 * s * math.sin(a) }
+  end
+  polyline(f, pts, t, c)
 end
 
-local function drawOne(f) drawHead(f, 0, 1) end
-local function drawTwo(f) drawHead(f, -3.2, 0.8) drawHead(f, 3.2, 0.8) end
+local function drawOne(f) drawPerson(f, 0, 1) end
+local function drawTwo(f) drawPerson(f, 3, 0.78) drawPerson(f, -2.6, 0.78) end
 
 local function drawCheck(f)
   add(f, Style.Line(f, "OVERLAY", 3, -7, 1, -2, -5, 3, C.goldDim))
@@ -161,7 +178,12 @@ local function build()
   face:SetPoint("CENTER")
 
   -- Lag utenfra og inn (SPEC §7.1)
-  parts.glow = Style.Disc(face, "BACKGROUND", -8, 78, C.red, 0)
+  -- Gløden: tre lag som blir svakere utover (en myk overgang uten tekstur)
+  parts.glow = {
+    { tex = Style.Disc(face, "BACKGROUND", -8, 76, C.red, 0), k = 0.10 },
+    { tex = Style.Disc(face, "BACKGROUND", -8, 72, C.red, 0), k = 0.16 },
+    { tex = Style.Disc(face, "BACKGROUND", -8, 68, C.red, 0), k = 0.24 },
+  }
   parts.shadow = Style.Disc(face, "BACKGROUND", -7, 68, C.black, 0.55, 0, -2)
   parts.outer = Style.Disc(face, "BACKGROUND", -6, 64, C.black, 1)
   parts.bronze = Style.Disc(face, "BACKGROUND", -5, 62, { 1, 1, 1 }, 1)
@@ -195,7 +217,8 @@ local function build()
   sym.right.one = symbolFrame(sym.right, 0, 0) drawOne(sym.right.one)
   sym.right.two = symbolFrame(sym.right, 0, 0) drawTwo(sym.right.two)
 
-  parts.dot = Style.Disc(face, "OVERLAY", 4, 5, C.goldLight, 0)
+  parts.dotHalo = Style.Disc(face, "OVERLAY", 4, 9, C.goldLight, 0)
+  parts.dot = Style.Disc(face, "OVERLAY", 5, 4, C.goldLight, 0)
   parts.hubMove = symbolFrame(face, 0, 0)
   drawMove(parts.hubMove)
   parts.hubLock = symbolFrame(face, 0, 0)
@@ -248,16 +271,21 @@ function applyAll()
   end
 
   local ang = math.rad(v("angle", 90))
-  parts.dot:ClearAllPoints()
-  parts.dot:SetPoint("CENTER", face, "CENTER", DOT_R * math.cos(ang), DOT_R * math.sin(ang))
+  local dx, dy = DOT_R * math.cos(ang), DOT_R * math.sin(ang)
+  for _, d in ipairs({ parts.dot, parts.dotHalo }) do
+    d:ClearAllPoints()
+    d:SetPoint("CENTER", face, "CENTER", dx, dy)
+  end
   parts.dot:SetAlpha(v("dot", 0))
+  parts.dotHalo:SetAlpha(v("dot", 0) * 0.35)
 
   parts.hubMove:SetAlpha(v("hubMove", 0))
   parts.hubLock:SetAlpha(v("hubLock", 0))
 
   local r, g, bl = v("ringR", 0), v("ringG", 0), v("ringB", 0)
   parts.ring:SetColorTexture(r, g, bl, 1)
-  parts.glow:SetColorTexture(r, g, bl, v("glowA", 0) * 0.45)
+  local ga = v("glowA", 0)
+  for _, layer in ipairs(parts.glow) do layer.tex:SetColorTexture(r, g, bl, ga * layer.k) end
 end
 
 local function refreshHover()
