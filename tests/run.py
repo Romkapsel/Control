@@ -156,8 +156,11 @@ check(db.combat[#db.combat].reason == "etter kamp", "øyeblikksbilde etter kamp"
 -- Testknapper (V5)
 SlashCmdList.CONTROL("debug knapp")
 check(Chat("Testknapper vist"), "testknapper vises")
+Fire("ADDON_ACTION_BLOCKED", "Control", "CastSpellByID()")
+Fire("UI_ERROR_MESSAGE", 51, "Out of range.")
+check(#db.errors == 2 and db.errors[1].b == "CastSpellByID()" and db.errors[2].b == "Out of range.", "V5: blokkerte handlinger og feilmeldinger logges")
 SlashCmdList.CONTROL("debug tøm")
-check(#db.runs == 0 and #db.casts == 0 and Chat("Loggen er tømt"), "/control debug tøm")
+check(#db.runs == 0 and #db.casts == 0 and #db.errors == 0 and Chat("Loggen er tømt"), "/control debug tøm")
 
 -- Bare tillatte globale navn
 local extra = {}

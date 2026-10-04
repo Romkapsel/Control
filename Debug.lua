@@ -292,6 +292,11 @@ local PLACE_EVENTS = { "TAXIMAP_OPENED", "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED"
                        "PLAYER_UPDATE_RESTING", "UPDATE_BATTLEFIELD_STATUS", "LFG_PROPOSAL_SHOW",
                        "TRANSPORT_ARRIVED", "CONFIRM_SUMMON" }
 
+-- Hvorfor et klikk ikke ble til et kast: blokkert av taint, eller en feilmelding fra spillet (for langt unna osv.).
+local ERROR_EVENTS = { "ADDON_ACTION_BLOCKED", "ADDON_ACTION_FORBIDDEN", "UI_ERROR_MESSAGE" }
+local ERROR_SET = {}
+for _, e in ipairs(ERROR_EVENTS) do ERROR_SET[e] = true end
+
 local function logCast(event, ...)
   local args = { ... }
   -- SENT: unit, target, castGUID, spellID · de andre: unit, castGUID, spellID
@@ -312,12 +317,20 @@ end
 -- V5: testknapper
 ------------------------------------------------------------------------
 
+-- Fire varianter, fordi «Party1» med spell-ID ikke kastet noe 4. okt: spell etter navn, etter ID og som makro.
+-- Klikket registreres bare på «ned» når ActionButtonUseKeyDown er på (ellers «opp»), så det ikke kommer to ganger.
 local holder
-local function makeTestButton(parent, label, unit, x)
+local function spellNameOf(id)
+  local ok, n = pcall(spellName, id)
+  if ok and type(n) == "string" and not isSecret(n) then return n end
+end
+
+local function makeTestButton(parent, label, unit, mode, x)
   local b = CreateFrame("Button", nil, parent, "SecureActionButtonTemplate")
   b:SetSize(40, 40)
   b:SetPoint("LEFT", parent, "LEFT", x, 0)
-  b:RegisterForClicks("AnyUp", "AnyDown")
+  local okCV, keyDown = pcall(GetCVar, "ActionButtonUseKeyDown")
+  if okCV and keyDown == "1" then b:RegisterForClicks("AnyDown") else b:RegisterForClicks("AnyUp") end
   b:SetAttribute("unit", unit)
   b.icon = b:CreateTexture(nil, "ARTWORK")
   b.icon:SetAllPoints()
@@ -330,9 +343,22 @@ local function makeTestButton(parent, label, unit, x)
     local kind, a, _, d = GetCursorInfo()
     if kind == "spell" then
       local id = d or a
-      self:SetAttribute("type", "spell")
-      self:SetAttribute("spell", id)
-      self.what = "spell " .. str(id)
+      local name = spellNameOf(id)
+      if mode == "macro" then
+        if not name then return Say("Fant ikke navnet på spellen.") end
+        self:SetAttribute("type", "macro")
+        self:SetAttribute("macrotext", "/cast [@" .. unit .. "] " .. name)
+        self.what = "makro /cast [@" .. unit .. "] " .. name
+      elseif mode == "name" then
+        if not name then return Say("Fant ikke navnet på spellen.") end
+        self:SetAttribute("type", "spell")
+        self:SetAttribute("spell", name)
+        self.what = "spell navn " .. name
+      else
+        self:SetAttribute("type", "spell")
+        self:SetAttribute("spell", id)
+        self.what = "spell ID " .. str(id)
+      end
       local okI, info = pcall(function() return C_Spell and C_Spell.GetSpellInfo and C_Spell.GetSpellInfo(id) end)
       if okI and info and info.iconID then self.icon:SetTexture(info.iconID) end
     elseif kind == "item" then
@@ -349,7 +375,8 @@ local function makeTestButton(parent, label, unit, x)
   end)
   b:HookScript("PostClick", function(self, mouse, down)
     push(db.clicks, { t = now(), at = stamp(), button = label, what = self.what or "tom", mouse = safe(mouse),
-                      down = safe(down), combat = inCombat() }, MAX_LOG)
+                      down = safe(down), combat = inCombat(), type = safe(self:GetAttribute("type")),
+                      unit = safe(self:GetAttribute("unit")) }, MAX_LOG)
   end)
   return b
 end
@@ -358,13 +385,15 @@ local function toggleTestButtons()
   if inCombat() then return Say("Testknappene kan bare vises og skjules utenfor kamp.") end
   if not holder then
     holder = CreateFrame("Frame", nil, UIParent)
-    holder:SetSize(110, 60)
+    holder:SetSize(240, 60)
     holder:SetPoint("CENTER", UIParent, "CENTER", 0, 160)
     local t = holder:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     t:SetPoint("BOTTOM", holder, "TOP", 0, 0)
-    t:SetText("Control test (V5)")
-    makeTestButton(holder, "Meg", "player", 6)
-    makeTestButton(holder, "Party1", "party1", 64)
+    t:SetText("Control test (V5): dra samme spell på alle fire")
+    makeTestButton(holder, "Meg navn", "player", "name", 6)
+    makeTestButton(holder, "Meg ID", "player", "id", 64)
+    makeTestButton(holder, "Meg makro", "player", "macro", 122)
+    makeTestButton(holder, "Party1", "party1", "name", 180)
     holder:Hide()
   end
   if holder:IsShown() then holder:Hide() else holder:Show() end
@@ -398,8 +427,8 @@ local function summary(s)
       if e.spellID == "<hemmelig>" then secret = secret + 1 end
     end
   end
-  Say(("Kast logget: %d, i kamp: %d, spell-ID hemmelig i kamp: %d · klikk på testknapper: %d · steder: %d"):format(
-      #db.casts, inC, secret, #db.clicks, #db.events))
+  Say(("Kast logget: %d, i kamp: %d, spell-ID hemmelig i kamp: %d · klikk på testknapper: %d · steder: %d · feil/blokkert: %d"):format(
+      #db.casts, inC, secret, #db.clicks, #db.events, #db.errors))
   Say("Lagret. /reload eller logg ut, så kan Claude lese svarene.")
 end
 
@@ -417,6 +446,8 @@ ev:SetScript("OnEvent", function(self, event, ...)
     db.debug = db.debug or {}
     db = db.debug
     db.runs, db.casts, db.events, db.clicks, db.combat = db.runs or {}, db.casts or {}, db.events or {}, db.clicks or {}, db.combat or {}
+    db.errors = db.errors or {}
+    for _, e in ipairs(ERROR_EVENTS) do pcall(self.RegisterEvent, self, e) end
     for e in pairs(CAST_EVENTS) do pcall(self.RegisterUnitEvent, self, e, "player") end
     for _, e in ipairs(PLACE_EVENTS) do pcall(self.RegisterEvent, self, e) end
     self:RegisterEvent("PLAYER_REGEN_DISABLED")
@@ -427,6 +458,9 @@ ev:SetScript("OnEvent", function(self, event, ...)
   if not db then return end
   if CAST_EVENTS[event] then
     pcall(logCast, event, ...)
+  elseif ERROR_SET[event] then
+    local a, b = ...
+    push(db.errors, { ev = event, t = now(), at = stamp(), combat = inCombat(), a = safe(a), b = safe(b) }, MAX_LOG)
   elseif event == "PLAYER_REGEN_DISABLED" then
     -- Ett sekund inn i kampen: les det samme som utenfor, og se hva som er hemmelig.
     C_Timer.After(1, function()
@@ -460,7 +494,7 @@ SlashCmdList.CONTROL = function(msg)
   elseif msg == "debug knapp" then
     toggleTestButtons()
   elseif raw == "debug tøm" or raw == "debug Tøm" or msg == "debug tom" then
-    db.runs, db.casts, db.events, db.clicks, db.combat = {}, {}, {}, {}, {}
+    db.runs, db.casts, db.events, db.clicks, db.combat, db.errors = {}, {}, {}, {}, {}, {}
     Say("Loggen er tømt.")
   else
     Say("Fase 0. Skriv /control debug, /control debug knapp eller /control debug tøm.")
