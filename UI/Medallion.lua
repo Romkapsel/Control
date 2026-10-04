@@ -11,7 +11,8 @@ ns.Medallion = M
 local SIZE = 64
 local HUB_R = 11      -- midten (22 px)
 local OUTER_R = 33    -- utenfor ringen teller ikke
-local SYM_OFFSET = 17 -- symbolene ut mot kanten av kjernen
+local SYM_OFFSET = 17 -- lås og meny ut mot kanten av kjernen
+local SYM_SIDE = 15   -- hodene litt innenfor: de er bredere enn de er høye
 local DOT_R = 29      -- lysprikken på bronsekanten, utenfor symbolene
 local ZONE_ANGLE = { up = 90, right = 0, down = -90, left = 180 }
 
@@ -120,20 +121,21 @@ local function drawMenu(f)
 end
 
 -- Hode som ring og skuldre som bue. Det indre av hodet har kjernens farge og farges ikke ved mus over.
+-- Kompakt (ca. 8 × 11 px), så symbolet holder seg inne i kjernen også når det vokser 25 %.
 local function drawPerson(f, x, s)
-  local c, t = C.goldDim, STROKE * s
-  add(f, Style.Disc(f, "OVERLAY", 2, 6.6 * s, c, 1, x, 3.2 * s))
-  Style.Disc(f, "OVERLAY", 3, 6.6 * s - 2 * t, C.core, 1, x, 3.2 * s)
+  local c, t = C.goldDim, STROKE
+  add(f, Style.Disc(f, "OVERLAY", 2, 5.4 * s, c, 1, x, 2.6 * s))
+  Style.Disc(f, "OVERLAY", 3, 5.4 * s - 2 * t, C.core, 1, x, 2.6 * s)
   local pts = {}
   for i = 0, 6 do
     local a = math.pi * i / 6
-    pts[#pts + 1] = { x + 5 * s * math.cos(a), -7 * s + 4.8 * s * math.sin(a) }
+    pts[#pts + 1] = { x + 4 * s * math.cos(a), -5.2 * s + 3.6 * s * math.sin(a) }
   end
   polyline(f, pts, t, c)
 end
 
 local function drawOne(f) drawPerson(f, 0, 1) end
-local function drawTwo(f) drawPerson(f, 3, 0.78) drawPerson(f, -2.6, 0.78) end
+local function drawTwo(f) drawPerson(f, 2.4, 0.78) drawPerson(f, -2.2, 0.78) end
 
 local function drawCheck(f)
   add(f, Style.Line(f, "OVERLAY", 3, -7, 1, -2, -5, 3, C.goldDim))
@@ -210,10 +212,10 @@ local function build()
   drawLock(sym.up.closed, 1, false)
   sym.down = symbolFrame(face, 0, -SYM_OFFSET)
   drawMenu(sym.down)
-  sym.left = symbolFrame(face, -SYM_OFFSET, 0)
+  sym.left = symbolFrame(face, -SYM_SIDE, 0)
   sym.left.one = symbolFrame(sym.left, 0, 0) drawOne(sym.left.one)
   sym.left.two = symbolFrame(sym.left, 0, 0) drawTwo(sym.left.two)
-  sym.right = symbolFrame(face, SYM_OFFSET, 0)
+  sym.right = symbolFrame(face, SYM_SIDE, 0)
   sym.right.one = symbolFrame(sym.right, 0, 0) drawOne(sym.right.one)
   sym.right.two = symbolFrame(sym.right, 0, 0) drawTwo(sym.right.two)
 
