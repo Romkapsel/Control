@@ -207,7 +207,8 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
     place(bar, bar.vB, x + 1)
   end
   bar.frame:SetWidth(sideView.width)
-  bar.status:SetText(SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
+  -- Tom side: ingen statuslinje (den får ikke plass, og «+»-ruta sier hva du kan gjøre)
+  bar.status:SetText(#bar.ids == 0 and "" or SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
   return true
 end
 
@@ -221,7 +222,8 @@ function SB.Paint(sideKey, entries, st, view, isParty, L)
     local e = byId[id]
     if e then ns.EntryButton.Paint(bar.buttons[i], e, st[id], L) end
   end
-  bar.status:SetText(SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
+  -- Tom side: ingen statuslinje (den får ikke plass, og «+»-ruta sier hva du kan gjøre)
+  bar.status:SetText(#bar.ids == 0 and "" or SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
   local inCombat = InCombatLockdown()
   local last
   for _, s in ipairs(bar.slots) do if s:IsShown() then last = s end end

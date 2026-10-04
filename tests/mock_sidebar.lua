@@ -25,7 +25,7 @@ check(mb.slots[1].shown and mb.slots[1].plus.shown and mb.slots[1].hint == "Dra 
   "tom side: én slipprute med «+» og hjelpetekst")
 check(not (mb.slots[2] and mb.slots[2].shown), "tom side: bare én rute")
 eq(mb.frame.width, 40 + 46, "tom side: bredde")
-check(mb.status.text:find("Status", 1, true) and mb.status.text:find("Alt med", 1, true), "statuslinja: Status · Alt med")
+eq(mb.status.text, "", "tom side: ingen statuslinje (får ikke plass)")
 
 -- Slipp på sidemenyen: sist i tier II
 T.cursor = { "spell", 3, "spell", 5232 }
@@ -114,7 +114,7 @@ T.cursor = { "spell", 3, "spell", 1126 }
 pb.frame.scripts.OnReceiveDrag(pb.frame)
 local g = ControlCharDB.party[1]
 check(g and g.type == "partyspell" and g.tier == 2 and g.groupSpell == "Gift of the Wild", "gruppebuff med gruppeversjon")
-check(pb.status.text:find("Alle har det de skal", 1, true), "gruppa: alle har det (leses fra fase 5)")
+check(pb.status.text:find("Alle har det de skal", 1, true), "gruppa med én buff: plass til hele teksten (leses fra fase 5)")
 T.cursor = { "item", 13510, "[Flask]" }
 pb.frame.scripts.OnReceiveDrag(pb.frame)
 eq(#ControlCharDB.party, 1, "item på gruppesiden avvises")

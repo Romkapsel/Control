@@ -113,14 +113,26 @@ end
 
 -- Rammen rundt knappene ved medaljongen og sidemenyene (SPEC §13.2): 1 px svart, 2 px bronse og 1 px svart,
 -- lik hele veien rundt (Daniel 4. okt: bunnen og siden skal se ut som toppen), og mørk brun bakgrunn innenfor.
+-- Kanten måles i skjermpiksler, ikke UI-enheter: med UI-skala ble en 1-enhets strek noen ganger 2 piksler
+-- (toppen så tykkere ut). PixelUtil er Blizzards egen omregning; uten den brukes 1 enhet.
 Style.FRAME_EDGE = 4
+function Style.OnePixel(f)
+  if PixelUtil and PixelUtil.GetPixelToUIUnitFactor then
+    local ok, s = pcall(f.GetEffectiveScale, f)
+    if ok and s and s > 0 then return PixelUtil.GetPixelToUIUnitFactor() / s end
+  end
+  return 1
+end
+
 function Style.Frame(f)
+  local p = Style.OnePixel(f)
   local bg = f:CreateTexture(nil, "BACKGROUND", nil, 0)
-  bg:SetPoint("TOPLEFT", 4, -4)
-  bg:SetPoint("BOTTOMRIGHT", -4, 4)
+  bg:SetPoint("TOPLEFT", 4 * p, -4 * p)
+  bg:SetPoint("BOTTOMRIGHT", -4 * p, 4 * p)
   bg:SetColorTexture(1, 1, 1, 0.96)
   Style.Gradient(bg, hex("130E0A"), hex("201812"), hex("1A140F"))
   local function ring(inset, thick, color, sub)
+    inset, thick = inset * p, thick * p
     local function edge(p1, x1, y1, p2, x2, y2, w, h)
       local t = f:CreateTexture(nil, "BORDER", nil, sub)
       t:SetColorTexture(color[1], color[2], color[3], 1)
