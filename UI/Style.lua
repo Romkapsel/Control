@@ -111,6 +111,34 @@ function Style.Line(parent, layer, sub, x1, y1, x2, y2, thickness, color, alpha)
   return l
 end
 
+-- Rammen rundt knappene ved medaljongen og sidemenyene (SPEC §13.2): 1 px svart, 2 px bronse og 1 px svart,
+-- lik hele veien rundt (Daniel 4. okt: bunnen og siden skal se ut som toppen), og mørk brun bakgrunn innenfor.
+Style.FRAME_EDGE = 4
+function Style.Frame(f)
+  local bg = f:CreateTexture(nil, "BACKGROUND", nil, 0)
+  bg:SetPoint("TOPLEFT", 4, -4)
+  bg:SetPoint("BOTTOMRIGHT", -4, 4)
+  bg:SetColorTexture(1, 1, 1, 0.96)
+  Style.Gradient(bg, hex("130E0A"), hex("201812"), hex("1A140F"))
+  local function ring(inset, thick, color, sub)
+    local function edge(p1, x1, y1, p2, x2, y2, w, h)
+      local t = f:CreateTexture(nil, "BORDER", nil, sub)
+      t:SetColorTexture(color[1], color[2], color[3], 1)
+      t:SetPoint(p1, f, p1, x1, y1)
+      t:SetPoint(p2, f, p2, x2, y2)
+      if w then t:SetWidth(w) end
+      if h then t:SetHeight(h) end
+    end
+    edge("TOPLEFT", inset, -inset, "TOPRIGHT", -inset, -inset, nil, thick)
+    edge("BOTTOMLEFT", inset, inset, "BOTTOMRIGHT", -inset, inset, nil, thick)
+    edge("TOPLEFT", inset, -inset, "BOTTOMLEFT", inset, inset, thick, nil)
+    edge("TOPRIGHT", -inset, -inset, "BOTTOMRIGHT", -inset, inset, thick, nil)
+  end
+  ring(0, 1, Style.C.black, 0)
+  ring(1, 2, hex("8A6A36"), 1)
+  ring(3, 1, Style.C.black, 2)
+end
+
 -- Gjør alle tegnede deler i en ramme samme farge (symbolene skifter mellom gull og lys gull).
 function Style.Tint(parts, color, alpha)
   for _, p in ipairs(parts) do p:SetColorTexture(color[1], color[2], color[3], alpha or 1) end

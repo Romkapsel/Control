@@ -11,30 +11,12 @@ ns.Tray = Tray
 local BTN, GAP, MED = 40, 6, 64
 local START = MED / 2   -- rammen starter i medaljongens midtpunkt
 local AIR = 36          -- luft innenfor kanten på medaljongsiden: første knapp 6 px utenfor medaljongen
-local HEIGHT = 56 -- 2 + 6 + 40 + 6 + 2
+local HEIGHT = 56 -- 4 kant + 4 luft + 40 knapp + 4 luft + 4 kant
 
 local trays = {}
 
 -- Bakgrunn og bronsekant som sidemenyen (SPEC §13.2)
-local function chrome(f)
-  local bg = f:CreateTexture(nil, "BACKGROUND", nil, 0)
-  bg:SetPoint("TOPLEFT", 2, -2)
-  bg:SetPoint("BOTTOMRIGHT", -2, 2)
-  bg:SetColorTexture(1, 1, 1, 0.96)
-  Style.Gradient(bg, Style.hex("130E0A"), Style.hex("201812"), Style.hex("1A140F"))
-  local function edge(p1, p2, w, h, color, sub)
-    local t = f:CreateTexture(nil, "BORDER", nil, sub)
-    t:SetColorTexture(color[1], color[2], color[3], 1)
-    t:SetPoint(p1, f, p1)
-    t:SetPoint(p2, f, p2)
-    if w then t:SetWidth(w) end
-    if h then t:SetHeight(h) end
-  end
-  edge("TOPLEFT", "TOPRIGHT", nil, 2, Style.hex("9A7A3E"), 1)
-  edge("BOTTOMLEFT", "BOTTOMRIGHT", nil, 2, Style.hex("4F3A1A"), 1)
-  edge("TOPLEFT", "BOTTOMLEFT", 2, nil, Style.hex("6E5328"), 0)
-  edge("TOPRIGHT", "BOTTOMRIGHT", 2, nil, Style.hex("6E5328"), 0)
-end
+local function chrome(f) Style.Frame(f) end -- lik kant hele veien rundt (UI/Style.lua)
 
 local function popIn(b)
   if not b.popIn then

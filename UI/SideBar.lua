@@ -12,31 +12,14 @@ ns.SideBar = SB
 
 local BTN, GAP, MED = 40, 6, 64
 local START, AIR = MED / 2, 36
+-- Rad 1 som knappene ved medaljongen: 4 px kant + 4 px luft + 40 px knapp + 4 px luft (knappene står likt)
 local ROW1, GROOVE, ROW2 = 52, 2, 30
-local HEIGHT = 2 + ROW1 + GROOVE + ROW2 + 2
+local HEIGHT = ROW1 + GROOVE + ROW2 + 4 -- 4 px kant nederst (svart, bronse, svart)
 local TIER_GAP = 12 -- fura mellom tier I og II: 2 px streker + marg
 
 local bars = {}
 
-local function chrome(f)
-  local bg = f:CreateTexture(nil, "BACKGROUND", nil, 0)
-  bg:SetPoint("TOPLEFT", 2, -2)
-  bg:SetPoint("BOTTOMRIGHT", -2, 2)
-  bg:SetColorTexture(1, 1, 1, 0.96)
-  Style.Gradient(bg, Style.hex("130E0A"), Style.hex("201812"), Style.hex("1A140F"))
-  local function edge(p1, p2, w, h, color, sub)
-    local t = f:CreateTexture(nil, "BORDER", nil, sub)
-    t:SetColorTexture(color[1], color[2], color[3], 1)
-    t:SetPoint(p1, f, p1)
-    t:SetPoint(p2, f, p2)
-    if w then t:SetWidth(w) end
-    if h then t:SetHeight(h) end
-  end
-  edge("TOPLEFT", "TOPRIGHT", nil, 2, Style.hex("9A7A3E"), 1)
-  edge("BOTTOMLEFT", "BOTTOMRIGHT", nil, 2, Style.hex("4F3A1A"), 1)
-  edge("TOPLEFT", "BOTTOMLEFT", 2, nil, Style.hex("6E5328"), 0)
-  edge("TOPRIGHT", "BOTTOMRIGHT", 2, nil, Style.hex("6E5328"), 0)
-end
+local function chrome(f) Style.Frame(f) end -- lik kant hele veien rundt (UI/Style.lua)
 
 -- Fure: 1 px svart + 1 px bronse (vannrett under rad 1, loddrett mellom tier I og II)
 local function groove(f, horizontal)
@@ -108,9 +91,9 @@ function SB.Create(root, side)
 
   local bar = { frame = f, side = side, buttons = {}, slots = {}, ids = {} }
   bar.hA, bar.hB = groove(f, true)
-  local y = -(2 + ROW1)
-  bar.hA:SetPoint("TOPLEFT", f, "TOPLEFT", side == "right" and (2 + AIR - 6) or 6, y)
-  bar.hA:SetPoint("TOPRIGHT", f, "TOPRIGHT", side == "right" and -6 or -(2 + AIR - 6), y)
+  local y = -ROW1
+  bar.hA:SetPoint("TOPLEFT", f, "TOPLEFT", side == "right" and (2 + AIR - 6) or 8, y)
+  bar.hA:SetPoint("TOPRIGHT", f, "TOPRIGHT", side == "right" and -8 or -(2 + AIR - 6), y)
   bar.hB:SetPoint("TOPLEFT", bar.hA, "BOTTOMLEFT")
   bar.hB:SetPoint("TOPRIGHT", bar.hA, "BOTTOMRIGHT")
   bar.vA, bar.vB = groove(f, false)
@@ -125,11 +108,11 @@ function SB.Create(root, side)
   bar.status:SetJustifyH(side == "right" and "LEFT" or "RIGHT")
   bar.status:SetHeight(ROW2)
   if side == "right" then
-    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2 + AIR + 2, 2)
-    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -12, 2)
+    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2 + AIR + 2, 4)
+    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -12, 4)
   else
-    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -(2 + AIR + 2), 2)
-    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 12, 2)
+    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -(2 + AIR + 2), 4)
+    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 12, 4)
   end
 
   f.fadeIn = f:CreateAnimationGroup()
