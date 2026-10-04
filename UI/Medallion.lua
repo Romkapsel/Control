@@ -178,6 +178,7 @@ local function build()
   face = CreateFrame("Frame", nil, root)
   face:SetSize(SIZE, SIZE)
   face:SetPoint("CENTER")
+  face:SetFrameLevel(root:GetFrameLevel() + 10) -- over knappene ved siden av, som starter under medaljongen
 
   -- Lag utenfra og inn (SPEC §7.1)
   -- Gløden: tre lag som blir svakere utover (en myk overgang uten tekstur)
@@ -230,6 +231,7 @@ local function build()
   hit = CreateFrame("Button", nil, root)
   hit:SetAllPoints(root)
   hit:EnableMouse(true)
+  hit:SetFrameLevel(root:GetFrameLevel() + 20)
 end
 
 ------------------------------------------------------------------------
@@ -394,6 +396,10 @@ local function onMouseDown(_, button)
 end
 
 local function onMouseUp(_, button)
+  if GetCursorInfo() and M.onDrop then -- noe holdes på musepekeren: slipp det her
+    M.onDrop()
+    return
+  end
   if moving then
     moving = false
     root:StopMovingOrSizing()
@@ -436,6 +442,7 @@ function M.Create(database, locale)
   hit:SetScript("OnLeave", function() hit:SetScript("OnUpdate", nil) setHover(nil) GameTooltip:Hide() end)
   hit:SetScript("OnMouseDown", onMouseDown)
   hit:SetScript("OnMouseUp", onMouseUp)
+  hit:SetScript("OnReceiveDrag", function() if M.onDrop then M.onDrop() end end)
   for _, k in ipairs({ "ringR", "ringG", "ringB", "glowA" }) do animate(k, 0, 0.3, true) end
   refreshSymbols()
   refreshHover()
@@ -454,7 +461,10 @@ function M.Update(newView)
   animate("ringB", c[3], 0.3)
   animate("glowA", Style.GLOW_ALPHA[newView.ring] or 0, 0.3)
   refreshSymbols()
-  if newView.side then M.UpdateClamp({ self = newView.side.self.width, party = newView.side.party.width }) end
+  -- Skjermgrensen endres bare utenfor kamp: medaljongen har sikre knapper under seg (fase 3)
+  if newView.side and not InCombatLockdown() then
+    M.UpdateClamp({ self = newView.side.self.width, party = newView.side.party.width })
+  end
   applyAll()
   if hover then showTip() end
 end

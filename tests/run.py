@@ -15,7 +15,7 @@ from lupa import lua51
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TESTS = os.path.join(ROOT, "tests")
 TOC = os.path.join(ROOT, "Control.toc")
-ALLOWED_GLOBALS = {"ControlCharDB", "SLASH_CONTROL1", "SLASH_CONTROL2", "NS"}
+ALLOWED_GLOBALS = {"ControlCharDB", "SLASH_CONTROL1", "SLASH_CONTROL2", "NS", "KlarsjekkDB"}  # KlarsjekkDB settes av testen
 
 MOCK = r"""
 T = { chat = {}, now = 1000, handlers = {}, combat = false, secret = false, party = {}, auras = {},
@@ -66,13 +66,30 @@ local function frame(name, kind)
   function f:StopMovingOrSizing() if T.dragTo then self.points = { { "CENTER", UIParent, "BOTTOMLEFT", T.dragTo[1], T.dragTo[2] } } end end
   function f:SetClampRectInsets(l, r, t, b) self.clamp = { l, r, t, b } end
   function f:GetName() return name end
+  function f:SetFrameLevel(l) self.level = l end
+  function f:GetFrameLevel() return self.level or 1 end
+  function f:SetDesaturated(v) self.desat = v end
+  function f:SetWidth(w) self.width = w end
+  function f:SetHeight(h) self.height = h end
+  function f:CreateAnimationGroup()
+    local g = frame(nil, "AnimationGroup")
+    g.playing = false
+    function g:Play() self.playing = true self.plays = (self.plays or 0) + 1 end
+    function g:Stop() self.playing = false end
+    function g:IsPlaying() return self.playing end
+    function g:CreateAnimation() return frame(nil, "Animation") end
+    return g
+  end
   return setmetatable(f, { __index = function(_, k) if type(k) == "string" and k:match("^%u") then return function() end end end })
 end
 T.center = { 500, 400 }
 function CreateFrame(kind, name) local f = frame(name, kind) return f end
 UIParent = frame("UIParent")
 GameTooltip = frame("GameTooltip")
-function GameTooltip:SetOwner() T.tooltip = { lines = {} } end
+function GameTooltip:SetOwner(o) T.tooltip = { lines = {}, owner = o } end
+function GameTooltip:IsOwned(o) return T.tooltip.owner == o and not T.tooltip.hidden end
+function GameTooltip:Show() T.tooltip.hidden = false end
+NumberFontNormal = {}
 function GameTooltip:SetText(t) T.tooltip.text = t end
 function GameTooltip:AddLine(t) table.insert(T.tooltip.lines, t) end
 function GameTooltip:Hide() T.tooltip.hidden = true end
@@ -96,7 +113,8 @@ function IsInInstance() return false, "none" end
 function IsResting() return S(true) end
 function InCombatLockdown() return T.combat end
 function GetCVar() return "1" end
-C_Timer = { After = function(_, fn) fn() end }
+C_Timer = { After = function(_, fn) fn() end, NewTicker = function(_, fn) T.ticker = fn end }
+function Tick() if T.ticker then T.ticker() end end
 C_Secrets = { ShouldAurasBeSecret = function() return T.secret end }
 C_UnitAuras = { GetAuraDataByIndex = function(unit, i)
   local list = unit == "player" and T.auras or (T.partyAuras or {})
@@ -111,8 +129,14 @@ function UnitClass(u) return "Warrior", S("WARRIOR") end
 function UnitInRange() return S(true), true end
 C_Container = { GetContainerNumSlots = function(b) return T.bags[b] and #T.bags[b] or 0 end,
                 GetContainerItemID = function(b, s) return T.bags[b] and T.bags[b][s] end }
-C_Item = { GetItemCount = function(id) return S(T.counts[id] or 0) end,
-           GetItemSpell = function(id) if id == 13510 then return S("Flask of the Titans"), S(17626) end end,
+T.itemNames = { [13510] = "Flask of the Titans", [14529] = "Runecloth Bandage", [21023] = "Dirge's Kickin' Chimaerok Chops" }
+T.itemSpells = { [13510] = { "Flask of the Titans", 17626 }, [21023] = { "Food", 433 } }
+T.itemClass = { [13510] = { 0, 3 }, [14529] = { 0, 7 }, [21023] = { 0, 5 } }
+-- Lageret er lesbart i kamp (fase 0, V6). T.secretItems gjør det hemmelig likevel, for å teste vernet.
+C_Item = { GetItemCount = function(id) local c = T.counts[id] or 0 if T.secretItems then return SECRET end return c end,
+           GetItemSpell = function(id) local s = T.itemSpells[id] if s then return S(s[1]), S(s[2]) end end,
+           GetItemNameByID = function(id) return T.itemNames[id] end,
+           GetItemInfoInstant = function(id) local c = T.itemClass[id] or {} return id, "", "", "", 100 + id, c[1], c[2] end,
            GetItemIconByID = function(id) return 100 + id end }
 Enum = { SpellBookSpellBank = { Player = 0 } }
 local BOOK = { { name = "Mark of the Wild", subName = "Rank 3", spellID = 5232 }, { name = "Wrath", spellID = 5176 },
@@ -120,7 +144,9 @@ local BOOK = { { name = "Mark of the Wild", subName = "Rank 3", spellID = 5232 }
 C_SpellBook = { GetNumSpellBookSkillLines = function() return 1 end,
                 GetSpellBookSkillLineInfo = function() return { itemIndexOffset = 0, numSpellBookItems = #BOOK } end,
                 GetSpellBookItemInfo = function(i) return BOOK[i] end }
-C_Spell = { GetSpellInfo = function(id) if id == 1126 then return { name = "Mark of the Wild", iconID = 1 } end end }
+T.spellNames = { [1126] = "Mark of the Wild", [5232] = "Mark of the Wild", [17626] = "Flask of the Titans",
+                 [19705] = "Well Fed", [433] = "Food", [5176] = "Wrath" }
+C_Spell = { GetSpellInfo = function(id) local n = T.spellNames[id] if n then return { name = n, iconID = 1000 + id } end end }
 function GetCursorInfo() if T.cursor then return unpack(T.cursor) end end
 function ClearCursor() T.cursor = nil end
 function Fire(e, ...) for _, f in ipairs(T.handlers[e] or {}) do f.scripts.OnEvent(f, e, ...) end end

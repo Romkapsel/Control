@@ -45,7 +45,104 @@ function Data.Init(db)
 end
 
 ------------------------------------------------------------------------
--- Testdata (SPEC §19), brukt av medaljongen til buffene kobles på i fase 3
+-- Likeverdige buffer (SPEC §9.5): navn som også teller som «på». Data, ikke logikk.
+------------------------------------------------------------------------
+
+Data.EQUIV = {
+  ["Mark of the Wild"] = { "Gift of the Wild" },
+  ["Power Word: Fortitude"] = { "Prayer of Fortitude" },
+  ["Divine Spirit"] = { "Prayer of Spirit" },
+  ["Shadow Protection"] = { "Prayer of Shadow Protection" },
+  ["Arcane Intellect"] = { "Arcane Brilliance" },
+  ["Blessing of Might"] = { "Greater Blessing of Might" },
+  ["Blessing of Wisdom"] = { "Greater Blessing of Wisdom" },
+  ["Blessing of Kings"] = { "Greater Blessing of Kings" },
+  ["Blessing of Salvation"] = { "Greater Blessing of Salvation" },
+  ["Blessing of Sanctuary"] = { "Greater Blessing of Sanctuary" },
+  ["Blessing of Light"] = { "Greater Blessing of Light" },
+}
+
+-- Kortnavn i statuslinja (SPEC §5.2). Ukjente: regel under, ellers hele navnet.
+Data.SHORT = {
+  ["Mark of the Wild"] = "MotW", ["Gift of the Wild"] = "MotW", ["Power Word: Fortitude"] = "Fort",
+  ["Arcane Intellect"] = "Int", ["Divine Spirit"] = "Spirit", ["Shadow Protection"] = "Shadow",
+  ["Blessing of Might"] = "Might", ["Blessing of Wisdom"] = "Wisdom", ["Blessing of Kings"] = "Kings",
+  ["Lightning Shield"] = "Shield", ["Water Shield"] = "Shield", ["Battle Shout"] = "Shout",
+  ["Well Fed"] = "Well Fed",
+}
+
+function Data.ShortName(name)
+  if not name then return "?" end
+  if Data.SHORT[name] then return Data.SHORT[name] end
+  if name:find("Flask") then return "Flask" end
+  if name:find("Bandage") then return "Bandage" end
+  local rest = name:match("^Elixir of the (.+)$") or name:match("^Elixir of (.+)$")
+  if rest then return rest:match("(%S+)$") end
+  local potion = name:match("(%S+) Potion$")
+  if potion then return potion end
+  if #name <= 12 then return name end
+  return name:match("^(%S+)")
+end
+
+function Data.AuraNames(name)
+  local out = { name }
+  for _, n in ipairs(Data.EQUIV[name] or {}) do out[#out + 1] = n end
+  return out
+end
+
+-- Ny oppføring fra det som ble dratt inn. info = { kind = "spell"|"item", spellId, name,
+-- itemId, itemName, itemSpell, isFood, wellFed, count }. Ting som gir en buff = buffting, ellers lagerting.
+function Data.MakeEntry(db, info, tier)
+  db.nextId = (db.nextId or 0) + 1
+  local e = { id = "e" .. db.nextId, tier = tier or 2 }
+  if info.kind == "spell" then
+    e.type, e.spellId, e.name = "spell", info.spellId, info.name
+    e.auraNames = Data.AuraNames(info.name)
+  elseif info.itemSpell then
+    e.type, e.itemId, e.name = "buffitem", info.itemId, info.itemName
+    e.castName = info.itemSpell
+    local aura = info.isFood and (info.wellFed or "Well Fed") or info.itemSpell
+    e.auraNames = { aura }
+    e.want = math.max(1, info.count or 1)
+    e.short = info.isFood and Data.ShortName(aura) or nil
+  else
+    e.type, e.itemId, e.name = "item", info.itemId, info.itemName
+    e.want = math.max(1, info.count or 1)
+  end
+  e.short = e.short or Data.ShortName(e.name)
+  return e
+end
+
+function Data.FindDuplicate(list, info)
+  for _, e in ipairs(list) do
+    if info.kind == "spell" and e.type == "spell" and e.name == info.name then return e end
+    if info.kind == "item" and e.itemId == info.itemId then return e end
+  end
+end
+
+-- Den gamle Klar-sjekk (1.0, KlarsjekkDB per karakter) → MB tier II, én gang (Q10).
+-- resolve(kind, id) gir info som til MakeEntry, eller nil hvis spillet ikke kjenner den.
+function Data.ImportKlarsjekk(db, old, resolve)
+  if db.importedKlarsjekk or type(old) ~= "table" or type(old.list) ~= "table" then return 0 end
+  local added = 0
+  for _, o in ipairs(old.list) do
+    local info
+    if o.kind == "buff" then info = resolve("spell", o.id)
+    elseif o.kind == "item" or o.kind == "itembuff" then info = resolve("item", o.id) end
+    if info then
+      if o.need then info.count = o.need end
+      if not Data.FindDuplicate(db.self, info) then
+        db.self[#db.self + 1] = Data.MakeEntry(db, info, 2)
+        added = added + 1
+      end
+    end
+  end
+  db.importedKlarsjekk = true
+  return added
+end
+
+------------------------------------------------------------------------
+-- Testdata (SPEC §19): /control test blar gjennom dem
 ------------------------------------------------------------------------
 
 local function scenarioStart()

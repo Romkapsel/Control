@@ -52,5 +52,33 @@ ns.L = {
   SAMPLE_ORANGE = "oransje (2 under ønsket eller snart ute)",
   SAMPLE_OK = "alt med",
   SAMPLE_EMPTY = "tom liste",
-  HELP = "/control test (bla i testdata) · /control lås · /control nullstill · /control debug",
+  HELP = "/control test (bla i testdata) · /control lås · /control nullstill · /control tøm · /control debug",
+  MODE_LIVE = "dine egne buffer og ting",
+
+  -- Knappen (SPEC §7.5)
+  BTN_MISSING = "ikke på",
+  BTN_EXPIRED = "gått ut",
+
+  -- Tooltip (SPEC §7.7)
+  TIP_MISSING = "Ikke på",
+  TIP_EXPIRED = "Gått ut",
+  TIP_ON = "På",
+  TIP_LEFT = "%s igjen",
+  TIP_EXPIRING = "%s igjen, snart ute",
+  TIP_IN_BAG = " · %d av %d i baggen",
+  TIP_HAVE = "Har %d av %d",
+  TIP_CAST_SELF = "Klikk for å kaste på deg selv",
+  TIP_USE = "Klikk for å bruke (%s)",
+  TIP_NONE_IN_BAG = "Ingen i baggen",
+  TIP_STOCK_EMPTY = "Lagervare: tom",
+  TIP_STOCK_LOW = "Lagervare: under ønsket",
+  TIP_STOCK_OK = "Lagervare: nok",
+
+  -- Legge til (fase 3: slipp på medaljongen)
+  ADDED = "%s er lagt til (tier I).",
+  DUPLICATE = "%s står allerede på lista.",
+  NOT_ADDABLE = "Bare spells fra spellboken og ting fra baggen kan legges på lista.",
+  NOT_KNOWN = "Fant ikke navnet ennå. Prøv igjen om et øyeblikk.",
+  IMPORTED = "%d ting fra den gamle Klar-sjekk er flyttet over (tier II).",
+  LIST_CLEARED = "Lista er tømt.",
 }

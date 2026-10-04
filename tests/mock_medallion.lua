@@ -17,6 +17,8 @@ eq(M.ZoneAt(40, 0), nil, "utenfor ringen: ingen sone")
 
 Fire("ADDON_LOADED", "Control")
 Fire("PLAYER_LOGIN")
+check(M.State().count == "" and ns.view.empty, "uten oppføringer: ingen tall (tom tilstand)")
+SlashCmdList.CONTROL("test") -- testdata: rød, 7 som i spesifikasjonen
 local st = M.State()
 check(M.frame ~= nil and st.root == M.frame, "medaljongen lages ved innlogging")
 eq(st.count, "7", "testdata start: tallet 7")
@@ -112,7 +114,7 @@ check(near(st.parts.check.alpha, 0.6) and st.parts.count.alpha == 0, "alt ok: de
 SlashCmdList.CONTROL("test")
 check(ns.view.empty and M.State().count == "", "tom liste: hake, intet tall")
 SlashCmdList.CONTROL("test")
-eq(M.State().count, "7", "tilbake til start")
+check(ns.view.empty and Chat("dine egne buffer og ting"), "etter testdataene: tilbake til dine egne")
 
 -- Nullstill
 SlashCmdList.CONTROL("nullstill")
