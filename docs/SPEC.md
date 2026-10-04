@@ -479,9 +479,9 @@ Alt gjøres med musa direkte på medaljongen og knappene. Ingen innstillingsvind
 | Bytte tier | **Høyreklikk** på en knapp hvor som helst, eller dra den til den andre raden | Flytter I ↔ II. En tier I som mangler, dukker opp ved knappen med en gang. |
 | Ønsket antall | **Musehjul** over en buffting eller lagerting (Shift = 5) | «har/vil ha» endres med en gang. Minst 1. |
 | Legge til | **Dra** en spell fra spellboken eller et item fra baggen og slipp på en sidemeny eller i menyen | Havner sist i tier II på riktig side. Spell på gruppesiden = gruppebuff. Item som gir en buff = buffting, ellers lagerting. |
-| Slette | **Dra en knapp ut** av sidemenyen/menyen og slipp utenfor | «Slipp for å fjerne» ved musa mens du drar. I chatten: «[Control] Thorns er fjernet. Skriv /control angre for å få den tilbake.» |
+| Slette | **Shift + dra en knapp ut** av sidemenyen/menyen og slipp utenfor (Shift fordi knappene kaster på «ned»-klikket; et vanlig dra ville kastet eller brukt itemet. Shift + klikk gjør ingenting) | «Slipp for å fjerne» ved musa mens du drar. I chatten: «[Control] Thorns er fjernet. Skriv /control angre for å få den tilbake.» |
 | Angre sletting | `/control angre` | Oppføringen kommer tilbake på samme plass. |
-| Bytte rekkefølge | Dra en knapp til en ny plass i samme rad | Gul strek der den lander. |
+| Bytte rekkefølge | Shift + dra en knapp til en annen knapp i samme sidemeny; den tar plassen og tieren der (gul strek kommer i fase 9) | Knappen flytter. |
 | Fold ut/inn side | Klikk venstre/høyre sone | §7.4 |
 | Meny | Klikk nedre sone | §7.6 |
 | Låse | Klikk øvre sone | Hengelås lukkes. Midten viser lås ved mus over. |
@@ -707,7 +707,7 @@ Spør Daniel. Inntil han har svart, bruk standardvalget i høyre kolonne (og si 
 | **Q7** | Hvordan velges hvem en gruppebuff følges på? | Klikk på navnene i tooltip-lista eller i menyen for å slå av/på |
 | **Q8** | Medlem ute av rekkevidde: ukjent (dempet) eller mangler (rød)? | Ukjent, dempet rute, teller ikke |
 | **Q9** | Skal kjente likeverdige buffer (§9.5) fylles inn automatisk, eller velges? | **Avgjort 3. okt.: automatisk.** Gruppeversjonen kastes bare i party når flere enn 2 mangler (§9.5) |
-| **Q10** | Skal lista fra den gamle Klar-sjekk (1.0, `KlarsjekkDB`) flyttes over? | **Avgjort 3. okt.: ja**, som MB tier II, én gang, mens den gamle addonen fortsatt er lastet |
+| **Q10** | Skal lista fra den gamle Klar-sjekk (1.0, `KlarsjekkDB`) flyttes over? | **Avgjort 4. okt.: nei, droppet** (Klar-sjekk er slått av, og lista var mest håndverksting) |
 
 ---
 

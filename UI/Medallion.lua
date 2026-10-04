@@ -329,7 +329,11 @@ local function zoneText(z)
   if z == "down" then return string.format(L.ZONE_MENU_OPEN, view.count or 0), L.COMING_MENU end
   if z == "hub" then return db.ui.locked and L.HUB_LOCKED or L.HUB_MOVE end
   local isParty = (z == "left") == partyLeft()
-  return isParty and L.ZONE_OPEN_PARTY or L.ZONE_OPEN_SELF, L.COMING_SIDES
+  local open = M.isSideOpen and M.isSideOpen(z)
+  local text
+  if isParty then text = open and L.ZONE_CLOSE_PARTY or L.ZONE_OPEN_PARTY
+  else text = open and L.ZONE_CLOSE_SELF or L.ZONE_OPEN_SELF end
+  return text, InCombatLockdown() and L.NOT_IN_COMBAT or nil
 end
 
 local function showTip()
@@ -412,6 +416,7 @@ local function onMouseUp(_, button)
     if M.onLockChanged then M.onLockChanged(db.ui.locked) end
   elseif hover and M.onZoneClick then
     M.onZoneClick(hover)
+    showTip()
   end
 end
 

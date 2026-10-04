@@ -44,7 +44,10 @@ function EB.Create(parent)
   local b = CreateFrame("Button", nil, parent, "SecureActionButtonTemplate")
   b:SetSize(SIZE, SIZE)
   b:RegisterForClicks(useKeyDown() and "AnyDown" or "AnyUp")
-  b:SetAttribute("type2", "") -- høyreklikk skal aldri kaste (SPEC §12.1)
+  b:SetAttribute("type2", "") -- høyreklikk skal aldri kaste (SPEC §12.1): det bytter tier
+  b:SetAttribute("shift-type1", "") -- Shift + venstre gjør ingenting: Shift + dra flytter/fjerner uten å kaste
+  b:RegisterForDrag("LeftButton")
+  b:EnableMouseWheel(true)
 
   b.bg = Style.Rect(b, "BACKGROUND", 0, SIZE, SIZE, C.black, 1)
   b.icon = b:CreateTexture(nil, "ARTWORK", nil, 0)
@@ -118,6 +121,22 @@ function EB.Create(parent)
     if mouse == "LeftButton" and self.entry then ns.Track.Pressed(self.entry) end
     self.flashAnim:Stop()
     self.flashAnim:Play()
+  end)
+  b:HookScript("PostClick", function(self, mouse)
+    if mouse == "RightButton" and self.entry and not InCombatLockdown() and ns.Actions then
+      ns.Actions.ToggleTier(self.entry)
+    end
+  end)
+  b:SetScript("OnMouseWheel", function(self, delta)
+    if self.entry and not InCombatLockdown() and ns.Actions then
+      ns.Actions.Wheel(self.entry, delta, IsShiftKeyDown() and 5 or 1)
+    end
+  end)
+  b:SetScript("OnDragStart", function(self)
+    if IsShiftKeyDown() and ns.SideBar then ns.SideBar.BeginDrag(self) end
+  end)
+  b:SetScript("OnDragStop", function(self)
+    if ns.SideBar then ns.SideBar.EndDrag(self) end
   end)
   b:HookScript("OnEnter", function(self)
     if self.faded then return end -- usynlig (ferdig i kamp): ingen hover eller tooltip
@@ -255,5 +274,9 @@ function EB.ShowTooltip(b)
   end
   GameTooltip:AddLine(line, 1, 1, 1)
   GameTooltip:AddLine(action, actColor[1], actColor[2], actColor[3])
+  local h = C.help
+  if e.type == "buffitem" or e.type == "item" then GameTooltip:AddLine(L.TIP_WHEEL, h[1], h[2], h[3]) end
+  GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_1 or L.TIER_2), h[1], h[2], h[3])
+  if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
   GameTooltip:Show()
 end

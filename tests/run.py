@@ -66,6 +66,8 @@ local function frame(name, kind)
   function f:StopMovingOrSizing() if T.dragTo then self.points = { { "CENTER", UIParent, "BOTTOMLEFT", T.dragTo[1], T.dragTo[2] } } end end
   function f:SetClampRectInsets(l, r, t, b) self.clamp = { l, r, t, b } end
   function f:GetName() return name end
+  function f:IsMouseOver() return self.mouse or false end
+  function f:GetTexture() return self.texture end
   function f:SetFrameLevel(l) self.level = l end
   function f:GetFrameLevel() return self.level or 1 end
   function f:SetDesaturated(v) self.desat = v end
@@ -123,6 +125,7 @@ function Chat(p) for _, s in ipairs(T.chat) do if s:find(p, 1, true) then return
 function date() return "2026-10-03 23:59:00" end
 function GetTime() return T.now end
 function GetCursorPosition() return T.mouse[1], T.mouse[2] end
+function IsShiftKeyDown() return T.shift or false end
 function CreateColor(r, g, b, a) return { r = r, g = g, b = b, a = a } end
 function GetFileIDFromPath(p) return T.files[p] end
 C_Texture = { GetAtlasInfo = function(a) if T.atlases[a] then return { width = 64 } end end }

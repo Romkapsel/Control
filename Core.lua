@@ -30,7 +30,7 @@ local prevTray, auraCache
 function Core.Model()
   if Core.sample then return ns.Data.Sample(ns.Data.SAMPLES[Core.sample]) end
   local st = ns.Scan.State(ns.db, auraCache)
-  return { self = ns.db.self, party = {}, st = st }
+  return { self = ns.db.self, party = ns.db.party, st = st } -- gruppebuffene leses fra fase 5
 end
 
 local function byId(list)
@@ -46,6 +46,7 @@ local function trayEntries(ids, map)
 end
 
 local function mbSide() return ns.db.ui.partySide == "right" and "left" or "right" end
+local function pbSide() return mbSide() == "right" and "left" or "right" end
 
 function Core.Draw()
   if not ns.Medallion.frame then return end
@@ -60,11 +61,18 @@ function Core.Draw()
     return
   end
   local map = byId(model.self)
+  local mb, pb = mbSide(), pbSide()
   if inCombat then
-    ns.Tray.Paint(mbSide(), map, model.st, ns.L) -- frosset: bare tider, lager og glød
+    ns.Tray.Paint(mb, map, model.st, ns.L) -- frosset: bare tider, lager og glød
+    ns.SideBar.Paint(mb, model.self, model.st, view, false, ns.L)
+    ns.SideBar.Paint(pb, model.party, model.st, view, true, ns.L)
   else
-    ns.Tray.Layout(mbSide(), trayEntries(view.tray.self, map), model.st, ns.L)
-    ns.Tray.Layout(mbSide() == "right" and "left" or "right", {}, {}, ns.L) -- gruppesiden kommer i fase 5
+    -- Sidemenyen dekker knappene ved medaljongen på sin side mens den er åpen (SPEC §7.4)
+    local mbOut = ns.SideBar.IsOpen(mb) and {} or trayEntries(view.tray.self, map)
+    ns.Tray.Layout(mb, mbOut, model.st, ns.L)
+    ns.Tray.Layout(pb, {}, {}, ns.L) -- gruppeknappene ved medaljongen kommer i fase 5
+    ns.SideBar.Layout(mb, model.self, model.st, view, false, ns.L)
+    ns.SideBar.Layout(pb, model.party, model.st, view, true, ns.L)
     prevTray = view.tray
   end
 end
@@ -108,6 +116,64 @@ function Core.Resolve(kind, id)
            wellFed = wellFedName(), count = ns.Scan.ItemCount(id) }
 end
 
+------------------------------------------------------------------------
+-- Handlinger fra knappene og sidemenyene (SPEC §8)
+------------------------------------------------------------------------
+
+local Actions = {}
+ns.Actions = Actions
+local undo
+
+local function listOf(isParty) return isParty and ns.db.party or ns.db.self end
+local function indexOf(list, e) for i, x in ipairs(list) do if x == e or x.id == e.id then return i end end end
+local function isPartyEntry(e) return e.type == "partyspell" end
+
+function Actions.ToggleTier(e)
+  if InCombatLockdown() then return end
+  e.tier = e.tier == 1 and 2 or 1
+  ns.Refresh(false)
+end
+
+function Actions.Wheel(e, delta, step)
+  if InCombatLockdown() or not (e.type == "buffitem" or e.type == "item") then return end
+  e.want = math.max(1, math.min(999, (e.want or 1) + (delta > 0 and step or -step)))
+  ns.Refresh(false)
+end
+
+function Actions.Remove(e)
+  if InCombatLockdown() then return end
+  local list = listOf(isPartyEntry(e))
+  local i = indexOf(list, e)
+  if not i then return end
+  table.remove(list, i)
+  undo = { entry = e, index = i, party = isPartyEntry(e) }
+  Say(string.format(ns.L.REMOVED, e.name or "?"))
+  ns.Refresh(true)
+end
+
+function Actions.Undo()
+  if not undo then return Say(ns.L.UNDO_NONE) end
+  local list = listOf(undo.party)
+  table.insert(list, math.min(undo.index, #list + 1), undo.entry)
+  Say(string.format(ns.L.UNDONE, undo.entry.name or "?"))
+  undo = nil
+  ns.Refresh(true)
+end
+
+-- Flytt e til plassen der target står, og ta tieren dens (dra til den andre raden = bytt tier)
+function Actions.Move(e, targetId)
+  if InCombatLockdown() then return end
+  local list = listOf(isPartyEntry(e))
+  local from = indexOf(list, e)
+  local to
+  for i, x in ipairs(list) do if x.id == targetId then to = i end end
+  if not from or not to or from == to then return end
+  e.tier = list[to].tier
+  table.remove(list, from)
+  table.insert(list, to, e)
+  ns.Refresh(false)
+end
+
 function ns.AddFromCursor()
   local kind, a, _, d = GetCursorInfo()
   local info
@@ -126,6 +192,32 @@ function ns.AddFromCursor()
   local e = ns.Data.MakeEntry(ns.db, info, 1)
   table.insert(ns.db.self, e)
   Say(string.format(ns.L.ADDED, e.name))
+  ns.Refresh(true)
+end
+
+-- Slipp på en sidemeny: sist i tier II på den siden. En spell på gruppesiden = gruppebuff (SPEC §8).
+function Actions.DropOnSide(sideKey)
+  if InCombatLockdown() then return end
+  local kind, a, _, d = GetCursorInfo()
+  local party = sideKey == pbSide()
+  local info
+  if kind == "spell" then
+    info = Core.Resolve("spell", d or a)
+  elseif kind == "item" and not party then
+    info = Core.Resolve("item", a)
+  else
+    if kind then ClearCursor() Say(party and ns.L.EMPTY_PARTY or ns.L.NOT_ADDABLE) end
+    return
+  end
+  ClearCursor()
+  if not info then return Say(ns.L.NOT_KNOWN) end
+  local list = party and ns.db.party or ns.db.self
+  local dup = ns.Data.FindDuplicate(list, info)
+  if dup then return Say(string.format(ns.L.DUPLICATE, dup.name)) end
+  local e = party and ns.Data.MakePartyEntry(ns.db, info) or ns.Data.MakeEntry(ns.db, info, 2)
+  table.insert(list, e)
+  Say(string.format(ns.L.ADDED_SIDE, e.name))
+  if party then Say(ns.L.PARTY_LATER) end
   ns.Refresh(true)
 end
 
@@ -148,14 +240,23 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
   end
   if event == "PLAYER_LOGIN" then
     ns.Scan.wellFed = wellFedName()
-    local n = ns.Data.ImportKlarsjekk(ns.db, KlarsjekkDB, Core.Resolve) -- den gamle lista, én gang (Q10)
-    if n > 0 then Say(string.format(ns.L.IMPORTED, n)) end
     ns.Data.Reclassify(ns.db, Core.Resolve) -- ting som ble lagt inn med feil type (potion som buffting)
     ns.Medallion.Create(ns.db, ns.L)
-    ns.Medallion.onZoneClick = function() end -- sidemenyer og meny kommer i fase 4 og 6
     ns.Medallion.onDrop = ns.AddFromCursor
     ns.Tray.Create(ns.Medallion.frame, "left")
     ns.Tray.Create(ns.Medallion.frame, "right")
+    ns.SideBar.Create(ns.Medallion.frame, "left")
+    ns.SideBar.Create(ns.Medallion.frame, "right")
+    ns.SideBar.onDrop = Actions.DropOnSide
+    ns.SideBar.onRemove = Actions.Remove
+    ns.SideBar.onMove = Actions.Move
+    ns.Medallion.isSideOpen = ns.SideBar.IsOpen
+    ns.Medallion.onZoneClick = function(z) -- menyen (nede) kommer i fase 6
+      if (z == "left" or z == "right") and not InCombatLockdown() then
+        ns.SideBar.SetOpen(z, not ns.SideBar.IsOpen(z))
+        Core.Draw()
+      end
+    end
     pcall(self.RegisterUnitEvent, self, "UNIT_AURA", "player")
     for e in pairs(CAST) do pcall(self.RegisterUnitEvent, self, e, "player") end
     for _, e in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
@@ -209,6 +310,8 @@ SlashCmdList.CONTROL = function(msg)
   elseif raw == "lås" or raw == "Lås" or cmd == "las" or cmd == "lock" then
     ns.Medallion.SetLocked(not ns.db.ui.locked)
     Say(ns.db.ui.locked and ns.L.LOCKED or ns.L.UNLOCKED)
+  elseif cmd == "angre" then
+    Actions.Undo()
   elseif raw == "tøm" or raw == "Tøm" or cmd == "tom" then
     if InCombatLockdown() then return Say(ns.L.NOT_IN_COMBAT) end
     ns.db.self = {}

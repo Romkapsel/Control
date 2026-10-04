@@ -134,32 +134,27 @@ function Data.Reclassify(db, resolve)
   end
 end
 
-function Data.FindDuplicate(list, info)
-  for _, e in ipairs(list) do
-    if info.kind == "spell" and e.type == "spell" and e.name == info.name then return e end
-    if info.kind == "item" and e.itemId == info.itemId then return e end
-  end
+-- Gruppeversjonen av en buff (SPEC §9.5): kastes når flere enn 2 i partyet mangler (Daniel 3. okt)
+Data.GROUP = {
+  ["Mark of the Wild"] = "Gift of the Wild",
+  ["Power Word: Fortitude"] = "Prayer of Fortitude",
+  ["Arcane Intellect"] = "Arcane Brilliance",
+  ["Divine Spirit"] = "Prayer of Spirit",
+  ["Shadow Protection"] = "Prayer of Shadow Protection",
+}
+
+-- En buff du kan gi gruppa (PB). Ny = sist i tier II; følges på alle (onlyOn = nil).
+function Data.MakePartyEntry(db, info)
+  db.nextId = (db.nextId or 0) + 1
+  return { id = "p" .. db.nextId, type = "partyspell", tier = 2, spellId = info.spellId, name = info.name,
+           auraNames = Data.AuraNames(info.name), short = Data.ShortName(info.name), groupSpell = Data.GROUP[info.name] }
 end
 
--- Den gamle Klar-sjekk (1.0, KlarsjekkDB per karakter) → MB tier II, én gang (Q10).
--- resolve(kind, id) gir info som til MakeEntry, eller nil hvis spillet ikke kjenner den.
-function Data.ImportKlarsjekk(db, old, resolve)
-  if db.importedKlarsjekk or type(old) ~= "table" or type(old.list) ~= "table" then return 0 end
-  local added = 0
-  for _, o in ipairs(old.list) do
-    local info
-    if o.kind == "buff" then info = resolve("spell", o.id)
-    elseif o.kind == "item" or o.kind == "itembuff" then info = resolve("item", o.id) end
-    if info then
-      if o.need then info.want = o.need end
-      if not Data.FindDuplicate(db.self, info) then
-        db.self[#db.self + 1] = Data.MakeEntry(db, info, 2)
-        added = added + 1
-      end
-    end
+function Data.FindDuplicate(list, info)
+  for _, e in ipairs(list) do
+    if info.kind == "spell" and (e.type == "spell" or e.type == "partyspell") and e.name == info.name then return e end
+    if info.kind == "item" and e.itemId == info.itemId then return e end
   end
-  db.importedKlarsjekk = true
-  return added
 end
 
 ------------------------------------------------------------------------

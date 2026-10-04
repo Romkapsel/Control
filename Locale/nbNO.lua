@@ -38,7 +38,7 @@ ns.L = {
   ZONE_MENU_CLOSE = "Lukk menyen, %d å gjøre",
   HUB_MOVE = "Flytt knappen: dra",
   HUB_LOCKED = "Låst på plass. Lås opp fra toppen av ringen.",
-  COMING_SIDES = "Sidemenyene kommer i fase 4.",
+
   COMING_MENU = "Menyen kommer i fase 6.",
 
   -- Chat
@@ -79,6 +79,16 @@ ns.L = {
   DUPLICATE = "%s står allerede på lista.",
   NOT_ADDABLE = "Bare spells fra spellboken og ting fra baggen kan legges på lista.",
   NOT_KNOWN = "Fant ikke navnet ennå. Prøv igjen om et øyeblikk.",
-  IMPORTED = "%d ting fra den gamle Klar-sjekk er flyttet over (tier II).",
   LIST_CLEARED = "Lista er tømt.",
+
+  -- Sidemenyene (fase 4)
+  ADDED_SIDE = "%s er lagt til (tier II).",
+  DRAG_REMOVE = "Slipp for å fjerne",
+  REMOVED = "%s er fjernet. Skriv /control angre for å få den tilbake.",
+  UNDO_NONE = "Ingenting å angre.",
+  UNDONE = "%s er tilbake på lista.",
+  TIP_WHEEL = "Musehjul: ønsket antall (Shift = 5)",
+  TIP_RCLICK = "Høyreklikk: bytt tier (nå %s)",
+  TIP_DRAG = "Shift + dra: flytt, eller slipp utenfor for å fjerne",
+  PARTY_LATER = "Gruppebuffene følges fra fase 5.",
 }
