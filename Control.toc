@@ -5,4 +5,6 @@
 ## Version: 0.0.1
 ## SavedVariablesPerCharacter: ControlCharDB
 
+Locale\nbNO.lua
+Rules.lua
 Debug.lua

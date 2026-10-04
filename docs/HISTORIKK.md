@@ -131,3 +131,6 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | 2026-10-03 | Mappa kobles inn i spillet med en junction fra `_classic_beta_\Interface\AddOns\Control` | Daniel + Claude |
 | 2026-10-03 | Fase 0 bygget: `Control.toc` (interface 16001) + `Debug.lua` (`/control debug`, `debug knapp`, `debug tøm`). 30/30 tester. Junction opprettet. Venter på Daniels test i spillet | Claude |
 | 2026-10-04 | Fase 0 ferdig unntatt party-knapp (V5) og kø-popup (V8), som testes når det passer. Sikre knapper: `type=spell` med navn, registrert bare for «ned» (`AnyDown`) når `ActionButtonUseKeyDown` er på | Daniel + Claude |
+| 2026-10-04 | **Fase 1 ferdig:** `Rules.lua` (ren Lua) + `Locale/nbNO.lua`. 125/125 tester, inkludert §19 trinn for trinn (7 → 6 → 5 → 5 → 4) og statuslinjene ord for ord. Regeltestene kjøres i en tom Lua uten WoW-API | Claude |
+| 2026-10-04 | En tom side i sidemenyen får **én** slipprute (SPEC §6.5), ikke fem som i prototypen | Claude |
+| 2026-10-04 | Gruppeversjonen krever reagens bare når `reagents` er oppgitt; `nil` = trengs ikke. Målet er alltid første som mangler | Claude |

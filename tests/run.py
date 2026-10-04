@@ -217,6 +217,31 @@ def main():
     bad += len(fails)
     for m in fails:
         print("FEIL [fase 0]:", m)
+
+    # Regelmotoren: i en helt tom Lua 5.1 uten WoW-API, så den beviselig er ren (SPEC §4, §17).
+    for name in sorted(os.listdir(os.path.join(ROOT, "tests"))):
+        if not (name.startswith("test_") and name.endswith(".lua")):
+            continue
+        bare = lua51.LuaRuntime(unpack_returned_tuples=True)
+        bare.execute("GLOBALS_BEFORE = {}; for k in pairs(_G) do GLOBALS_BEFORE[k] = true end")
+        ns = bare.table()
+        bare.globals().NS = ns
+        bload = bare.eval('function(src, name, ns) local f = assert(loadstring(src, name)); f("Control", ns) end')
+        try:
+            for f in ("Locale\\nbNO.lua", "Rules.lua"):
+                bload(open(os.path.join(ROOT, f), encoding="utf-8").read(), f, ns)
+            leaks = bare.eval('function() local t = {} for k in pairs(_G) do if not GLOBALS_BEFORE[k] and k ~= "NS" then t[#t+1] = tostring(k) end end return table.concat(t, ",") end')()
+            n, fails = bare.execute(open(os.path.join(ROOT, "tests", name), encoding="utf-8").read())
+            fails = list(fails.values()) if fails else []
+            n += 1
+            if leaks:
+                fails.append("regelmotoren lager globale navn: " + leaks)
+        except Exception as e:
+            n, fails = 1, ["krasjet: " + str(e).strip().splitlines()[0]]
+        total += n
+        bad += len(fails)
+        for m in fails:
+            print("FEIL [%s]:" % name, m)
     print("%d/%d sjekker ok" % (total - bad, total))
     sys.exit(1 if bad else 0)
 
