@@ -83,7 +83,28 @@ local function frame(name, kind)
   return setmetatable(f, { __index = function(_, k) if type(k) == "string" and k:match("^%u") then return function() end end end })
 end
 T.center = { 500, 400 }
-function CreateFrame(kind, name) local f = frame(name, kind) return f end
+function CreateFrame(kind, name, parent, template)
+  local f = frame(name, kind)
+  f.template = template
+  if parent then
+    parent.children = parent.children or {}
+    table.insert(parent.children, f)
+  end
+  function f:GetChildren() return unpack(self.children or {}) end
+  return f
+end
+-- Sikre skript (restricted Lua): lagres ved WrapScript og kjøres av SecureClick, som spillet gjør etter OnClick.
+function SecureHandlerWrapScript(f, script, header, pre, post) f.wrap = { header = header, post = post } end
+function SecureClick(b, mouse)
+  if b.scripts.hookPreClick then b.scripts.hookPreClick(b, mouse) end
+  if b.wrap and b.wrap.post ~= "" then
+    local chunk = assert(loadstring(b.wrap.post))
+    setfenv(chunk, { self = b, owner = b.wrap.header, button = mouse,
+                     SecureCmdOptionParse = function(s) if s:find("[combat]", 1, true) then return T.combat and "k" or "u" end end,
+                     newtable = function(...) return { ... } end })
+    chunk()
+  end
+end
 UIParent = frame("UIParent")
 GameTooltip = frame("GameTooltip")
 function GameTooltip:SetOwner(o) T.tooltip = { lines = {}, owner = o } end

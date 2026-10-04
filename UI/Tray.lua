@@ -47,8 +47,52 @@ local function popIn(b)
   b.popIn:Play()
 end
 
+------------------------------------------------------------------------
+-- Klikk i kamp (Daniel 4. okt): knappen forsvinner og rekka lukker seg med en gang.
+-- Addon-kode kan ikke skjule eller flytte sikre knapper i kamp, men et sikkert skript (restricted Lua) kan,
+-- når det startes av klikket selv. Skriptet ser ikke om kastet lyktes (buffene er hemmelige i kamp):
+-- feiler det, står det fortsatt i tallet, og knappen kommer tilbake når kampen er over.
+-- self = knappen, owner = rammen (SecureHandlerBaseTemplate). Ingen funksjoner defineres i skriptet.
+------------------------------------------------------------------------
+
+Tray.AFTER_CLICK = [[
+  if button ~= "LeftButton" or SecureCmdOptionParse("[combat] k; u") ~= "k" then return end
+  self:Hide()
+  local slots, last = newtable(), 0
+  local kids = newtable(owner:GetChildren())
+  for i = 1, #kids do
+    local k = kids[i]
+    local order = k:GetAttribute("ks-order")
+    if order and k:IsShown() then
+      slots[order] = k
+      if order > last then last = order end
+    end
+  end
+  local side, air, n = owner:GetAttribute("ks-side"), owner:GetAttribute("ks-air"), 0
+  for order = 1, last do
+    local k = slots[order]
+    if k then
+      local x = 2 + air + n * 46
+      k:ClearAllPoints()
+      if side == "right" then
+        k:SetPoint("TOPLEFT", owner, "TOPLEFT", x, -8)
+      else
+        k:SetPoint("TOPRIGHT", owner, "TOPRIGHT", -x, -8)
+      end
+      n = n + 1
+    end
+  end
+  if n == 0 then
+    owner:Hide()
+  else
+    owner:SetWidth(2 + air + n * 46 + 2)
+  end
+]]
+
 function Tray.Create(root, side)
-  local f = CreateFrame("Frame", nil, root)
+  local f = CreateFrame("Frame", nil, root, "SecureHandlerBaseTemplate")
+  f:SetAttribute("ks-side", side)
+  f:SetAttribute("ks-air", AIR)
   f:SetFrameLevel(math.max(0, root:GetFrameLevel() - 1))
   f:SetHeight(HEIGHT)
   if side == "right" then
@@ -66,8 +110,10 @@ local function button(t, i)
   local b = t.buttons[i]
   if not b then
     b = ns.EntryButton.Create(t.frame)
+    SecureHandlerWrapScript(b, "OnClick", t.frame, "", Tray.AFTER_CLICK)
     t.buttons[i] = b
   end
+  b:SetAttribute("ks-order", i)
   local x = 2 + AIR + (i - 1) * (BTN + GAP)
   b:ClearAllPoints()
   if t.side == "right" then
@@ -83,8 +129,11 @@ function Tray.Layout(side, entries, st, L)
   local t = trays[side]
   if not t or InCombatLockdown() then return false end
   -- Samme knapper som sist: bare nytt utseende (attributter settes ikke på nytt hvert kvarter sekund)
-  local same = #entries == #t.ids
-  for i, e in ipairs(entries) do if t.ids[i] ~= e.id then same = false break end end
+  -- (Et sikkert skript kan ha skjult knapper i kamp: da legges alt ut på nytt.)
+  local same = #entries == #t.ids and (#entries == 0 or t.frame:IsShown())
+  for i, e in ipairs(entries) do
+    if t.ids[i] ~= e.id or not t.buttons[i]:IsShown() then same = false break end
+  end
   if same then
     for i, e in ipairs(entries) do
       if t.buttons[i].entry ~= e then ns.EntryButton.Bind(t.buttons[i], e) end

@@ -64,6 +64,7 @@ function Core.Draw()
     ns.Tray.Paint(mbSide(), map, model.st, ns.L) -- frosset: bare tider, lager og glød
   else
     ns.Tray.Layout(mbSide(), trayEntries(view.tray.self, map), model.st, ns.L)
+    ns.Tray.Layout(mbSide() == "right" and "left" or "right", {}, {}, ns.L) -- gruppesiden kommer i fase 5
     prevTray = view.tray
   end
 end
