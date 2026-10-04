@@ -26,4 +26,31 @@ ns.L = {
   EMPTY_SELF = "Dra en spell eller en ting fra baggen hit",
   EMPTY_PARTY = "Dra en buff du kan gi, fra spellboken hit",
   FREE_SLOT = "Ledig plass",
+
+  -- Medaljongen: sonene og midten (SPEC §14)
+  ZONE_LOCK = "Lås",
+  ZONE_UNLOCK = "Lås opp",
+  ZONE_OPEN_PARTY = "Fold ut gruppa",
+  ZONE_CLOSE_PARTY = "Fold inn gruppa",
+  ZONE_OPEN_SELF = "Fold ut mine buffer",
+  ZONE_CLOSE_SELF = "Fold inn mine buffer",
+  ZONE_MENU_OPEN = "Åpne menyen, %d å gjøre",
+  ZONE_MENU_CLOSE = "Lukk menyen, %d å gjøre",
+  HUB_MOVE = "Flytt knappen: dra",
+  HUB_LOCKED = "Låst på plass. Lås opp fra toppen av ringen.",
+  COMING_SIDES = "Sidemenyene kommer i fase 4.",
+  COMING_MENU = "Menyen kommer i fase 6.",
+
+  -- Chat
+  NOT_READY = "Ikke lastet ennå.",
+  NOT_IN_COMBAT = "Ikke i kamp.",
+  LOCKED = "Låst.",
+  UNLOCKED = "Låst opp.",
+  RESET_DONE = "Knappen er flyttet tilbake og har vanlig størrelse.",
+  TEST_SAMPLE = "Testdata: %s.",
+  SAMPLE_START = "rød (7 mangler, som i spesifikasjonen)",
+  SAMPLE_ORANGE = "oransje (2 under ønsket eller snart ute)",
+  SAMPLE_OK = "alt med",
+  SAMPLE_EMPTY = "tom liste",
+  HELP = "/control test (bla i testdata) · /control lås · /control nullstill · /control debug",
 }

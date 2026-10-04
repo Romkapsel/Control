@@ -479,12 +479,9 @@ ev:SetScript("OnEvent", function(self, event, ...)
   end
 end)
 
-SLASH_CONTROL1 = "/control"
-SLASH_CONTROL2 = "/ctl"
-SlashCmdList.CONTROL = function(msg)
-  -- Ikke lower() på hele teksten: den ødelegger «ø» i noen klienter. Sammenlign råteksten også.
-  local raw = (msg or ""):match("^%s*(.-)%s*$")
-  msg = raw:lower()
+-- Kalles fra Core.lua for «/control debug …» (raw = teksten uten å endre bokstavene).
+function ns.DebugCommand(raw)
+  local msg = raw:lower()
   if not db then return Say("Ikke lastet ennå.") end
   if msg == "debug" then
     local ok, s = pcall(snapshot, "manuell", true)
@@ -497,7 +494,7 @@ SlashCmdList.CONTROL = function(msg)
     db.runs, db.casts, db.events, db.clicks, db.combat, db.errors = {}, {}, {}, {}, {}, {}
     Say("Loggen er tømt.")
   else
-    Say("Fase 0. Skriv /control debug, /control debug knapp eller /control debug tøm.")
+    Say("Skriv /control debug, /control debug knapp eller /control debug tøm.")
   end
 end
 

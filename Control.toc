@@ -1,10 +1,14 @@
 ## Interface: 16001
 ## Title: Control
-## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk. (Fase 0: /control debug)
+## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk. (Fase 2: medaljongen med testdata)
 ## Author: Daniel
-## Version: 0.0.1
+## Version: 0.2.0
 ## SavedVariablesPerCharacter: ControlCharDB
 
 Locale\nbNO.lua
+Data.lua
 Rules.lua
+UI\Style.lua
+UI\Medallion.lua
+Core.lua
 Debug.lua

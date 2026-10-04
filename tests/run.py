@@ -1,9 +1,10 @@
-"""Kjører Control i Lua 5.1 (lupa) mot en falsk WoW-klient.
+"""Kjører alle testene for Control i Lua 5.1 (lupa).
 
     python tests/run.py
 
-Fase 0: Debug.lua skal laste, svare på /control debug og aldri krasje eller lekke globale navn,
-også når klienten gir «hemmelige» verdier (secret values) slik WoW Forever gjør i kamp.
+- tests/test_*.lua  regelmotoren, i en helt tom Lua uten WoW-API (beviser at Rules.lua er ren)
+- tests/mock_*.lua  hele addonen (alle filer i TOC) mot en falsk WoW-klient
+I tillegg sjekkes kildekoden: ingen enkle bakstreker (ukjente teksturstier krasjer klienten) og interface i TOC.
 """
 import os
 import re
@@ -12,11 +13,15 @@ import sys
 from lupa import lua51
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TESTS = os.path.join(ROOT, "tests")
 TOC = os.path.join(ROOT, "Control.toc")
+ALLOWED_GLOBALS = {"ControlCharDB", "SLASH_CONTROL1", "SLASH_CONTROL2", "NS"}
 
 MOCK = r"""
 T = { chat = {}, now = 1000, handlers = {}, combat = false, secret = false, party = {}, auras = {},
-      bags = { [0] = { 13510, 14529 } }, counts = { [13510] = 3, [14529] = 0 }, timers = {} }
+      bags = { [0] = { 13510, 14529 } }, counts = { [13510] = 3, [14529] = 0 },
+      mouse = { 0, 0 }, atlases = { CircleMaskScalable = true }, files = {}, texPaths = {}, atlasUsed = {},
+      tooltip = { lines = {} } }
 -- En hemmelig verdi: alt annet enn å lagre den eller sende den videre, feiler.
 local function boom() error("attempt to use a secret value", 2) end
 SECRET = setmetatable({}, { __tostring = boom, __concat = boom, __lt = boom, __le = boom, __add = boom,
@@ -24,22 +29,54 @@ SECRET = setmetatable({}, { __tostring = boom, __concat = boom, __lt = boom, __l
 function issecretvalue(v) return v == SECRET end
 local function S(v) if T.secret then return SECRET end return v end
 
-local function frame()
-  local f = { scripts = {}, shown = true, attrs = {} }
+local function frame(name, kind)
+  local f = { scripts = {}, shown = true, attrs = {}, points = {}, scale = 1, alpha = 1, name = name, kind = kind }
   function f:SetScript(k, fn) self.scripts[k] = fn end
+  function f:GetScript(k) return self.scripts[k] end
   function f:HookScript(k, fn) self.scripts["hook" .. k] = fn end
-  function f:RegisterEvent(e) T.handlers[e] = self end
-  function f:RegisterUnitEvent(e) T.handlers[e] = self end
+  function f:RegisterEvent(e) T.handlers[e] = T.handlers[e] or {} table.insert(T.handlers[e], self) end
+  function f:RegisterUnitEvent(e) self:RegisterEvent(e) end
   function f:Show() self.shown = true end
   function f:Hide() self.shown = false end
+  function f:SetShown(v) self.shown = v and true or false end
   function f:IsShown() return self.shown end
   function f:SetAttribute(k, v) self.attrs[k] = v end
-  function f:CreateTexture() return frame() end
-  function f:CreateFontString() return frame() end
+  function f:GetAttribute(k) return self.attrs[k] end
+  function f:CreateTexture() return frame(nil, "Texture") end
+  function f:CreateMaskTexture() return frame(nil, "Mask") end
+  function f:CreateLine() return frame(nil, "Line") end
+  function f:CreateFontString() return frame(nil, "FontString") end
+  function f:SetText(t) self.text = t end
+  function f:GetText() return self.text end
+  function f:SetFont() return true end
+  function f:SetTexture(p) if type(p) == "string" then T.texPaths[p] = true end self.texture = p end
+  function f:SetAtlas(a) T.atlasUsed[a] = true self.atlas = a end
+  function f:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
+  function f:SetVertexColor(r, g, b) self.vertex = { r, g, b } end
+  function f:SetAlpha(a) self.alpha = a end
+  function f:GetAlpha() return self.alpha end
+  function f:SetScale(s) self.scale = s end
+  function f:GetScale() return self.scale end
+  function f:GetEffectiveScale() return 1 end
+  function f:ClearAllPoints() self.points = {} end
+  function f:SetPoint(...) table.insert(self.points, { ... }) end
+  function f:GetPoint() local p = self.points[1] if p then return p[1], p[2], p[3], p[4], p[5] end end
+  function f:GetCenter() return T.center[1], T.center[2] end
+  function f:StartMoving() T.startedMoving = (T.startedMoving or 0) + 1 end
+  function f:StopMovingOrSizing() if T.dragTo then self.points = { { "CENTER", UIParent, "BOTTOMLEFT", T.dragTo[1], T.dragTo[2] } } end end
+  function f:SetClampRectInsets(l, r, t, b) self.clamp = { l, r, t, b } end
+  function f:GetName() return name end
   return setmetatable(f, { __index = function(_, k) if type(k) == "string" and k:match("^%u") then return function() end end end })
 end
-function CreateFrame() return frame() end
-UIParent = frame()
+T.center = { 500, 400 }
+function CreateFrame(kind, name) local f = frame(name, kind) return f end
+UIParent = frame("UIParent")
+GameTooltip = frame("GameTooltip")
+function GameTooltip:SetOwner() T.tooltip = { lines = {} } end
+function GameTooltip:SetText(t) T.tooltip.text = t end
+function GameTooltip:AddLine(t) table.insert(T.tooltip.lines, t) end
+function GameTooltip:Hide() T.tooltip.hidden = true end
+GameFontNormalHuge = {}
 SlashCmdList = {}
 NUM_BAG_SLOTS = 4
 WOW_PROJECT_ID = 99
@@ -47,7 +84,11 @@ function print(s) table.insert(T.chat, s) end
 function Chat(p) for _, s in ipairs(T.chat) do if s:find(p, 1, true) then return true end end return false end
 function date() return "2026-10-03 23:59:00" end
 function GetTime() return T.now end
-function GetBuildInfo() return "1.60.1", "70170", "Oct 1 2026", 16001 end
+function GetCursorPosition() return T.mouse[1], T.mouse[2] end
+function CreateColor(r, g, b, a) return { r = r, g = g, b = b, a = a } end
+function GetFileIDFromPath(p) return T.files[p] end
+C_Texture = { GetAtlasInfo = function(a) if T.atlases[a] then return { width = 64 } end end }
+function GetBuildInfo() return "1.60.1", "70205", "Oct 2 2026", 16001 end
 function GetRealZoneText() return S("Stormwind City") end
 function GetSubZoneText() return S("Trade District") end
 C_Map = { GetBestMapForUnit = function() return S(1453) end }
@@ -82,103 +123,57 @@ C_SpellBook = { GetNumSpellBookSkillLines = function() return 1 end,
 C_Spell = { GetSpellInfo = function(id) if id == 1126 then return { name = "Mark of the Wild", iconID = 1 } end end }
 function GetCursorInfo() if T.cursor then return unpack(T.cursor) end end
 function ClearCursor() T.cursor = nil end
-function Fire(e, ...) local f = T.handlers[e] if f then f.scripts.OnEvent(f, e, ...) end end
+function Fire(e, ...) for _, f in ipairs(T.handlers[e] or {}) do f.scripts.OnEvent(f, e, ...) end end
 function GlobalSnapshot() local s = {} for k in pairs(_G) do s[k] = true end return s end
-"""
-
-SCENARIO = r"""
-local ns = NS
-local fails, n = {}, 0
-local function check(c, m) n = n + 1 if not c then table.insert(fails, m) end end
-
-Fire("ADDON_LOADED", "SomethingElse")
-check(ControlCharDB == nil, "ADDON_LOADED for en annen addon rører ingenting")
-Fire("ADDON_LOADED", "Control")
-local db = ControlCharDB and ControlCharDB.debug
-check(db and db.runs and db.casts and db.events and db.clicks and db.combat, "lagringen er satt opp")
-check(SlashCmdList.CONTROL and SLASH_CONTROL1 == "/control" and SLASH_CONTROL2 == "/ctl", "/control og /ctl finnes")
-
--- Vanlige verdier, ute av kamp
-T.auras = { { "Mark of the Wild", 1126, 2800, 1800 }, { "Well Fed", 19705, 1900, 900 } }
-Fire("PLAYER_ENTERING_WORLD")
-check(#db.runs == 1 and db.runs[1].reason == "innlogging", "øyeblikksbilde ved innlogging")
-SlashCmdList.CONTROL("debug")
-local s = db.runs[#db.runs]
-check(s.client.interface == 16001 and s.client.build == "70170", "V1: build og interface lagres")
-check(s.zone.zone == "Stormwind City" and s.zone.mapID == 1453, "sted lagres")
-check(s.player.n == 2 and s.player.secretFields == 0 and s.player.list[1].name == "Mark of the Wild", "V2: egne buffer leses")
-check(#s.items == 2 and s.items[1].count == 3 and s.items[1].spell == "Flask of the Titans", "V6/V7: lager og spell på item")
-check(#s.spellbook == 2 and s.spellbook[1].rank == "Rank 3" and s.spellbook[1].id == 5232, "V7: buffer i spellboken med rank og ID")
-check(s.ids[1].name == "Mark of the Wild" and s.ids[2].name == nil, "V7: hvilke ID-er klienten kjenner")
-check(Chat("interface 16001") and Chat("Egne buffer: 2 lest, 0 hemmelige felt") and Chat("Party: ingen"), "sammendrag i chatten")
-
--- Party
-T.party = { party1 = "Brakk" }
-T.partyAuras = { { "Battle Shout", 6673, 1100, 120 } }
-SlashCmdList.CONTROL("debug")
-s = db.runs[#db.runs]
-check(#s.party == 1 and s.party[1].name == "Brakk" and s.party[1].auras.n == 1, "V3: party-buffer leses")
-
--- Kast utenfor kamp
-Fire("UNIT_SPELLCAST_SENT", "player", "Brakk", "Cast-1", 1126)
-Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-1", 1126)
-check(#db.casts == 2 and db.casts[2].spellID == 1126 and db.casts[2].name == "Mark of the Wild", "V4: kast logges med spell-ID")
-
--- Sted
-Fire("TAXIMAP_OPENED")
-Fire("ZONE_CHANGED_NEW_AREA")
-check(#db.events >= 3 and db.events[#db.events].ev == "ZONE_CHANGED_NEW_AREA", "V8: steder logges")
-
--- Alt blir hemmelig (som i kamp i WoW Forever): ingenting skal krasje
-T.secret = true
-T.combat = true
-local ok, err = pcall(Fire, "PLAYER_REGEN_DISABLED")
-check(ok, "i kamp med hemmelige verdier: ingen krasj " .. tostring(err))
-local c = db.combat[#db.combat]
-check(c and c.reason == "i kamp" and c.combat == true, "øyeblikksbilde i kamp")
-check(c.player.secretFields == 8 and c.player.list[1].name == "<hemmelig>", "V2: hemmelige felt telles og byttes ut")
-check(c.party[1].name == "<hemmelig>" and c.party[1].guid == "<hemmelig>", "V9: hemmelig navn og GUID på party")
-check(c.items[1].count == "<hemmelig>", "V6: hemmelig lager")
-check(c.zone.zone == "<hemmelig>", "hemmelig sone")
-ok, err = pcall(Fire, "UNIT_SPELLCAST_SUCCEEDED", "player", SECRET, SECRET)
-check(ok and db.casts[#db.casts].spellID == "<hemmelig>" and db.casts[#db.casts].guidSecret == true, "V4: hemmelig spell-ID i kamp logges uten krasj " .. tostring(err))
-ok, err = pcall(SlashCmdList.CONTROL, "debug")
-check(ok and Chat("spell-ID hemmelig i kamp: 1"), "/control debug i kamp: ingen krasj " .. tostring(err))
-ok, err = pcall(Fire, "ZONE_CHANGED")
-check(ok, "sted i kamp: ingen krasj " .. tostring(err))
-SlashCmdList.CONTROL("debug knapp")
-check(Chat("bare vises og skjules utenfor kamp"), "testknapper avvises i kamp")
-T.secret = false
-T.combat = false
-Fire("PLAYER_REGEN_ENABLED")
-check(db.combat[#db.combat].reason == "etter kamp", "øyeblikksbilde etter kamp")
-
--- Testknapper (V5)
-SlashCmdList.CONTROL("debug knapp")
-check(Chat("Testknapper vist"), "testknapper vises")
-Fire("ADDON_ACTION_BLOCKED", "Control", "CastSpellByID()")
-Fire("UI_ERROR_MESSAGE", 51, "Out of range.")
-check(#db.errors == 2 and db.errors[1].b == "CastSpellByID()" and db.errors[2].b == "Out of range.", "V5: blokkerte handlinger og feilmeldinger logges")
-SlashCmdList.CONTROL("debug tøm")
-check(#db.runs == 0 and #db.casts == 0 and #db.errors == 0 and Chat("Loggen er tømt"), "/control debug tøm")
-
--- Bare tillatte globale navn
-local extra = {}
-for k in pairs(_G) do
-  if not GLOBALS_BEFORE[k] and k ~= "ControlCharDB" and k ~= "SLASH_CONTROL1" and k ~= "SLASH_CONTROL2" then extra[#extra + 1] = tostring(k) end
-end
-check(#extra == 0, "nye globale navn: " .. table.concat(extra, ","))
-return n, fails
 """
 
 
 def toc_files():
-    files = []
-    for ln in open(TOC, encoding="utf-8"):
-        ln = ln.strip()
-        if ln and not ln.startswith("#"):
-            files.append(ln)
-    return files
+    return [ln.strip() for ln in open(TOC, encoding="utf-8") if ln.strip() and not ln.startswith("#")]
+
+
+def src(rel):
+    return open(os.path.join(ROOT, *rel.split("\\")), encoding="utf-8").read()
+
+
+def collect(n, fails):
+    return n, (list(fails.values()) if fails else [])
+
+
+def run_mock(test_file, prelude=""):
+    lua = lua51.LuaRuntime(unpack_returned_tuples=True)
+    lua.execute(MOCK)
+    if prelude:
+        lua.execute(prelude)
+    lua.execute("GLOBALS_BEFORE = {}; GLOBALS_BEFORE = GlobalSnapshot()")
+    ns = lua.table()
+    lua.globals().NS = ns
+    load = lua.eval('function(src, name, ns) local f = assert(loadstring(src, name)); f("Control", ns) end')
+    for f in toc_files():
+        load(src(f), f, ns)
+    n, fails = collect(*lua.execute(open(os.path.join(TESTS, test_file), encoding="utf-8").read()))
+    leaks = lua.eval('function() local t = {} for k in pairs(_G) do if not GLOBALS_BEFORE[k] then t[#t+1] = tostring(k) end end return t end')()
+    extra = [k for k in leaks.values() if k not in ALLOWED_GLOBALS]
+    n += 1
+    if extra:
+        fails.append("nye globale navn: " + ",".join(extra))
+    return n, fails
+
+
+def run_bare(test_file):
+    bare = lua51.LuaRuntime(unpack_returned_tuples=True)
+    bare.execute("GLOBALS_BEFORE = {}; for k in pairs(_G) do GLOBALS_BEFORE[k] = true end")
+    ns = bare.table()
+    bare.globals().NS = ns
+    load = bare.eval('function(src, name, ns) local f = assert(loadstring(src, name)); f("Control", ns) end')
+    for f in ("Locale\\nbNO.lua", "Rules.lua"):
+        load(src(f), f, ns)
+    leaks = bare.eval('function() local t = {} for k in pairs(_G) do if not GLOBALS_BEFORE[k] and k ~= "NS" then t[#t+1] = tostring(k) end end return table.concat(t, ",") end')()
+    n, fails = collect(*bare.execute(open(os.path.join(TESTS, test_file), encoding="utf-8").read()))
+    n += 1
+    if leaks:
+        fails.append("regelmotoren lager globale navn: " + leaks)
+    return n, fails
 
 
 def main():
@@ -186,62 +181,30 @@ def main():
         sys.stdout.reconfigure(encoding="utf-8")
     total, bad = 0, 0
 
-    # Kildekoden: ingen enkle bakstreker (ukjente teksturstier krasjer klienten), og versjonen står i TOC.
-    toc = open(TOC, encoding="utf-8").read()
-    for f in toc_files():
-        src = open(os.path.join(ROOT, f), encoding="utf-8").read()
-        total += 1
-        if re.search(r'(?<!\\)\\(?![\\nrt"\'0-9])', src):
-            bad += 1
-            print("FEIL [kildekode]: enkel bakstrek i", f)
-    total += 1
-    if not re.search(r"^## Interface: 16001", toc, re.M):
-        bad += 1
-        print("FEIL [toc]: interface 16001 mangler")
-
-    lua = lua51.LuaRuntime(unpack_returned_tuples=True)
-    lua.execute(MOCK)
-    lua.execute("GLOBALS_BEFORE = {}; GLOBALS_BEFORE = GlobalSnapshot()")
-    ns = lua.table()
-    lua.globals().NS = ns
-    load = lua.eval('function(src, name, ns) local f = assert(loadstring(src, name)); f("Control", ns) end')
-    for f in toc_files():
-        load(open(os.path.join(ROOT, f), encoding="utf-8").read(), f, ns)
-    lua.execute("GLOBALS_BEFORE.NS = true")
-    try:
-        n, fails = lua.execute(SCENARIO)
-        fails = list(fails.values()) if fails else []
-    except Exception as e:
-        n, fails = 1, ["krasjet: " + str(e).strip().splitlines()[0]]
-    total += n
-    bad += len(fails)
-    for m in fails:
-        print("FEIL [fase 0]:", m)
-
-    # Regelmotoren: i en helt tom Lua 5.1 uten WoW-API, så den beviselig er ren (SPEC §4, §17).
-    for name in sorted(os.listdir(os.path.join(ROOT, "tests"))):
-        if not (name.startswith("test_") and name.endswith(".lua")):
-            continue
-        bare = lua51.LuaRuntime(unpack_returned_tuples=True)
-        bare.execute("GLOBALS_BEFORE = {}; for k in pairs(_G) do GLOBALS_BEFORE[k] = true end")
-        ns = bare.table()
-        bare.globals().NS = ns
-        bload = bare.eval('function(src, name, ns) local f = assert(loadstring(src, name)); f("Control", ns) end')
-        try:
-            for f in ("Locale\\nbNO.lua", "Rules.lua"):
-                bload(open(os.path.join(ROOT, f), encoding="utf-8").read(), f, ns)
-            leaks = bare.eval('function() local t = {} for k in pairs(_G) do if not GLOBALS_BEFORE[k] and k ~= "NS" then t[#t+1] = tostring(k) end end return table.concat(t, ",") end')()
-            n, fails = bare.execute(open(os.path.join(ROOT, "tests", name), encoding="utf-8").read())
-            fails = list(fails.values()) if fails else []
-            n += 1
-            if leaks:
-                fails.append("regelmotoren lager globale navn: " + leaks)
-        except Exception as e:
-            n, fails = 1, ["krasjet: " + str(e).strip().splitlines()[0]]
+    def report(label, n, fails):
+        nonlocal total, bad
         total += n
         bad += len(fails)
         for m in fails:
-            print("FEIL [%s]:" % name, m)
+            print("FEIL [%s]:" % label, m)
+
+    toc = open(TOC, encoding="utf-8").read()
+    static = []
+    for f in toc_files():
+        if re.search(r'(?<!\\)\\(?![\\nrt"\'0-9])', src(f)):
+            static.append("enkel bakstrek i " + f)
+    if not re.search(r"^## Interface: 16001", toc, re.M):
+        static.append("interface 16001 mangler i TOC")
+    report("kildekode", len(toc_files()) + 1, static)
+
+    for name in sorted(os.listdir(TESTS)):
+        try:
+            if name.startswith("test_") and name.endswith(".lua"):
+                report(name, *run_bare(name))
+            elif name.startswith("mock_") and name.endswith(".lua"):
+                report(name, *run_mock(name))
+        except Exception as e:
+            report(name, 1, ["krasjet: " + str(e).strip().splitlines()[0]])
     print("%d/%d sjekker ok" % (total - bad, total))
     sys.exit(1 if bad else 0)
 

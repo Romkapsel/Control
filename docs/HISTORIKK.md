@@ -134,3 +134,6 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | 2026-10-04 | **Fase 1 ferdig:** `Rules.lua` (ren Lua) + `Locale/nbNO.lua`. 125/125 tester, inkludert §19 trinn for trinn (7 → 6 → 5 → 5 → 4) og statuslinjene ord for ord. Regeltestene kjøres i en tom Lua uten WoW-API | Claude |
 | 2026-10-04 | En tom side i sidemenyen får **én** slipprute (SPEC §6.5), ikke fem som i prototypen | Claude |
 | 2026-10-04 | Gruppeversjonen krever reagens bare når `reagents` er oppgitt; `nil` = trengs ikke. Målet er alltid første som mangler | Claude |
+| 2026-10-04 | **Fase 2 bygget:** `Core.lua`, `Data.lua`, `UI/Style.lua`, `UI/Medallion.lua`. Medaljong med tall og ring fra testdata (`/control test` blar: rød 7 / oransje 2 / alt med / tom), soner med symboler og lysprikk, flytting fra midten, lås, klemming med sidemenyer og meny utfoldet, posisjon lagret. 182/182 tester. Venter på test i spillet | Claude |
+| 2026-10-04 | Medaljongen tegnes med fargeflater, gradienter og streker. Eneste tekstur er den runde masken (atlas `CircleMaskScalable`, ellers `TempPortraitAlphaMask` hvis filen finnes, ellers firkantet) – sjekkes før bruk, så en ukjent sti aldri kan krasje klienten | Claude |
+| 2026-10-04 | Lysbuen langs ringen ved mus over (SPEC §7.1) er utsatt til fase 9; lysprikken som peker mot sonen er med. Flytting er av i kamp allerede nå | Claude |
