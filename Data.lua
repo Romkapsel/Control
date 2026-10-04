@@ -103,11 +103,11 @@ function Data.MakeEntry(db, info, tier)
     e.castName = info.itemSpell
     local aura = info.isFood and (info.wellFed or "Well Fed") or info.itemSpell
     e.auraNames = { aura }
-    e.want = math.max(1, info.count or 1)
+    e.want = math.max(1, info.want or 1) -- standard 1: varsler bare når du er tom (Daniel 4. okt)
     e.short = info.isFood and Data.ShortName(aura) or nil
   else
     e.type, e.itemId, e.name = "item", info.itemId, info.itemName
-    e.want = math.max(1, info.count or 1)
+    e.want = math.max(1, info.want or 1) -- standard 1: varsler bare når du er tom (Daniel 4. okt)
   end
   e.short = e.short or Data.ShortName(e.name)
   return e
@@ -151,7 +151,7 @@ function Data.ImportKlarsjekk(db, old, resolve)
     if o.kind == "buff" then info = resolve("spell", o.id)
     elseif o.kind == "item" or o.kind == "itembuff" then info = resolve("item", o.id) end
     if info then
-      if o.need then info.count = o.need end
+      if o.need then info.want = o.need end
       if not Data.FindDuplicate(db.self, info) then
         db.self[#db.self + 1] = Data.MakeEntry(db, info, 2)
         added = added + 1

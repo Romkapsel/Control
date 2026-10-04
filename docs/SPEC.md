@@ -185,7 +185,7 @@ ControlCharDB = {
 
 - `auraNames`: buffer som teller som «på». Fyll ut fra spellets eget navn, pluss kjente likeverdige (se §9.5). Navn heller enn spellId, fordi ranks kan gi ulike spellId (V7).
 - `short`: kortnavn i statuslinja (§6.6), f.eks. «MotW», «Flask», «Defense», «Bandage». Standard: fra en tabell over kjente forkortelser, ellers det fulle navnet. Kan endres senere (ikke i v1-UI).
-- `want`: bare for `buffitem` og `item`. Standard ved innlegging: antallet du har nå, minst 1.
+- `want`: bare for `buffitem` og `item`. **Standard ved innlegging: 1** (Daniel 4. okt: varsler bare når du er tom; høyere mål stilles med musehjulet). Var: antallet du har nå – da ga første klikk et lagervarsel.
 - `onlyOn`: bare for `partyspell`. `nil` = følg alle i gruppa. Ellers et sett med spillernavn.
 - Nye oppføringer legges **sist i tier II**.
 

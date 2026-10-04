@@ -43,7 +43,7 @@ T.cursor = { "item", 13510, "[Flask of the Titans]" }
 hit.scripts.OnMouseUp(hit, "LeftButton")
 local flask = ControlCharDB.self[2]
 check(flask and flask.type == "buffitem" and flask.castName == "Flask of the Titans" and flask.short == "Flask", "flask: buffting")
-eq(flask.want, 3, "ønsket antall = det du har nå")
+eq(flask.want, 1, "ønsket antall er 1 til du stiller det selv")
 eq(ns.view.count, 2, "MotW og flask mangler")
 check(#tray.ids == 2 and tray.buttons[2]:GetAttribute("type") == "item" and tray.buttons[2]:GetAttribute("item") == "item:13510",
   "flasken står ute og bruker itemet")
@@ -81,13 +81,13 @@ Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "c4", 17626)
 Fire("BAG_UPDATE_DELAYED")
 check(#tray.ids == 1 and tray.ids[1] == flask.id, "i kamp: knappen blir stående til kampen er over")
 eq(ns.model.st[flask.id].status, "on", "i kamp: flasken regnes som på etter bekreftet trykk")
-eq(fb.stock.text, "2/3", "lageret leses i kamp")
+eq(fb.stock.text, "2", "lageret leses i kamp (2, nok)")
 check(not fb.glowing and fb.glow.alpha == 0, "på: ingen glød")
 eq(fb.alpha, 0, "i kamp: ferdig knapp blir usynlig")
 fb.scripts.hookOnEnter(fb)
 check(T.tooltip.owner ~= fb, "usynlig knapp viser ingen tooltip")
-eq(ns.view.count, 1, "flask på, men 2/3: teller fortsatt")
-eq(ns.view.ring, 1, "bare lageret: oransje")
+eq(ns.view.count, 0, "flask på og nok igjen: ingenting mangler")
+eq(ns.view.ring, 0, "alt i orden: ingen ringfarge")
 local clampBefore = ns.Medallion.frame.clamp
 ns.Medallion.Update(ns.view)
 check(ns.Medallion.frame.clamp == clampBefore, "i kamp: skjermgrensen røres ikke")
@@ -96,7 +96,7 @@ check(ns.Medallion.frame.clamp == clampBefore, "i kamp: skjermgrensen røres ikk
 T.now = T.now + 3600 - 2 - 30
 Tick()
 eq(ns.model.st[motw.id].status, "expiring", "i kamp: MotW snart ute (estimat)")
-eq(ns.view.count, 2, "i kamp: tallet oppdateres fra estimat")
+eq(ns.view.count, 1, "i kamp: tallet oppdateres fra estimat")
 check(#tray.ids == 1, "i kamp: ingen ny knapp dukker opp")
 
 -- Etter kampen: les alt på nytt, legg ut knappene på nytt
