@@ -77,8 +77,20 @@ function Scan.ItemInfo(id)
     if C_Item and C_Item.GetItemInfoInstant then return C_Item.GetItemInfoInstant(id) end
     return GetItemInfoInstant(id)
   end)
-  local isFood = okI and classID == 0 and subClassID == 5 -- forbruk / mat og drikke (V7: auraen heter «Well Fed»)
-  return name, spell, isFood
+  if not okI then classID, subClassID = nil, nil end
+  return name, spell, classID, subClassID
+end
+
+-- Står «Well Fed» i itemets tooltip? (Ikke all mat gir buffen; vanlig brød og vann gjør det ikke.)
+function Scan.TooltipHas(id, text)
+  if not (C_TooltipInfo and C_TooltipInfo.GetItemByID) or not text then return false end
+  local ok, data = pcall(C_TooltipInfo.GetItemByID, id)
+  if not ok or not data or not data.lines then return false end
+  for _, line in ipairs(data.lines) do
+    local t = line.leftText
+    if type(t) == "string" and not isSecret(t) and t:find(text, 1, true) then return true end
+  end
+  return false
 end
 
 ------------------------------------------------------------------------

@@ -98,9 +98,13 @@ function Core.Resolve(kind, id)
     if not name then return nil end
     return { kind = "spell", spellId = id, name = name }
   end
-  local name, spell, isFood = ns.Scan.ItemInfo(id)
+  local name, spell, classID, subClassID = ns.Scan.ItemInfo(id)
   if not name then return nil end
-  return { kind = "item", itemId = id, itemName = name, itemSpell = spell, isFood = isFood,
+  -- Buffting bare for eliksir, flask, scroll og mat som gir «Well Fed». Potions, bandasjer og healthstones har
+  -- også en bruk-effekt, men gir ingen buff å vente på: de er lagerting (Daniel 4. okt, en potion som ble rød).
+  local isFood = classID == 0 and subClassID == 5 and ns.Scan.TooltipHas(id, wellFedName())
+  local givesBuff = spell and classID == 0 and (ns.Data.BUFF_SUBCLASS[subClassID] or isFood)
+  return { kind = "item", itemId = id, itemName = name, itemSpell = givesBuff and spell or nil, isFood = isFood,
            wellFed = wellFedName(), count = ns.Scan.ItemCount(id) }
 end
 
@@ -146,6 +150,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Scan.wellFed = wellFedName()
     local n = ns.Data.ImportKlarsjekk(ns.db, KlarsjekkDB, Core.Resolve) -- den gamle lista, én gang (Q10)
     if n > 0 then Say(string.format(ns.L.IMPORTED, n)) end
+    ns.Data.Reclassify(ns.db, Core.Resolve) -- ting som ble lagt inn med feil type (potion som buffting)
     ns.Medallion.Create(ns.db, ns.L)
     ns.Medallion.onZoneClick = function() end -- sidemenyer og meny kommer i fase 4 og 6
     ns.Medallion.onDrop = ns.AddFromCursor

@@ -190,8 +190,13 @@ local function scanItems(keep)
           if C_Item and C_Item.GetItemSpell then return C_Item.GetItemSpell(id) end
           return GetItemSpell(id)
         end)
+        local okT, _, _, _, _, _, classID, subClassID = pcall(function()
+          if C_Item and C_Item.GetItemInfoInstant then return C_Item.GetItemInfoInstant(id) end
+          return GetItemInfoInstant(id)
+        end)
         out[#out + 1] = { id = id, count = try(okC, c),
-                          spell = try(okS, spellName), spellID = try(okS, spellID) }
+                          spell = try(okS, spellName), spellID = try(okS, spellID),
+                          class = try(okT, classID), subclass = try(okT, subClassID) }
       end
     end
   end

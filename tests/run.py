@@ -150,9 +150,20 @@ function UnitClass(u) return "Warrior", S("WARRIOR") end
 function UnitInRange() return S(true), true end
 C_Container = { GetContainerNumSlots = function(b) return T.bags[b] and #T.bags[b] or 0 end,
                 GetContainerItemID = function(b, s) return T.bags[b] and T.bags[b][s] end }
-T.itemNames = { [13510] = "Flask of the Titans", [14529] = "Runecloth Bandage", [21023] = "Dirge's Kickin' Chimaerok Chops" }
-T.itemSpells = { [13510] = { "Flask of the Titans", 17626 }, [21023] = { "Food", 433 } }
-T.itemClass = { [13510] = { 0, 3 }, [14529] = { 0, 7 }, [21023] = { 0, 5 } }
+T.itemNames = { [13510] = "Flask of the Titans", [14529] = "Runecloth Bandage", [21023] = "Dirge's Kickin' Chimaerok Chops",
+                [13446] = "Major Healing Potion", [4540] = "Tough Hunk of Bread" }
+T.itemSpells = { [13510] = { "Flask of the Titans", 17626 }, [21023] = { "Food", 433 }, [13446] = { "Healing Potion", 17534 },
+                 [4540] = { "Food", 433 }, [14529] = { "First Aid", 18610 } }
+T.itemClass = { [13510] = { 0, 3 }, [14529] = { 0, 7 }, [21023] = { 0, 5 }, [13446] = { 0, 1 }, [4540] = { 0, 5 } }
+T.tooltips = { [21023] = { "Dirge's Kickin' Chimaerok Chops", "Use: ... you will become Well Fed and gain 25 Stamina." },
+               [4540] = { "Tough Hunk of Bread", "Use: Restores 61 health over 18 sec." } }
+C_TooltipInfo = { GetItemByID = function(id)
+  local t = T.tooltips[id]
+  if not t then return nil end
+  local lines = {}
+  for i, s in ipairs(t) do lines[i] = { leftText = s } end
+  return { lines = lines }
+end }
 -- Lageret er lesbart i kamp (fase 0, V6). T.secretItems gjør det hemmelig likevel, for å teste vernet.
 C_Item = { GetItemCount = function(id) local c = T.counts[id] or 0 if T.secretItems then return SECRET end return c end,
            GetItemSpell = function(id) local s = T.itemSpells[id] if s then return S(s[1]), S(s[2]) end end,

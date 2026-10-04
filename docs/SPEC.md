@@ -613,7 +613,7 @@ Utenfor kamp: bekreft med `UNIT_AURA` (buffen er faktisk på) før knappen fjern
 
 ### 12.5 Dra og slipp
 
-- Inn: `OnReceiveDrag` på sidemenyen/menyen → `GetCursorInfo()` gir `"spell"` eller `"item"` + ID → `ClearCursor()`. For items: `C_Item.GetItemSpell(itemId)` avgjør buffting eller lagerting.
+- Inn: `OnReceiveDrag` på sidemenyen/menyen → `GetCursorInfo()` gir `"spell"` eller `"item"` + ID → `ClearCursor()`. For items (endret 4. okt): **buffting bare for forbruk med undertype eliksir (2), flask (3) og scroll (4), og mat (5) som har «Well Fed» i tooltipen**. Alt annet – potions, bandasjer, healthstones, vanlig mat og drikke – er lagerting, selv om det har en bruk-effekt. Ting som ligger med feil type, rettes ved innlogging.
 - Ut: `OnDragStart` på en knapp (bare utenfor kamp) → spøkelsesikon følger musa → slipp utenfor = fjern.
 
 ---

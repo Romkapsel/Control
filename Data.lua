@@ -113,6 +113,27 @@ function Data.MakeEntry(db, info, tier)
   return e
 end
 
+-- Forbruk (klasse 0) med disse undertypene gir en buff: 2 eliksir, 3 flask, 4 scroll. Mat (5) bare med «Well Fed».
+Data.BUFF_SUBCLASS = { [2] = true, [3] = true, [4] = true }
+
+-- Rett opp type på ting som ligger på lista (buffting ↔ lagerting), f.eks. en potion som ble lagt inn som buffting.
+function Data.Reclassify(db, resolve)
+  for _, e in ipairs(db.self or {}) do
+    if e.itemId and (e.type == "buffitem" or e.type == "item") then
+      local info = resolve("item", e.itemId)
+      if info then
+        if info.itemSpell and e.type == "item" then
+          e.type, e.castName = "buffitem", info.itemSpell
+          e.auraNames = { info.isFood and (info.wellFed or "Well Fed") or info.itemSpell }
+        elseif not info.itemSpell and e.type == "buffitem" then
+          e.type, e.castName, e.auraNames = "item", nil, nil
+          e.short = Data.ShortName(e.name)
+        end
+      end
+    end
+  end
+end
+
 function Data.FindDuplicate(list, info)
   for _, e in ipairs(list) do
     if info.kind == "spell" and e.type == "spell" and e.name == info.name then return e end

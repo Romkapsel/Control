@@ -139,6 +139,20 @@ T.now = T.now + 41
 Fire("UNIT_AURA", "player")
 eq(ns.model.st[food.id].status, "expired", "ingen Well Fed etter 40 s: tilbake")
 
+-- Potion, bandasje og vanlig mat: bare antall (lagerting), aldri «buff som mangler» (Daniel 4. okt)
+for _, id in ipairs({ 13446, 14529, 4540 }) do
+  T.counts[id] = 2
+  T.cursor = { "item", id, "[x]" }
+  hit.scripts.OnReceiveDrag(hit)
+end
+local list = ControlCharDB.self
+check(list[#list - 2].type == "item" and list[#list - 1].type == "item" and list[#list].type == "item",
+  "potion, bandasje og brød uten Well Fed er lagerting")
+eq(list[#list - 2].short, "Healing", "potion: kortnavn")
+for _, e in ipairs({ list[#list - 2], list[#list - 1], list[#list] }) do
+  for _, id in ipairs(ns.view.tray.self) do check(id ~= e.id, "lagerting står aldri ute ved knappen") end
+end
+
 -- Testdata viser ingen knapper; tilbake til egne data viser dem igjen
 SlashCmdList.CONTROL("test")
 check(not tray.frame.shown, "testdata: ingen knapper ute")
