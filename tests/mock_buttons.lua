@@ -9,8 +9,8 @@ Fire("ADDON_LOADED", "Control")
 Fire("PLAYER_LOGIN")
 local tray = ns.Tray.Get("right") -- gruppa til venstre, mine til høyre
 check(tray and not tray.frame.shown, "tom liste: ingen knapper ute")
-check(tray.frame.points[1][1] == "TOPLEFT" and tray.frame.points[1][4] == 18 and tray.frame.points[1][5] == -4,
-  "rammen starter 18 px inn under medaljongen, 4 px under toppen")
+check(tray.frame.points[1][1] == "TOPLEFT" and tray.frame.points[1][4] == 32 and tray.frame.points[1][5] == -4,
+  "rammen starter i medaljongens midtpunkt (skjult bak sirkelen), 4 px under toppen")
 local hit = ns.Medallion.State().hit
 
 -- Slipp Mark of the Wild (rank 2, 5232) på medaljongen
@@ -30,8 +30,8 @@ check(b1:GetAttribute("type2") == "", "høyreklikk kaster ikke")
 check(not b1.band.shown and b1.bandText.text == "" and b1.glowing and b1.glow.alpha == 1 and b1.glowAnim.playing,
   "ikke på: ingen tekst, pulserende glød")
 eq(b1.icon.texture, 1000 + 5232, "ikonet er spellens")
-eq(tray.frame.width, 2 + 50 + 40 + 6 + 2, "rammen er én knapp bred")
-check(b1.points[1][4] == 52, "første knapp 6 px utenfor medaljongen")
+eq(tray.frame.width, 2 + 36 + 40 + 6 + 2, "rammen er én knapp bred")
+check(32 + b1.points[1][4] == 64 + 6, "første knapp 6 px utenfor medaljongen")
 
 T.cursor = { "spell", 3, "spell", 1126 }
 hit.scripts.OnReceiveDrag(hit)
@@ -48,7 +48,7 @@ eq(ns.view.count, 2, "MotW og flask mangler")
 check(#tray.ids == 2 and tray.buttons[2]:GetAttribute("type") == "item" and tray.buttons[2]:GetAttribute("item") == "item:13510",
   "flasken står ute og bruker itemet")
 eq(tray.buttons[2].stock.text, "3", "nok på lager: bare tallet")
-eq(tray.frame.width, 2 + 50 + 2 * 40 + 6 + 6 + 2, "rammen vokser utover")
+eq(tray.frame.width, 2 + 36 + 2 * 40 + 6 + 6 + 2, "rammen vokser utover")
 check(ns.view.status.self.text == "Mangler  MotW · Flask", "statuslinja (til sidemenyen i fase 4)")
 
 -- Klikk MotW: trykket registreres, kastet bekreftes, buffen kommer, knappen forsvinner

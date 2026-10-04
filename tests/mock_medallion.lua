@@ -29,7 +29,7 @@ local p = st.root.points[1]
 check(p[1] == "CENTER" and p[3] == "CENTER" and p[4] == 0 and p[5] == 200, "standardplass: midt på, 200 px opp")
 check(st.root.clamp and st.root.clamp[1] <= -138 and st.root.clamp[2] >= 138, "holdes innenfor skjermen med menyen utfoldet (138 px hver side)")
 local rv = ns.view.side.self.width
-check(st.root.clamp[2] == math.max(138, 18 + rv - 64), "høyre grense regnet med MB-sidemenyen fullt utfoldet")
+check(st.root.clamp[2] == math.max(138, 32 + rv - 64), "høyre grense regnet med MB-sidemenyen fullt utfoldet")
 
 -- Animasjonene går ferdig og stopper
 local function settle() local f = st.root.scripts.OnUpdate if f then f(st.root, 5) end end

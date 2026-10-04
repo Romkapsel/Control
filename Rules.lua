@@ -17,6 +17,10 @@ ns.Rules = Rules
 Rules.EXPIRING_SECONDS = 40 -- SPEC §6.1, Q3
 Rules.MIN_SLOTS = 5         -- SPEC §7.4: knapper + tomme ruter fyller minst så mange plasser
 Rules.STATUS_MAX = 4        -- SPEC §6.6: maks fire i statuslinja, så «+N»
+-- Rammene (ved knappen og sidemenyene) starter i medaljongens midtpunkt, så venstre ende alltid ligger skjult
+-- bak sirkelen (Daniel 4. okt; SPEC hadde 18 px fra kanten, og hjørnene tittet fram). Første knapp står fortsatt
+-- 6 px utenfor medaljongen: 2 px kant + 36 px luft. Bredde = 2 + 36 + plasser × 46 + 2.
+Rules.FRAME_BASE = 40
 
 local SEV_OK, SEV_WARN, SEV_BAD = 0, 1, 2
 Rules.SEV_OK, Rules.SEV_WARN, Rules.SEV_BAD = SEV_OK, SEV_WARN, SEV_BAD
@@ -159,7 +163,7 @@ local function sideBar(entries)
   for _, e in ipairs(t2) do ids2[#ids2 + 1] = e.id end
   return {
     tier1 = ids1, tier2 = ids2, groove = groove, slots = slots,
-    width = 54 + (n + slots) * 46 + (groove and 12 or 0),
+    width = Rules.FRAME_BASE + (n + slots) * 46 + (groove and 12 or 0),
   }
 end
 

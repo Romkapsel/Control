@@ -176,9 +176,9 @@ eq(ids(v.side.self.tier1), "motw,thorns,flask", "MB tier I i brukerens rekkeføl
 eq(ids(v.side.self.tier2), "fed,mong,def,band,mana", "MB tier II")
 check(v.side.self.groove, "fure mellom tier I og II")
 eq(v.side.self.slots, 1, "8 knapper: minst én tom rute")
-eq(v.side.self.width, 54 + 9 * 46 + 12, "bredde MB")
+eq(v.side.self.width, 40 + 9 * 46 + 12, "bredde MB")
 eq(v.side.party.slots, 3, "2 gruppeknapper: fylles opp til 5")
-eq(v.side.party.width, 54 + 5 * 46 + 12, "bredde PB med fure")
+eq(v.side.party.width, 40 + 5 * 46 + 12, "bredde PB med fure")
 
 ------------------------------------------------------------------------
 -- Alt ok, og tom tilstand (§6.5)
@@ -191,7 +191,7 @@ eq(v.status.party.text, "Gruppa  Alle har det de skal", "alt ok: statuslinje PB"
 v = R.render({ self = {}, party = {}, st = {} }, L)
 check(v.empty and v.count == 0 and v.ring == 0, "tom tilstand")
 eq(v.side.self.slots, 1, "tom tilstand: én tom slipprute")
-eq(v.side.self.width, 54 + 46, "tom tilstand: bredde")
+eq(v.side.self.width, 40 + 46, "tom tilstand: bredde")
 
 ------------------------------------------------------------------------
 -- Oransje alene, og stabil rekkefølge (§6.6)

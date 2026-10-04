@@ -363,6 +363,7 @@ Medaljongen deles i fire kiler fra midten ut mot hjørnene (opp, høyre, ned, ve
 ### 7.3 Ved knappen (Tray)
 
 - Én tray per side. Den har bare tier I-knapper som kan trykkes (§6.4). Tom tray vises ikke.
+- **Endret 4. okt (Daniel): rammen starter i medaljongens midtpunkt**, så hjørnene aldri titter fram bak sirkelen. Første knapp står fortsatt 6 px utenfor medaljongen (2 px kant + 36 px luft). Opprinnelig tekst:
 - Ramme: samme ramme som sidemenyen (§13), 56 px høy med kant (2 + 6 + 40 + 6 + 2). Rammen starter **under** medaljongen: kanten på medaljongsiden ligger 18 px fra medaljongens *motsatte* kant (for høyre side: rammens venstre kant = medaljongens venstre kant + 18 px), så rammen stikker 46 px inn under medaljongen. Toppen ligger 4 px under medaljongens topp. Med 2 px kant og 50 px luft på medaljongsiden står første knapp 6 px utenfor medaljongens kant. Knappene står med 6 px mellomrom og vokser utover.
 - Nye knapper spretter inn (skala 0,55 → 1, 0,28 s, litt overshoot). Knapper som blir borte, krymper og tones ut (0,17 s).
 
@@ -374,7 +375,7 @@ Folder ut fra medaljongen når du klikker venstre eller høyre sone (`04-begge-s
 - **Rad 1, knapper:** alle tier I, så en fure (2 px: 1 px svart + 1 px `#4A3920`, 2 px marg), så alle tier II, så tomme ruter. Tomme ruter fyller opp til minst 5 plasser, alltid minst én (unntak: tom tilstand, §6.5). Første tomme rute har et «+» og er slippmål for nye oppføringer. I kamp viser siste tomme rute to kryssede sverd (frosset).
 - **Fure** (2 px) under raden.
 - **Rad 2, statuslinja** (30 px): §6.6.
-- **Bredde:** gitt av innholdet: `54 + (knapper + tomme ruter) × 46 + (12 hvis både tier I og II finnes)` px (fura er 2 px + 2 × 2 px marg + ett ekstra mellomrom). Prototypen bruker +10, som er 2 px for lite.
+- **Bredde:** gitt av innholdet: `40 + (knapper + tomme ruter) × 46 + (12 hvis både tier I og II finnes)` px (rammen starter i medaljongens midtpunkt, se §7.3; var 54 da den startet 18 px fra kanten) (fura er 2 px + 2 × 2 px marg + ett ekstra mellomrom). Prototypen bruker +10, som er 2 px for lite.
 - Åpne/lukke: klippes inn/ut fra medaljongsiden, 0,35 s, med opasitet 0,2 s.
 - Begge sider kan være åpne samtidig. Sidene er uavhengige av menyen.
 - Venstre side vokser mot venstre (knappene speilvendt, innerst nærmest medaljongen).

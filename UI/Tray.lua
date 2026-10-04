@@ -1,5 +1,5 @@
 -- Control: knappene ved medaljongen (SPEC §6.4, §7.3). Én tray per side, bare tier I som kan trykkes.
--- Rammen starter 18 px inn fra medaljongens motsatte kant, 4 px under toppen; første knapp står 6 px utenfor
+-- Rammen starter i medaljongens midtpunkt (skjult bak sirkelen), 4 px under toppen; første knapp står 6 px utenfor
 -- medaljongen, 6 px mellom knappene. Hvilke knapper som står ute, endres bare utenfor kamp (sikre knapper).
 local addonName, ns = ...
 local Style = ns.Style
@@ -9,6 +9,8 @@ local Tray = {}
 ns.Tray = Tray
 
 local BTN, GAP, MED = 40, 6, 64
+local START = MED / 2   -- rammen starter i medaljongens midtpunkt
+local AIR = 36          -- luft innenfor kanten på medaljongsiden: første knapp 6 px utenfor medaljongen
 local HEIGHT = 56 -- 2 + 6 + 40 + 6 + 2
 
 local trays = {}
@@ -50,9 +52,9 @@ function Tray.Create(root, side)
   f:SetFrameLevel(math.max(0, root:GetFrameLevel() - 1))
   f:SetHeight(HEIGHT)
   if side == "right" then
-    f:SetPoint("TOPLEFT", root, "TOPLEFT", 18, -4)
+    f:SetPoint("TOPLEFT", root, "TOPLEFT", START, -4)
   else
-    f:SetPoint("TOPRIGHT", root, "TOPRIGHT", -18, -4)
+    f:SetPoint("TOPRIGHT", root, "TOPRIGHT", -START, -4)
   end
   chrome(f)
   f:Hide()
@@ -66,7 +68,7 @@ local function button(t, i)
     b = ns.EntryButton.Create(t.frame)
     t.buttons[i] = b
   end
-  local x = 2 + 50 + (i - 1) * (BTN + GAP) -- 50 px luft på medaljongsiden
+  local x = 2 + AIR + (i - 1) * (BTN + GAP)
   b:ClearAllPoints()
   if t.side == "right" then
     b:SetPoint("TOPLEFT", t.frame, "TOPLEFT", x, -8)
@@ -104,7 +106,7 @@ function Tray.Layout(side, entries, st, L)
   for i = #entries + 1, #t.buttons do t.buttons[i]:Hide() end
   local n = #entries
   if n > 0 then
-    t.frame:SetWidth(2 + 50 + n * BTN + (n - 1) * GAP + 6 + 2)
+    t.frame:SetWidth(2 + AIR + n * BTN + (n - 1) * GAP + 6 + 2)
     t.frame:Show()
   else
     t.frame:Hide()
