@@ -311,7 +311,7 @@ Under knappe-raden i hver sidemeny står én linje:
 ### 6.8 I kamp
 
 - Ingen knapper dukker opp eller forsvinner, ingen layout endres (beskyttede knapper, §12.1). Det som stod ute, står fast.
-- Knappene kan fortsatt trykkes. Trykket registreres (§12.4), og nedtellingen starter fra full varighet. Knappen blir stående til kampen er over, men **tones nesten helt bort (15 %)** så snart trykket er bekreftet (Daniel 4. okt).
+- Knappene kan fortsatt trykkes. Trykket registreres (§12.4), og nedtellingen starter fra full varighet. Knappen blir stående til kampen er over, men **blir usynlig** så snart trykket er bekreftet (Daniel 4. okt); plassen står tom til kampen er over.
 - Ingen nye lys eller tekster midt på skjermen. Tall og ringfarge kan oppdateres fra estimater.
 - Gruppebuff-rutene vises dempet (45 % opasitet) fordi vi ikke kan se hvem som har buffen.
 - Når kampen er over (`PLAYER_REGEN_ENABLED`): les alt på nytt, legg ut knappene på nytt.

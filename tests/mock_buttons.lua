@@ -83,7 +83,9 @@ check(#tray.ids == 1 and tray.ids[1] == flask.id, "i kamp: knappen blir stående
 eq(ns.model.st[flask.id].status, "on", "i kamp: flasken regnes som på etter bekreftet trykk")
 eq(fb.stock.text, "2/3", "lageret leses i kamp")
 check(not fb.glowing and fb.glow.alpha == 0, "på: ingen glød")
-eq(fb.alpha, 0.15, "i kamp: ferdig knapp tones nesten helt bort")
+eq(fb.alpha, 0, "i kamp: ferdig knapp blir usynlig")
+fb.scripts.hookOnEnter(fb)
+check(T.tooltip.owner ~= fb, "usynlig knapp viser ingen tooltip")
 eq(ns.view.count, 1, "flask på, men 2/3: teller fortsatt")
 eq(ns.view.ring, 1, "bare lageret: oransje")
 local clampBefore = ns.Medallion.frame.clamp

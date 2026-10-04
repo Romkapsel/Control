@@ -120,6 +120,7 @@ function EB.Create(parent)
     self.flashAnim:Play()
   end)
   b:HookScript("OnEnter", function(self)
+    if self.faded then return end -- usynlig (ferdig i kamp): ingen hover eller tooltip
     for _, t in ipairs(self.hoverEdge) do t:SetAlpha(0.75) end
     EB.ShowTooltip(self)
   end)
@@ -153,7 +154,8 @@ function EB.Bind(b, e)
 end
 
 -- Hvordan knappen ser ut nå. Ikke beskyttet: virker også i kamp.
--- frozen = i kamp: en knapp som er ferdig (buffen er på), tones nesten helt bort; den fjernes etter kampen.
+-- frozen = i kamp: en knapp som er ferdig (buffen er på), blir usynlig; den fjernes fra rekka etter kampen.
+-- (Sikre knapper kan ikke skjules eller flyttes i kamp, så plassen står tom til kampen er over.)
 function EB.Paint(b, e, st, L, frozen)
   st = st or {}
   b.entry, b.st = e, st
@@ -214,7 +216,8 @@ function EB.Paint(b, e, st, L, frozen)
     b.glow:SetAlpha(0)
   end
   b.glowing = glow
-  b:SetAlpha((frozen and not R.canPress(e, st)) and 0.15 or 1)
+  b.faded = frozen and not R.canPress(e, st)
+  b:SetAlpha(b.faded and 0 or 1)
   if GameTooltip:IsOwned(b) then EB.ShowTooltip(b) end
 end
 
