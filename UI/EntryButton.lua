@@ -153,7 +153,8 @@ function EB.Bind(b, e)
 end
 
 -- Hvordan knappen ser ut nå. Ikke beskyttet: virker også i kamp.
-function EB.Paint(b, e, st, L)
+-- frozen = i kamp: en knapp som er ferdig (buffen er på), tones nesten helt bort; den fjernes etter kampen.
+function EB.Paint(b, e, st, L, frozen)
   st = st or {}
   b.entry, b.st = e, st
   local R = ns.Rules
@@ -185,8 +186,7 @@ function EB.Paint(b, e, st, L)
       b.big:SetText(R.formatTime(st.left, L) or "")
       drain = 0.97
     else
-      b.band:Show()
-      b.bandText:SetText(status == "expired" and L.BTN_EXPIRED or L.BTN_MISSING)
+      -- Ikke på / gått ut: ingen tekst, gløden er signalet (Daniel, 4. okt)
       glow = R.canPress(e, st)
     end
     if e.type == "buffitem" then
@@ -214,6 +214,7 @@ function EB.Paint(b, e, st, L)
     b.glow:SetAlpha(0)
   end
   b.glowing = glow
+  b:SetAlpha((frozen and not R.canPress(e, st)) and 0.15 or 1)
   if GameTooltip:IsOwned(b) then EB.ShowTooltip(b) end
 end
 

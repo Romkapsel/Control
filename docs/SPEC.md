@@ -311,7 +311,7 @@ Under knappe-raden i hver sidemeny står én linje:
 ### 6.8 I kamp
 
 - Ingen knapper dukker opp eller forsvinner, ingen layout endres (beskyttede knapper, §12.1). Det som stod ute, står fast.
-- Knappene kan fortsatt trykkes. Trykket registreres (§12.4), og nedtellingen starter fra full varighet, men knappen blir stående til kampen er over.
+- Knappene kan fortsatt trykkes. Trykket registreres (§12.4), og nedtellingen starter fra full varighet. Knappen blir stående til kampen er over, men **tones nesten helt bort (15 %)** så snart trykket er bekreftet (Daniel 4. okt).
 - Ingen nye lys eller tekster midt på skjermen. Tall og ringfarge kan oppdateres fra estimater.
 - Gruppebuff-rutene vises dempet (45 % opasitet) fordi vi ikke kan se hvem som har buffen.
 - Når kampen er over (`PLAYER_REGEN_ENABLED`): les alt på nytt, legg ut knappene på nytt.
@@ -389,8 +389,8 @@ Prosessen vises med form og bevegelse, ikke bare farge:
 |---|---|
 | **På** (`aktiv`) | Liten tid nederst (12 px fet, svart kontur), f.eks. «6 min». En mørk **tømming ovenfra** (`rgba(8,6,4,.66)` med 1 px lys kant) viser hvor mye av tiden som er brukt. |
 | **Snart ute** (`snart`, ≤ 40 s) | **Stor nedtelling** midt på (16 px fet), f.eks. «0:38». Tømmingen står nesten helt nede. Ingen glød (nedtellingen er signalet). |
-| **Gått ut** (`gatt`) | Mørkt bånd nederst (13 px, svart 72 %) med «gått ut». **Pulserende gullglød**. |
-| **Ikke på** (`ikke`) | Bånd nederst med «ikke på». **Pulserende gullglød**. Dette er tilstanden som skal stikke seg mest ut. |
+| **Gått ut** (`gatt`) | **Pulserende gullglød**, ingen tekst (Daniel 4. okt: uten «gått ut»). |
+| **Ikke på** (`ikke`) | **Pulserende gullglød**, ingen tekst (Daniel 4. okt: uten «ikke på»). Dette er tilstanden som skal stikke seg mest ut. |
 | **Lager på buffting** | Antall øverst til høyre (12 px fet). Nok: bare tallet («3»). Under: «har/vil ha» («3/4»). Tomt: «0/2» i grått `#A0A0A0`, og ikonet i gråtoner og mørkere. |
 | **Lagerting** (`item`) | Antallet står nederst der tiden ellers står («5», «3/6»). Tømmingen ovenfra viser hvor mye som mangler opp til ønsket antall. Tomt: mørkt bånd med «0/10» og ikonet i gråtoner. **Lyser aldri.** |
 | **Gruppebuff** | Én rute (5 px) per medlem som følges, i et 11 px-bånd nederst. Fylt lys rute = har buffen; tom rute med gul kant = mangler. Ikonet flyttes litt opp. Gløder når noen mangler. Dempet til 45 % i kamp. |

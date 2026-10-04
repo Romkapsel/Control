@@ -27,7 +27,8 @@ local b1 = tray.buttons[1]
 check(b1:GetAttribute("type") == "spell" and b1:GetAttribute("spell") == "Mark of the Wild" and b1:GetAttribute("unit") == "player",
   "knappen kaster Mark of the Wild på deg selv, etter navn")
 check(b1:GetAttribute("type2") == "", "høyreklikk kaster ikke")
-check(b1.bandText.text == "ikke på" and b1.glowing and b1.glow.alpha == 1 and b1.glowAnim.playing, "ikke på: bånd og pulserende glød")
+check(not b1.band.shown and b1.bandText.text == "" and b1.glowing and b1.glow.alpha == 1 and b1.glowAnim.playing,
+  "ikke på: ingen tekst, pulserende glød")
 eq(b1.icon.texture, 1000 + 5232, "ikonet er spellens")
 eq(tray.frame.width, 2 + 50 + 40 + 6 + 2, "rammen er én knapp bred")
 check(b1.points[1][4] == 52, "første knapp 6 px utenfor medaljongen")
@@ -82,6 +83,7 @@ check(#tray.ids == 1 and tray.ids[1] == flask.id, "i kamp: knappen blir stående
 eq(ns.model.st[flask.id].status, "on", "i kamp: flasken regnes som på etter bekreftet trykk")
 eq(fb.stock.text, "2/3", "lageret leses i kamp")
 check(not fb.glowing and fb.glow.alpha == 0, "på: ingen glød")
+eq(fb.alpha, 0.15, "i kamp: ferdig knapp tones nesten helt bort")
 eq(ns.view.count, 1, "flask på, men 2/3: teller fortsatt")
 eq(ns.view.ring, 1, "bare lageret: oransje")
 local clampBefore = ns.Medallion.frame.clamp
@@ -110,8 +112,9 @@ eq(mb.big.text, "0:20", "nedtellingen går mellom lesingene")
 T.now = T.now + 25
 T.auras = { { "Flask of the Titans", 17626, T.now + 7000, 7200 } }
 Fire("UNIT_AURA", "player")
-eq(mb.bandText.text, "gått ut", "gått ut: bånd")
+check(not mb.band.shown and mb.bandText.text == "", "gått ut: ingen tekst")
 check(mb.glowing and mb.glowAnim.playing, "gått ut: glød")
+eq(mb.alpha, 1, "utenfor kamp: helt synlig")
 
 -- Tooltip
 mb.scripts.hookOnEnter(mb)

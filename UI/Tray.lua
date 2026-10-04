@@ -118,7 +118,7 @@ function Tray.Paint(side, byId, st, L)
   if not t then return end
   for i, id in ipairs(t.ids) do
     local e = byId[id]
-    if e then ns.EntryButton.Paint(t.buttons[i], e, st[id], L) end
+    if e then ns.EntryButton.Paint(t.buttons[i], e, st[id], L, true) end
   end
 end
 
