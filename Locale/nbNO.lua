@@ -63,6 +63,7 @@ ns.L = {
   DIR_SWAP = "Bytt side på gruppene",
   SCALE = "Størrelse",
   COUNT_LABEL = "Tall i midten",
+  OPEN_CORE_LABEL = "Gjennomsiktig midt",
   ON = "På",
   OFF = "Av",
   SCALE_VALUE = "%d %%",

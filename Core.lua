@@ -314,6 +314,12 @@ function Actions.ToggleCount()
   Core.Draw()
 end
 
+function Actions.ToggleOpenCore()
+  ns.db.ui.openCore = not ns.db.ui.openCore
+  ns.Medallion.ApplyCore()
+  Core.Draw()
+end
+
 function Actions.SwapSides()
   if InCombatLockdown() then return end
   ns.db.ui.partySide = ns.db.ui.partySide == "right" and "left" or "right"
@@ -387,6 +393,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onRemoveCity = Actions.RemoveCity
     ns.Menu.onSwap = Actions.SwapSides
     ns.Menu.onToggleCount = Actions.ToggleCount
+    ns.Menu.onToggleOpenCore = Actions.ToggleOpenCore
     ns.Menu.onScale = Actions.SetScale
     ns.Medallion.isMenuOpen = ns.Menu.IsOpen
     -- Det sikre skriptet på medaljongen åpner/lukker disse i kamp (fase 7)

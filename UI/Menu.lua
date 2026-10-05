@@ -39,7 +39,8 @@ Menu.onAddCity = nil  -- (zone)
 Menu.onRemoveCity = nil -- (zone)
 Menu.onSwap = nil
 Menu.onScale = nil
-Menu.onToggleCount = nil -- tallet i midten av medaljongen av/på    -- (skala 0,70–1,50): settes når du slipper slideren
+Menu.onToggleCount = nil -- tallet i midten av medaljongen av/på
+Menu.onToggleOpenCore = nil -- gjennomsiktig midte av/på    -- (skala 0,70–1,50): settes når du slipper slideren
 
 ------------------------------------------------------------------------
 -- Byggeklosser
@@ -535,24 +536,41 @@ local function scaleRow()
 end
 
 -- Tall i midten: av/på (Daniel 5. okt). Tekst til venstre, liten knapp til høyre, som «Legg til» under Byvakt.
-local function countRow()
-  local on = db.ui.showCount ~= false
-  local t = text(L.COUNT_LABEL, C.text)
-  local tw = textWidth(t)
-  local x0 = math.floor((W - (tw + 14 + 52)) / 2) -- tekst og knapp som én midtstilt gruppe
-  place(t, x0, y + 4)
-  Menu.countText = t
+-- Av/på-linjer under Oppsett (Tall i midten, Gjennomsiktig midte): tekst til venstre og liten knapp til høyre,
+-- som én midtstilt gruppe. Knappene står på linje under hverandre (gruppen regnes ut fra den lengste teksten).
+-- Begge virker i kamp: de endrer bare medaljongens utseende.
+local TOGGLE_W = 52
+local function toggleRow(label, isOn, onClick)
+  local t = text(label, C.text)
+  local wide = 0
+  for _, l in ipairs({ L.COUNT_LABEL, L.OPEN_CORE_LABEL }) do
+    t:SetText(l)
+    wide = math.max(wide, textWidth(t))
+  end
+  t:SetText(label)
+  local x0 = math.floor((W - (wide + 14 + TOGGLE_W)) / 2)
+  place(t, x0 + wide - textWidth(t), y + 4) -- høyrejustert mot knappen
   local a
-  a = action(on and L.ON or L.OFF, true, nil, function()
-    if Menu.onToggleCount then Menu.onToggleCount() end
-    local now = db.ui.showCount ~= false and L.ON or L.OFF
+  a = action(isOn() and L.ON or L.OFF, true, nil, function()
+    onClick()
+    local now = isOn() and L.ON or L.OFF
     a.fs:SetText(now)
     a.text = now
-  end, 52)
-  a.allowCombat = true -- endrer bare tallet i medaljongen
-  place(a, x0 + tw + 14, y)
-  Menu.countButton = a
+  end, TOGGLE_W)
+  a.allowCombat = true
+  place(a, x0 + wide + 14, y)
   y = y + 22 + G
+  return t, a
+end
+
+local function countRow()
+  Menu.countText, Menu.countButton = toggleRow(L.COUNT_LABEL, function() return db.ui.showCount ~= false end,
+    function() if Menu.onToggleCount then Menu.onToggleCount() end end)
+end
+
+local function openCoreRow()
+  Menu.coreText, Menu.coreButton = toggleRow(L.OPEN_CORE_LABEL, function() return db.ui.openCore == true end,
+    function() if Menu.onToggleOpenCore then Menu.onToggleOpenCore() end end)
 end
 
 -- Bytt side: én lang knapp, midtstilt (Daniel 5. okt). Hvilken side som er hvor, står i kategorilinjene over.
@@ -680,6 +698,8 @@ function Menu.Layout(model, members, sideOpen)
   direction()
   separator()
   countRow()
+  separator()
+  openCoreRow()
   separator()
   scaleRow()
   if db.debug and db.debug.rangeButton then

@@ -32,6 +32,7 @@ local DEFAULTS = {
     locked = false,
     partySide = "left",
     showCount = true,   -- tallet i midten av medaljongen (Oppsett i menyen)
+    openCore = false,   -- gjennomsiktig midte: verden synes gjennom kjernen (Oppsett i menyen)
     menuSections = { self = true, party = true, city = true },
   },
   durations = {},

@@ -136,6 +136,9 @@ def medal_base():
     core.img = Image.composite(grad, core.img, mask)
     c.over(core)
     c.save("medal_base")
+    # Gjennomsiktig midte (Oppsett, Daniel 5. okt): samme bilde, men kjernen innenfor statusringen er tom
+    c.clear_disc(0, 0, 24)
+    c.save("medal_base_open")
 
 
 def medal_ring():

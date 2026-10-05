@@ -272,6 +272,7 @@ local function build()
   parts.glow = Style.Image(face, "medal_glow", MEDAL, MEDAL, "BACKGROUND", -8)
   parts.glow:SetAlpha(0)
   parts.base = Style.Image(face, "medal_base", MEDAL, MEDAL, "BACKGROUND", -6)
+  -- (gjennomsiktig midte byttes inn av M.ApplyCore: "medal_base_open")
   parts.rim = Style.Image(face, "medal_rim", MEDAL, MEDAL, "BACKGROUND", -5)
   parts.rim:SetBlendMode("ADD")
   parts.rim:SetVertexColor(C.bronzeLight[1], C.bronzeLight[2], C.bronzeLight[3])
@@ -496,6 +497,12 @@ function M.Size() return (db and db.ui.scale) or 1 end
 -- Hvor mye lenger ut kanten av sirkelen står enn ved 100 % (px)
 function M.Extra() return math.floor(SIZE / 2 * (M.Size() - 1) + 0.5) end
 
+-- Gjennomsiktig midte av/på (Oppsett): bytter bare bildet, så det virker også i kamp
+function M.ApplyCore()
+  if not parts.base then return end
+  parts.base:SetTexture(Style.Media(db.ui.openCore and "medal_base_open" or "medal_base"))
+end
+
 function M.SetScale(s)
   if inCombat() or type(s) ~= "number" or s <= 0 then return false end
   db.ui.scale = s
@@ -561,6 +568,7 @@ function M.Create(database, locale)
   build()
   M.ApplyPosition()
   applySize()
+  M.ApplyCore()
   hit:SetScript("OnEnter", function() setHover(cursorZone()) trackFrame:SetScript("OnUpdate", M.TrackMouse) end)
   hit:SetScript("OnLeave", function() trackFrame:SetScript("OnUpdate", nil) setHover(nil) GameTooltip:Hide() end)
   hit:HookScript("PostClick", function()

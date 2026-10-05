@@ -80,7 +80,7 @@ dra et sted ut av lista for å fjerne det.
 
 - **Meg** og **Party:** alle knappene dine i rad I og II.
 - **Byvakt:** se over.
-- **Oppsett:** **Bytt side på gruppene**, **Tall i midten** (på/av – uten tallet er det ringen som sier fra), og **Størrelse** (70–150 %).
+- **Oppsett:** **Bytt side på gruppene**, **Tall i midten** (på/av – uten tallet er det ringen som sier fra), **Gjennomsiktig midt** (på/av – verden synes gjennom medaljongen), og **Størrelse** (70–150 %).
 - Lukk med pila i hjørnet, eller klikk nederst på medaljongen.
 
 ## I kamp

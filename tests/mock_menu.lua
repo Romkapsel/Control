@@ -163,13 +163,26 @@ Menu.swapButton.scripts.OnClick(Menu.swapButton)
 local cnt = M.State().parts.count
 local cb = Menu.countButton
 check(cb and cb.text == "På" and cnt.alpha > 0, "tallet vises som standard")
-local tx, bx = Menu.countText.points[1][4], cb.points[1][4]
-check(math.abs(tx - (Menu.frame.width - (bx + 52))) <= 1, "«Tall i midten» og knappen står midt i menyen")
+local tx, bx = Menu.coreText.points[1][4], cb.points[1][4] -- den lengste teksten bestemmer gruppen
+check(math.abs(tx - (Menu.frame.width - (bx + 52))) <= 1, "av/på-linjene står midt i menyen")
 cb.scripts.OnClick(cb)
 check(ControlCharDB.ui.showCount == false and Menu.countButton.text == "Av" and cnt.alpha == 0, "Av: tallet er borte")
 check(ns.view.ring == 2 or ns.view.ring == 1, "ringen viser fortsatt at noe mangler")
 Menu.countButton.scripts.OnClick(Menu.countButton)
 check(ControlCharDB.ui.showCount == true and Menu.countButton.text == "På" and cnt.alpha > 0, "På igjen: tallet er tilbake")
+
+-- Gjennomsiktig midte: bytter bildet i medaljongen, også i kamp
+local base = M.State().parts.base
+check(base.texture:find("medal_base", 1, true) and not base.texture:find("open", 1, true), "standard: mørk midte")
+check(Menu.coreButton and Menu.coreButton.text == "Av" and Menu.coreText.text == "Gjennomsiktig midt", "Gjennomsiktig midt er av som standard")
+eq(Menu.coreButton.points[1][4], Menu.countButton.points[1][4], "knappene står på linje under hverandre")
+Menu.coreButton.scripts.OnClick(Menu.coreButton)
+check(ControlCharDB.ui.openCore == true and base.texture:find("medal_base_open", 1, true) and Menu.coreButton.text == "På",
+  "På: midten er gjennomsiktig")
+T.combat = true
+Menu.coreButton.scripts.OnClick(Menu.coreButton)
+check(ControlCharDB.ui.openCore == false and not base.texture:find("open", 1, true), "virker også i kamp")
+T.combat = false
 
 -- I kamp: Tall i midten virker, resten er synlig grått med «Ikke i kamp.»
 T.combat = true
