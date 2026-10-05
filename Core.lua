@@ -349,6 +349,11 @@ function Actions.RemoveCity(zone)
 end
 
 -- Bytt sider: gruppa og mine buffer bytter plass. Sidemenyene lukkes, alt legges ut på nytt.
+function Actions.ToggleFade()
+  ns.db.ui.fadeOk = ns.db.ui.fadeOk == false
+  Core.Draw()
+end
+
 function Actions.ToggleCount()
   ns.db.ui.showCount = ns.db.ui.showCount == false
   Core.Draw()
@@ -580,6 +585,10 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onSwap = Actions.SwapSides
     ns.Menu.onToggleCount = Actions.ToggleCount
     ns.Menu.onToggleOpenCore = Actions.ToggleOpenCore
+    ns.Menu.onToggleFade = Actions.ToggleFade
+    ns.Medallion.isBusy = function()
+      return ns.Menu.IsOpen() or ns.SideBar.IsOpen("left") or ns.SideBar.IsOpen("right") or false
+    end
     ns.Menu.onUseSet = Actions.UseSet
     ns.Menu.onNewSet = Actions.AskNewSet
     ns.Menu.onEditSet = Actions.AskEditSet

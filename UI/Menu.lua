@@ -43,6 +43,7 @@ Menu.onSwap = nil
 Menu.onScale = nil
 Menu.onToggleCount = nil -- tallet i midten av medaljongen av/på
 Menu.onToggleOpenCore = nil -- gjennomsiktig midte av/på
+Menu.onToggleFade = nil -- nedtoning når alt er i orden av/på
 Menu.onUseSet, Menu.onNewSet, Menu.onEditSet = nil, nil, nil -- sett: bytt, nytt, nytt navn/slett
 Menu.onEquip, Menu.gearPlan = nil, nil -- «Ta på» ved Utstyr
 Menu.onToggleCityCheck = nil -- (key): reparasjon/bagplass i byvakta av/på    -- (skala 0,70–1,50): settes når du slipper slideren
@@ -651,12 +652,17 @@ end
 
 local function countRow()
   Menu.countText, Menu.countButton = toggleRow(L.COUNT_LABEL, function() return db.ui.showCount ~= false end,
-    function() if Menu.onToggleCount then Menu.onToggleCount() end end, { L.COUNT_LABEL, L.OPEN_CORE_LABEL }, true)
+    function() if Menu.onToggleCount then Menu.onToggleCount() end end, { L.COUNT_LABEL, L.OPEN_CORE_LABEL, L.FADE_LABEL }, true)
 end
 
 local function openCoreRow()
   Menu.coreText, Menu.coreButton = toggleRow(L.OPEN_CORE_LABEL, function() return db.ui.openCore == true end,
-    function() if Menu.onToggleOpenCore then Menu.onToggleOpenCore() end end, { L.COUNT_LABEL, L.OPEN_CORE_LABEL }, true)
+    function() if Menu.onToggleOpenCore then Menu.onToggleOpenCore() end end, { L.COUNT_LABEL, L.OPEN_CORE_LABEL, L.FADE_LABEL }, true)
+end
+
+local function fadeRow()
+  Menu.fadeText, Menu.fadeButton = toggleRow(L.FADE_LABEL, function() return db.ui.fadeOk ~= false end,
+    function() if Menu.onToggleFade then Menu.onToggleFade() end end, { L.COUNT_LABEL, L.OPEN_CORE_LABEL, L.FADE_LABEL }, true)
 end
 
 -- Bytt side: én lang knapp, midtstilt (Daniel 5. okt). Hvilken side som er hvor, står i kategorilinjene over.
@@ -806,6 +812,8 @@ function Menu.Layout(model, members, sideOpen)
   countRow()
   separator()
   openCoreRow()
+  separator()
+  fadeRow()
   separator()
   scaleRow()
   end

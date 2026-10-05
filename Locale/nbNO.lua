@@ -79,6 +79,7 @@ ns.L = {
   SCALE = "Størrelse",
   COUNT_LABEL = "Tall i midten",
   OPEN_CORE_LABEL = "Gjennomsiktig midt",
+  FADE_LABEL = "Ton ned når alt er ok",
   ON = "På",
   OFF = "Av",
   SCALE_VALUE = "%d %%",

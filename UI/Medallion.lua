@@ -39,6 +39,7 @@ local swordFrame, swords, swordFlash
 local buildSwords
 local anim = {}   -- key → { cur, from, to, t, dur }
 local applyAll
+local refreshFade
 
 local function ease(t) return t < 0.5 and 2 * t * t or 1 - (-2 * t + 2) ^ 2 / 2 end
 
@@ -351,6 +352,7 @@ local function allSymParts(f)
 end
 
 function applyAll()
+  face:SetAlpha(v("fade", 1)) -- nedtonet når alt er i orden (se refreshFade)
   local grow = v("grow", 0)
   face:SetScale((M.preview or M.Size()) * (1 + 0.06 * grow))
   -- Bronsen lyser opp ved mus over: lyset legges oppå (ADD), sterkest oppe
@@ -404,6 +406,7 @@ local function refreshHover()
   animate("dot", ring4 and 1 or 0, 0.15)
   animate("hubMove", (hover == "hub" and not locked) and 1 or 0, 0.15)
   animate("hubLock", (hover == "hub" and locked) and 1 or 0, 0.15)
+  if refreshFade then refreshFade() end
 end
 
 local function refreshSymbols()
@@ -492,6 +495,26 @@ function M.TrackMouse()
 end
 
 local moving = false
+
+-- Nedtoning (Daniel 5. okt): er alt i orden en stund, tones medaljongen ned så den ikke tar blikket. Mus over, noe
+-- som mangler, kamp, eller en meny/sidemeny åpen: helt fram igjen med en gang. Kan slås av under Oppsett.
+-- Bare bildet (face) tones; den sikre klikkflaten står som før, så klikk og dra virker også nedtonet.
+M.FADE_ALPHA, M.FADE_WAIT, M.FADE_DUR = 0.35, 3, 1.5
+M.isBusy = nil -- (): Core sier om menyen eller en sidemeny er åpen
+local okSince
+refreshFade = function()
+  local calm = db and db.ui.fadeOk ~= false and view.allOk and (view.ring or 0) == 0 and not hover and not moving
+    and not InCombatLockdown() and not (M.isBusy and M.isBusy())
+  if not calm then
+    okSince = nil
+    animate("fade", 1, 0.2)
+    return
+  end
+  local now = GetTime() or 0
+  okSince = okSince or now
+  if now - okSince >= M.FADE_WAIT then animate("fade", M.FADE_ALPHA, M.FADE_DUR) end
+end
+function M.Faded() return v("fade", 1) < 1 end
 
 function M.SavePosition()
   local point, rel, relPoint, x, y = root:GetPoint()
@@ -641,6 +664,7 @@ function M.Update(newView)
   animate("ringB", c[3], 0.3)
   animate("glowA", Style.GLOW_ALPHA[newView.ring] or 0, 0.3)
   refreshSymbols()
+  refreshFade()
   -- Skjermgrensen endres bare utenfor kamp: medaljongen har sikre knapper under seg (fase 3)
   if newView.side and not InCombatLockdown() then
     M.UpdateClamp({ self = newView.side.self.width, party = newView.side.party.width })
