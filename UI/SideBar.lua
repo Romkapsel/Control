@@ -166,7 +166,12 @@ local function hexOf(c) return string.format("%02x%02x%02x", c[1] * 255, c[2] * 
 local function colored(text, c) return "|cff" .. hexOf(c) .. text .. "|r" end
 
 function SB.StatusText(status, isParty, L)
-  return colored(status.label, C.gold) -- «Mine buffs» / «Party buffs», ikke mer (Daniel 5. okt)
+  local out = colored(status.label, C.gold) -- «Meg» / «Party», ikke mer (Daniel 5. okt)
+  -- Har du flere sett, står settet du er i etter navnet: «Meg · Healing»
+  if not isParty and ns.db and ns.db.setOrder and #ns.db.setOrder > 1 then
+    out = out .. colored(L.SEP .. ns.db.activeSet, C.help)
+  end
+  return out
 end
 
 -- Bygg sidemenyen fra Rules.render (side = view.side.self/party, status = view.status.self/party). Bare utenfor kamp.

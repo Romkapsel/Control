@@ -72,6 +72,69 @@ function Data.CategoryOf(e, classID, subClassID)
   return "other"
 end
 
+------------------------------------------------------------------------
+-- Sett (Daniel 5. okt): f.eks. «Solo» og «Healing», hver med sine egne ting og sin egen «Må ha». db.self er alltid
+-- lista i settet som er valgt (db.sets[db.activeSet]); resten av addonen trenger ikke vite om settene.
+-- Party-buffene er felles.
+------------------------------------------------------------------------
+
+function Data.EnsureSets(db, defaultName)
+  if type(db.sets) ~= "table" or not db.activeSet or type(db.setOrder) ~= "table" then
+    db.sets = { [defaultName] = db.self }
+    db.setOrder = { defaultName }
+    db.activeSet = defaultName
+  end
+  if not db.sets[db.activeSet] then db.activeSet = db.setOrder[1] end
+  db.self = db.sets[db.activeSet]
+end
+
+local function copyEntry(e)
+  local c = {}
+  for k, v in pairs(e) do
+    if type(v) == "table" then
+      local t = {}
+      for k2, v2 in pairs(v) do t[k2] = v2 end
+      c[k] = t
+    else
+      c[k] = v
+    end
+  end
+  return c
+end
+
+-- Nytt sett: en kopi av settet du står i (samme ting, samme «Må ha» – så endrer du det du vil)
+function Data.NewSet(db, name)
+  if not name or name == "" or db.sets[name] then return false end
+  local list = {}
+  for _, e in ipairs(db.self) do list[#list + 1] = copyEntry(e) end
+  db.sets[name] = list
+  table.insert(db.setOrder, name)
+  return true
+end
+
+function Data.UseSet(db, name)
+  if not db.sets[name] then return false end
+  db.activeSet = name
+  db.self = db.sets[name]
+  return true
+end
+
+function Data.RenameSet(db, old, new)
+  if not new or new == "" or not db.sets[old] or db.sets[new] then return false end
+  db.sets[new], db.sets[old] = db.sets[old], nil
+  for i, n in ipairs(db.setOrder) do if n == old then db.setOrder[i] = new end end
+  if db.activeSet == old then db.activeSet = new end
+  return true
+end
+
+function Data.DeleteSet(db, name)
+  if #db.setOrder <= 1 or not db.sets[name] then return false end
+  db.sets[name] = nil
+  for i, n in ipairs(db.setOrder) do if n == name then table.remove(db.setOrder, i) break end end
+  if db.activeSet == name then Data.UseSet(db, db.setOrder[1]) end
+  return true
+end
+
 -- Gjør lagringen komplett uten å røre det som alt står der (fase 0 la data under .debug).
 function Data.Init(db)
   if type(db) ~= "table" then db = {} end
@@ -154,8 +217,20 @@ end
 Data.BUFF_SUBCLASS = { [2] = true, [3] = true, [4] = true }
 
 -- Rett opp type på ting som ligger på lista (buffting ↔ lagerting), f.eks. en potion som ble lagt inn som buffting.
+-- Alle listene med egne ting: hvert sett (eller db.self før settene finnes)
+local function selfLists(db)
+  local out = {}
+  if type(db.sets) == "table" then
+    for _, list in pairs(db.sets) do out[#out + 1] = list end
+  else
+    out[1] = db.self or {}
+  end
+  return out
+end
+
 function Data.Reclassify(db, resolve)
-  for _, e in ipairs(db.self or {}) do
+  local lists = selfLists(db)
+  for _, list in ipairs(lists) do for _, e in ipairs(list) do
     if e.itemId and not e.weaponSlot and (e.type == "buffitem" or e.type == "item") then
       local info = resolve("item", e.itemId)
       if info then
@@ -168,9 +243,10 @@ function Data.Reclassify(db, resolve)
         end
       end
     end
-  end
+  end end
   -- Kategori på det som ble lagt inn før kategoriene fantes (og på alt som har fått ny type)
-  for _, list in ipairs({ db.self or {}, db.party or {} }) do
+  lists[#lists + 1] = db.party or {}
+  for _, list in ipairs(lists) do
     for _, e in ipairs(list) do
       local info = e.itemId and resolve("item", e.itemId)
       if not e.itemId or info then e.cat = Data.CategoryOf(e, info and info.classID, info and info.subClassID) end

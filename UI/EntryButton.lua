@@ -474,7 +474,7 @@ function EB.ShowTooltip(b)
   if ns.Rules.isParty(e) then
     partyTooltip(b, e, st, L)
     local h = C.help
-    GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2 or L.TIER_1), h[1], h[2], h[3])
+    GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2_WITH or L.TIER_1_WITH), h[1], h[2], h[3])
     if b.inMenu then GameTooltip:AddLine(e.tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT, h[1], h[2], h[3]) end
     if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
     GameTooltip:Show()
@@ -503,7 +503,7 @@ function EB.ShowTooltip(b)
   if action ~= "" then GameTooltip:AddLine(action, actColor[1], actColor[2], actColor[3]) end
   local h = C.help
   if (e.type == "buffitem" or e.type == "item") and e.cat ~= "gear" then GameTooltip:AddLine(L.TIP_WHEEL, h[1], h[2], h[3]) end
-  GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2 or L.TIER_1), h[1], h[2], h[3])
+  GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2_WITH or L.TIER_1_WITH), h[1], h[2], h[3])
   if b.inMenu then GameTooltip:AddLine(e.tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT, h[1], h[2], h[3]) end
   if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
   GameTooltip:Show()

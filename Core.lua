@@ -346,6 +346,77 @@ function Actions.ToggleCityCheck(key)
   Core.Draw()
 end
 
+-- Sett: bytte, nytt, nytt navn, slette (ikke i kamp – knappene ville byttet midt i kampen)
+function Actions.UseSet(name)
+  if InCombatLockdown() or name == ns.db.activeSet then return end
+  if ns.Data.UseSet(ns.db, name) then
+    undo = nil -- «angre» gjelder settet du sto i
+    Say(string.format(ns.L.SET_USED, name))
+    ns.Refresh(true)
+  end
+end
+
+function Actions.NewSet(name)
+  if InCombatLockdown() then return end
+  name = name and name:match("^%s*(.-)%s*$")
+  if not ns.Data.NewSet(ns.db, name) then return Say(ns.L.SET_BAD_NAME) end
+  ns.Data.UseSet(ns.db, name)
+  undo = nil
+  Say(string.format(ns.L.SET_CREATED, name))
+  ns.Refresh(true)
+end
+
+function Actions.RenameSet(old, new)
+  if InCombatLockdown() then return end
+  new = new and new:match("^%s*(.-)%s*$")
+  if not ns.Data.RenameSet(ns.db, old, new) then return Say(ns.L.SET_BAD_NAME) end
+  Core.Draw()
+end
+
+function Actions.DeleteSet(name)
+  if InCombatLockdown() then return end
+  if ns.Data.DeleteSet(ns.db, name) then
+    undo = nil
+    Say(string.format(ns.L.SET_DELETED, name))
+    ns.Refresh(true)
+  end
+end
+
+-- Dialoger: navn på nytt sett, og nytt navn / slette (spillets egne vinduer med tekstfelt)
+local function popupText(self)
+  local eb = self.editBox or self.EditBox
+  return eb and eb:GetText() or nil
+end
+StaticPopupDialogs = StaticPopupDialogs or {}
+StaticPopupDialogs.CONTROL_SET_NEW = {
+  text = "", button1 = "", button2 = "", hasEditBox = true, timeout = 0, whileDead = true, hideOnEscape = true,
+  OnShow = function(self) local eb = self.editBox or self.EditBox if eb then eb:SetText("") end end,
+  OnAccept = function(self) Actions.NewSet(popupText(self)) end,
+  EditBoxOnEnterPressed = function(eb) local p = eb:GetParent() Actions.NewSet(eb:GetText()) p:Hide() end,
+}
+StaticPopupDialogs.CONTROL_SET_EDIT = {
+  text = "", button1 = "", button2 = "", button3 = "", hasEditBox = true, timeout = 0, whileDead = true, hideOnEscape = true,
+  OnShow = function(self, data) local eb = self.editBox or self.EditBox if eb then eb:SetText(data or "") end end,
+  OnAccept = function(self, data) Actions.RenameSet(data, popupText(self)) end,
+  OnAlt = function(self, data) Actions.DeleteSet(data) end,
+  EditBoxOnEnterPressed = function(eb, data) local p = eb:GetParent() Actions.RenameSet(p.data, eb:GetText()) p:Hide() end,
+}
+
+function Actions.AskNewSet()
+  if InCombatLockdown() then return end
+  local d = StaticPopupDialogs.CONTROL_SET_NEW
+  d.text, d.button1, d.button2 = ns.L.SET_NEW_TITLE, ns.L.SET_CREATE, ns.L.CANCEL
+  StaticPopup_Show("CONTROL_SET_NEW")
+end
+
+function Actions.AskEditSet(name)
+  if InCombatLockdown() then return end
+  local d = StaticPopupDialogs.CONTROL_SET_EDIT
+  d.text, d.button1, d.button2 = string.format(ns.L.SET_EDIT_TITLE, name), ns.L.SET_RENAME, ns.L.CANCEL
+  d.button3 = #ns.db.setOrder > 1 and ns.L.SET_DELETE or nil -- det siste settet kan ikke slettes
+  StaticPopup_Show("CONTROL_SET_EDIT", name, nil, name)
+end
+
 function Actions.ToggleOpenCore()
   ns.db.ui.openCore = not ns.db.ui.openCore
   ns.Medallion.ApplyCore()
@@ -402,6 +473,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     if arg1 ~= addonName then return end
     ControlCharDB = ns.Data.Init(ControlCharDB)
     ns.db = ControlCharDB
+    ns.Data.EnsureSets(ns.db, ns.L.SET_DEFAULT) -- det du hadde, blir settet «Solo»
     return
   end
   if event == "PLAYER_LOGIN" then
@@ -431,6 +503,9 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onSwap = Actions.SwapSides
     ns.Menu.onToggleCount = Actions.ToggleCount
     ns.Menu.onToggleOpenCore = Actions.ToggleOpenCore
+    ns.Menu.onUseSet = Actions.UseSet
+    ns.Menu.onNewSet = Actions.AskNewSet
+    ns.Menu.onEditSet = Actions.AskEditSet
     ns.Menu.onToggleCityCheck = Actions.ToggleCityCheck
     ns.Menu.onScale = Actions.SetScale
     ns.Medallion.isMenuOpen = ns.Menu.IsOpen
@@ -579,7 +654,7 @@ SlashCmdList.CONTROL = function(msg)
     Actions.Undo()
   elseif raw == "tøm" or raw == "Tøm" or cmd == "tom" then
     if InCombatLockdown() then return Say(ns.L.NOT_IN_COMBAT) end
-    ns.db.self = {}
+    for i = #ns.db.self, 1, -1 do ns.db.self[i] = nil end -- tøm settet du står i (samme tabell, så settet følger med)
     ns.Refresh(true)
     Say(ns.L.LIST_CLEARED)
   elseif cmd == "nullstill" or cmd == "reset" then

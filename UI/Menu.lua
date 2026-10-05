@@ -42,6 +42,7 @@ Menu.onSwap = nil
 Menu.onScale = nil
 Menu.onToggleCount = nil -- tallet i midten av medaljongen av/på
 Menu.onToggleOpenCore = nil -- gjennomsiktig midte av/på
+Menu.onUseSet, Menu.onNewSet, Menu.onEditSet = nil, nil, nil -- sett: bytt, nytt, nytt navn/slett
 Menu.onToggleCityCheck = nil -- (key): reparasjon/bagplass i byvakta av/på    -- (skala 0,70–1,50): settes når du slipper slideren
 
 ------------------------------------------------------------------------
@@ -188,8 +189,14 @@ local function link(str, color, tip, onClick)
   return b
 end
 
+local function actionClick(self)
+  if self.enabled and self.onClick and (self.allowCombat or not InCombatLockdown()) then self.onClick() end
+end
+
 local function action(str, enabled, tip, onClick, width)
   local b = take("action", makeAction)
+  b:SetScript("OnClick", actionClick) -- (settknappene setter sin egen; en gjenbrukt knapp starter på nytt)
+  b.edge:SetAlpha(1)
   b.fs:SetText(str)
   setColor(b.fs, enabled and C.gold or C.help)
   b.enabled, b.text, b.tip, b.onClick, b.allowCombat = enabled, str, tip, onClick, nil
@@ -292,6 +299,45 @@ local function rows(list, isParty, st)
   s.hint = isParty and L.EMPTY_PARTY or L.EMPTY_SELF
   s.sub = L.TIER_2_HINT
   host.slots[#host.slots + 1] = s
+end
+
+-- Sett (Daniel 5. okt): «Sett:» og en knapp per sett, det valgte i gull; «+» lager et nytt (kopi av det du står i).
+-- Klikk = bytt, høyreklikk = nytt navn eller slett. Ikke i kamp.
+local function setsRow()
+  local label = text(L.SET_LABEL, C.help, 11)
+  place(label, PAD, y + 5)
+  local x = PAD + textWidth(label) + 8
+  Menu.setButtons = {}
+  local function put(b)
+    local w = b:GetWidth() or 60
+    if x + w > W - PAD and x > PAD + 40 then x = PAD + 40 y = y + 26 end
+    place(b, x, y)
+    x = x + w + 6
+  end
+  for _, name in ipairs(db.setOrder or {}) do
+    local active = name == db.activeSet
+    local b = action(name, true, nil, function() if Menu.onUseSet then Menu.onUseSet(name) end end)
+    setColor(b.fs, active and C.gold or C.help)
+    b.edge:SetAlpha(active and 1 or 0.35)
+    b.setName, b.active = name, active
+    b.tip = L.SET_TIP
+    b:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    b:SetScript("OnClick", function(self, mouse)
+      if InCombatLockdown() then return end
+      if mouse == "RightButton" then
+        if Menu.onEditSet then Menu.onEditSet(self.setName) end
+      elseif self.onClick then
+        self.onClick()
+      end
+    end)
+    put(b)
+    Menu.setButtons[#Menu.setButtons + 1] = b
+  end
+  local plus = action("+", true, L.SET_NEW_TIP, function() if Menu.onNewSet then Menu.onNewSet() end end, 26)
+  plus:SetScript("OnClick", function(self) if not InCombatLockdown() and self.onClick then self.onClick() end end)
+  put(plus)
+  Menu.newSetButton = plus
+  y = y + 22 + G
 end
 
 local function classColor(class)
@@ -726,7 +772,10 @@ function Menu.Layout(model, members, sideOpen)
   host.buttons, host.ids, host.slots = {}, {}, {}
   Menu.heads = {}
   y = Menu.OpensUp() and 8 + 22 or 8 -- står menyen over medaljongen, har lukke-pila en egen stripe øverst
-  if header("self", L.LABEL_MY_BUFFS, sideWord(false)) then rows(model.self, false, model.st) end
+  if header("self", L.LABEL_MY_BUFFS, sideWord(false)) then
+    setsRow()
+    rows(model.self, false, model.st)
+  end
   if header("party", L.LABEL_PARTY_BUFFS, sideWord(true)) then
     rows(model.party, true, model.st)
     picker(model.party, members or {})

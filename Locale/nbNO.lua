@@ -19,8 +19,8 @@ ns.L = {
   -- Tier (SPEC §7.7)
   TIER_1 = "Må ha",
   TIER_2 = "Fint å ha",
-  TIER_1_HINT = "Må ha: vises ved medaljongen når den mangler",
-  TIER_2_HINT = "Fint å ha: bare i sidemenyen",
+  TIER_1_HINT = "Må ha med varsles tydelig",
+  TIER_2_HINT = "Fint å ha med varsles diskret",
   -- Kategorier i menyen
   CAT_BUFFS = "Buffer",
   CAT_FLASKS = "Flasks og eliksirer",
@@ -140,7 +140,24 @@ ns.L = {
   UNDO_NONE = "Ingenting å angre.",
   UNDONE = "%s er tilbake.",
   TIP_WHEEL = "Hjul: antall (Shift = 5)",
-  TIP_RCLICK = "Høyreklikk: gjør til «%s»",
+  TIP_RCLICK = "Høyreklikk for «%s»",
+  TIER_1_WITH = "Må ha med",
+  TIER_2_WITH = "Fint å ha med",
+  -- Sett
+  SET_DEFAULT = "Solo",
+  SET_LABEL = "Sett:",
+  SET_TIP = "Klikk: bruk dette settet · Høyreklikk: nytt navn eller slett",
+  SET_NEW_TIP = "Nytt sett (kopi av det du står i)",
+  SET_NEW_TITLE = "Navn på det nye settet:",
+  SET_EDIT_TITLE = "Settet «%s»",
+  SET_CREATE = "Lag",
+  SET_RENAME = "Lagre navn",
+  SET_DELETE = "Slett",
+  CANCEL = "Avbryt",
+  SET_USED = "Sett: %s.",
+  SET_CREATED = "Nytt sett: %s.",
+  SET_DELETED = "%s er slettet.",
+  SET_BAD_NAME = "Settet trenger et navn som ikke er brukt.",
   TIP_DRAG = "Shift + dra: flytt eller fjern",
 
   -- Gruppebuffer (fase 5, SPEC §7.7)

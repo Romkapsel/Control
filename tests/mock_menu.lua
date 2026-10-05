@@ -69,8 +69,8 @@ check(not bm.mark.shown, "Fint å ha: ingen merke")
 bm.scripts.hookOnEnter(bm)
 local hasHint, hasRClick = false, false
 for _, l in ipairs(T.tooltip.lines) do
-  if l == "Fint å ha: bare i sidemenyen" then hasHint = true end
-  if l == "Høyreklikk: gjør til «Må ha»" then hasRClick = true end
+  if l == "Fint å ha med varsles diskret" then hasHint = true end
+  if l == "Høyreklikk for «Må ha med»" then hasRClick = true end
 end
 check(hasHint and hasRClick, "tooltip forklarer «Fint å ha» og høyreklikket")
 

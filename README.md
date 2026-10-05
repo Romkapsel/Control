@@ -32,7 +32,7 @@ Ny versjon: slett den gamle `Control`-mappa, pakk ut den nye, og start spillet p
 - **Må ha** (gullmerke i hjørnet): knappen dukker opp ved medaljongen når noe mangler – klikk, så er det fikset.
   Mangler noe du må ha, er ringen rød.
 - **Fint å ha:** står bare i sidemenyen; ringen blir oransje.
-- Høyreklikk en knapp for å bytte mellom «Må ha» og «Fint å ha».
+- Høyreklikk en knapp for å bytte mellom «Må ha» og «Fint å ha». «Må ha» varsles tydelig, «Fint å ha» diskret.
 - I menyen står alt sortert i **kategorier**: Buffer, Flasks og eliksirer, Mat og drikke, Potions, Våpen, Scrolls,
   Bandasjer, Utstyr og Annet.
 - **Ting du bare skal ha med** (utstyr, bandasjer, potions, reagenser) står i sidemenyen bare når de mangler eller er
@@ -45,6 +45,17 @@ Det som kan legges til:
   til med et våpen i annen hånd, så får du en knapp for den også (OH). Har våpenet noe på seg fra før, spør spillet
   om du vil bytte
 - andre ting du vil ha med deg (bandasjer, potions, reagenser) – addonen passer på antallet
+
+## Sett
+
+Har du ulike oppsett – for eksempel **Solo** og **Healing** – lager du et sett for hvert. Hvert sett har sine egne
+ting og sin egen «Må ha». Party-buffene er felles.
+
+- Øverst under **Meg** i menyen står **Sett:** med en knapp per sett. Settet du bruker, er i gull. Klikk for å bytte.
+- **«+»** lager et nytt sett. Det starter som en kopi av settet du står i – så endrer du det du vil.
+- **Høyreklikk** et sett for å gi det nytt navn eller slette det. Det siste settet kan ikke slettes.
+- Har du mer enn ett sett, står navnet i sidemenyen: «Meg · Healing».
+- Sett kan ikke byttes i kamp.
 
 ## Knappene
 
@@ -115,7 +126,7 @@ dra et sted ut av lista for å fjerne det.
 | `angre` | Får tilbake det du sist fjernet |
 | `varsel` | Viser byvaktvarselet akkurat nå |
 | `nullstill` | Flytter medaljongen tilbake og gir den vanlig størrelse |
-| `tøm` | Tømmer lista over dine egne buffer og ting |
+| `tøm` | Tømmer settet du står i |
 | `test` | Blar gjennom testdata (skriv igjen for å gå tilbake) |
 
 ## Greit å vite
