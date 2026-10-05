@@ -654,7 +654,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     end)
   elseif event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_UPDATE" or event == "TRADE_SKILL_LIST_UPDATE" then
     -- Yrkesvinduet: les oppskriftene litt etterpå (lista fylles etter at vinduet er åpnet), til «Lag selv» i tooltipen
-    C_Timer.After(0.3, function() ns.Craft.Read(ns.db) end)
+    -- (ns.Craft finnes ikke hvis spillet ikke er startet på nytt etter at Craft.lua kom i TOC – /reload leser ikke TOC)
+    C_Timer.After(0.3, function() if ns.Craft then ns.Craft.Read(ns.db) end end)
   elseif event == "GOSSIP_SHOW" then
     Core.gossipOpen = true
     -- Flight master: si fra før du trykker «I need a ride» (Daniel 5. okt). Flykartet gir ikke et varsel til.
