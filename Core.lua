@@ -170,6 +170,13 @@ end
 
 function Actions.Undo()
   if not undo then return Say(ns.L.UNDO_NONE) end
+  if undo.city then
+    local cities = ns.db.cityWatch.cities
+    table.insert(cities, math.min(undo.index, #cities + 1), undo.city)
+    Say(string.format(ns.L.CITY_ADDED, undo.city))
+    undo = nil
+    return Core.Draw()
+  end
   local list = listOf(undo.party)
   table.insert(list, math.min(undo.index, #list + 1), undo.entry)
   Say(string.format(ns.L.UNDONE, undo.entry.name or "?"))
@@ -293,6 +300,7 @@ function Actions.RemoveCity(zone)
   for i, c in ipairs(cities) do
     if c == zone then
       table.remove(cities, i)
+      undo = { city = zone, index = i }
       Say(string.format(ns.L.CITY_REMOVED, zone))
       break
     end

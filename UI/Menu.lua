@@ -154,6 +154,7 @@ end
 
 local function text(str, color, size)
   local fs = take("text" .. (size or 12), function() return newText(frame, size or 12) end)
+  fs:SetWidth(0)
   fs:SetText(str)
   setColor(fs, color or C.text)
   return fs
@@ -168,12 +169,12 @@ local function link(str, color, tip, onClick)
   return b
 end
 
-local function action(str, enabled, tip, onClick)
+local function action(str, enabled, tip, onClick, width)
   local b = take("action", makeAction)
   b.fs:SetText(str)
   setColor(b.fs, enabled and C.gold or C.help)
   b.enabled, b.text, b.tip, b.onClick = enabled, str, tip, onClick
-  b:SetWidth(textWidth(b.fs) + 20)
+  b:SetWidth(width or (textWidth(b.fs) + 20))
   b:SetAlpha(enabled and 1 or 0.5)
   return b
 end
@@ -193,6 +194,20 @@ local function header(key, title, right)
   Menu.heads[#Menu.heads + 1] = h
   y = y + HEAD + 8
   return isOpen
+end
+
+-- Tynn strek mellom delene: sentrert, med lik luft over og under (Daniel 5. okt)
+local function separator()
+  local t = take("sep", function()
+    local s = frame:CreateTexture(nil, "ARTWORK")
+    local c = Style.hex("4A3920")
+    s:SetColorTexture(c[1], c[2], c[3], 1)
+    s:SetHeight(1)
+    return s
+  end)
+  t:SetWidth(W - 80)
+  place(t, 40, y + 5)
+  y = y + 11
 end
 
 local function sideWord(isParty)
@@ -314,38 +329,124 @@ local function safeZone()
 end
 Menu.Zone = safeZone
 
+-- Lista over steder som voktes: foldes ut med «Voktes (n)». Dra et sted ut av lista for å fjerne det.
+local citiesOpen = false
+local ghost, draggingCity
+
+local function ensureGhost()
+  if ghost then return ghost end
+  ghost = CreateFrame("Frame", nil, UIParent)
+  ghost:SetSize(10, 10)
+  ghost:SetFrameStrata("TOOLTIP")
+  ghost.fs = newText(ghost, 12)
+  ghost.fs:SetPoint("LEFT", ghost, "RIGHT", 4, 0)
+  ghost:Hide()
+  return ghost
+end
+
+local function makeCityRow()
+  local r = CreateFrame("Button", nil, frame)
+  r:SetFrameLevel(frame:GetFrameLevel() + 3) -- over boksen, så det er radene som tar musa
+  r:SetHeight(LINE)
+  r.fs = newText(r, 12, C.text)
+  r.fs:SetPoint("LEFT", r, "LEFT", 6, 0)
+  r.hl = r:CreateTexture(nil, "BACKGROUND")
+  r.hl:SetAllPoints()
+  r.hl:SetColorTexture(1, 0.93, 0.67, 0)
+  r:RegisterForDrag("LeftButton")
+  r:SetScript("OnEnter", function(self)
+    self.hl:SetColorTexture(1, 0.93, 0.67, 0.08)
+    tooltip(self, self.city, L.CITY_ROW_TIP)
+  end)
+  r:SetScript("OnLeave", function(self) self.hl:SetColorTexture(1, 0.93, 0.67, 0) GameTooltip:Hide() end)
+  r:SetScript("OnDragStart", function(self)
+    if InCombatLockdown() then return end
+    draggingCity = self
+    self:SetAlpha(0.35)
+    local g = ensureGhost()
+    g:SetScript("OnUpdate", function(gf)
+      local x, yy = GetCursorPosition()
+      local s = UIParent:GetEffectiveScale() or 1
+      gf:ClearAllPoints()
+      gf:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x / s, yy / s)
+      local inside = Menu.cityBox and Menu.cityBox:IsMouseOver()
+      gf.fs:SetText(inside and self.city or (self.city .. "  " .. L.DRAG_REMOVE))
+      setColor(gf.fs, inside and C.text or C.red)
+    end)
+    g:Show()
+  end)
+  r:SetScript("OnDragStop", function(self)
+    if draggingCity ~= self then return end
+    draggingCity = nil
+    self:SetAlpha(1)
+    if ghost then ghost:Hide() ghost:SetScript("OnUpdate", nil) end
+    if InCombatLockdown() then return end
+    if not (Menu.cityBox and Menu.cityBox:IsMouseOver()) and Menu.onRemoveCity then Menu.onRemoveCity(self.city) end
+  end)
+  return r
+end
+
+local function makeBox()
+  local b = CreateFrame("Frame", nil, frame)
+  b:SetFrameLevel(frame:GetFrameLevel() + 1)
+  local e = Style.hex("4A3920")
+  b.edge = b:CreateTexture(nil, "BACKGROUND", nil, 0)
+  b.edge:SetAllPoints()
+  b.edge:SetColorTexture(e[1], e[2], e[3], 1)
+  b.fill = b:CreateTexture(nil, "BACKGROUND", nil, 1)
+  b.fill:SetPoint("TOPLEFT", 1, -1)
+  b.fill:SetPoint("BOTTOMRIGHT", -1, 1)
+  local f = Style.hex("0B0907")
+  b.fill:SetColorTexture(f[1], f[2], f[3], 1)
+  b:EnableMouse(true)
+  return b
+end
+
 local function cityWatch()
   local cities = db.cityWatch.cities
-  if #cities == 0 then
-    local t = text(L.CITY_NONE, C.help)
-    place(t, PAD, y)
-  else
-    local x = PAD
-    for i, c in ipairs(cities) do
-      local l = link(c, C.text, string.format(L.CITY_REMOVE, c), function() if Menu.onRemoveCity then Menu.onRemoveCity(c) end end)
-      local w = l:GetWidth() or 60
-      if x + w > W - PAD and x > PAD then x = PAD y = y + LINE end
-      place(l, x, y)
-      x = x + w
-      if i < #cities then
-        local dot = text("·", C.help)
-        place(dot, x + 5, y)
-        x = x + 16
-      end
-    end
-  end
-  y = y + LINE + 6
   local zone = safeZone()
   local watched = false
   for _, c in ipairs(cities) do if c == zone then watched = true end end
-  local here = text(string.format(L.CITY_HERE, zone or "?"), C.help)
-  place(here, PAD, y + 3)
   local a = action(L.CITY_ADD, zone ~= nil and not watched, watched and L.CITY_ALREADY or nil,
     function() if Menu.onAddCity then Menu.onAddCity(zone) end end)
-  place(a, W - PAD - (a:GetWidth() or 100), y)
+  local aw = a:GetWidth() or 80
+  place(a, W - PAD - aw, y)
   Menu.cityButton = a
+  local here = text(string.format(L.CITY_HERE, zone or "?"), C.help)
+  here:SetWidth(W - 2 * PAD - aw - 10) -- lange sonenavn kuttes med «…» i stedet for å gå inn i knappen
+  here:SetJustifyH("LEFT")
+  place(here, PAD, y + 4)
   y = y + 22 + 8
+  local list = action(string.format(L.CITY_LIST, #cities), true, nil, function()
+    citiesOpen = not citiesOpen
+    if Menu.onChange then Menu.onChange() end
+  end, W - 2 * PAD - 80)
+  place(list, 40, y)
+  list.edge:SetAlpha(citiesOpen and 1 or 0.6)
+  Menu.cityListButton = list
+  y = y + 22 + 6
+  Menu.cityBox = nil
+  if citiesOpen then
+    local box = take("box", makeBox)
+    local rowsN = math.max(1, #cities)
+    box:SetSize(W - 2 * PAD - 80, rowsN * LINE + 6)
+    place(box, 40, y)
+    Menu.cityBox = box
+    if #cities == 0 then
+      local t = text(L.CITY_NONE, C.help)
+      place(t, 46, y + 3)
+    end
+    for i, c in ipairs(cities) do
+      local r = take("cityrow", makeCityRow)
+      r.city = c
+      r.fs:SetText(c)
+      r:SetWidth(W - 2 * PAD - 80 - 2)
+      place(r, 41, y + 3 + (i - 1) * LINE)
+    end
+    y = y + rowsN * LINE + 6 + 8
+  end
 end
+Menu.CitiesOpen = function() return citiesOpen end
 
 -- Størrelse: slider 70–150 %. Viser tallet mens du drar; endrer størrelsen når du slipper
 -- (ellers vokser menyen bort fra musepekeren mens du drar).
@@ -396,23 +497,24 @@ local function scaleRow()
   s:Show()
   s.label:Show()
   place(s, PAD + 80, y + 2)
-  s.setting = true -- å sette verdien fra lagringen er ikke en endring
-  s:SetValue(math.floor((db.ui.scale or 1) * 100 + 0.5))
-  s.setting = false
+  -- Menyen tegnes fire ganger i sekundet. Mens du drar, skal slideren stå der musa er, ikke hoppe tilbake
+  -- til lagret verdi (det var hakkingen, Daniel 5. okt).
+  if not s.dragging then
+    s.setting = true -- å sette verdien fra lagringen er ikke en endring
+    s:SetValue(math.floor((db.ui.scale or 1) * 100 + 0.5))
+    s.setting = false
+  end
   s.label:ClearAllPoints()
   s.label:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD + 80 + 150 + 12, -(y + 2))
   y = y + 22 + 6
 end
 
+-- Bytt side: én lang knapp, midtstilt (Daniel 5. okt). Hvilken side som er hvor, står i kategorilinjene over.
 local function direction()
-  local partyRight = db.ui.partySide == "right"
-  local t = text(string.format(L.DIR_TEXT, partyRight and L.SIDE_RIGHT or L.SIDE_LEFT, partyRight and L.SIDE_LEFT or L.SIDE_RIGHT), C.text)
-  place(t, PAD, y + 3)
-  Menu.dirText = t
-  local a = action(L.DIR_SWAP, true, nil, function() if Menu.onSwap then Menu.onSwap() end end)
-  place(a, W - PAD - (a:GetWidth() or 100), y)
+  local a = action(L.DIR_SWAP, true, nil, function() if Menu.onSwap then Menu.onSwap() end end, W - 2 * PAD - 80)
+  place(a, 40, y)
   Menu.swapButton = a
-  y = y + 22 + 8
+  y = y + 22 + 10
 end
 
 ------------------------------------------------------------------------
@@ -488,11 +590,14 @@ function Menu.Layout(model, members, sideOpen)
   Menu.heads = {}
   y = 8
   if header("self", L.LABEL_MY_BUFFS, sideWord(false)) then rows(model.self, false, model.st) end
+  separator()
   if header("party", L.LABEL_PARTY_BUFFS, sideWord(true)) then
     rows(model.party, true, model.st)
     picker(model.party, members or {})
   end
+  separator()
   if header("city", L.MENU_CITY) then cityWatch() end
+  separator()
   header(nil, L.MENU_DIR)
   direction()
   scaleRow()

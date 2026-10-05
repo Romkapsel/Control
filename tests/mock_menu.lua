@@ -106,26 +106,49 @@ check(mira and not mira.followed, "Mira står grå")
 mira.scripts.OnClick(mira)
 check(g.onlyOn == nil and Chat("MotW følges nå på alle."), "klikk igjen: alle")
 
--- Byvakt
+-- Byvakt: «Legg til» for stedet du står, og «Voktes (n)» som folder ut lista
 local add = Menu.cityButton
-check(add and not add.enabled, "i Stormwind: «+ dette stedet» er grå (vaktes alt)")
+check(add and add.text == "Legg til" and not add.enabled, "i Stormwind: «Legg til» er grå (voktes alt)")
+local function cityRows()
+  local out = {}
+  for _, c in ipairs(Menu.frame.children or {}) do if c.shown and c.city then out[#out + 1] = c end end
+  return out
+end
+check(Menu.cityListButton.text == "Voktes (3)" and #cityRows() == 0 and not Menu.cityBox, "lista er foldet inn fra start")
+local listH = Menu.frame.height
+Menu.cityListButton.scripts.OnClick(Menu.cityListButton)
+local rowsNow = cityRows()
+check(#rowsNow == 3 and rowsNow[1].city == "Stormwind City" and Menu.cityBox and Menu.cityBox.shown, "klikk: lista med tre steder")
+check(Menu.frame.height > listH, "menyen blir høyere når lista er ute")
 T.zone = "Goldshire"
 ns.Refresh(false)
 add = Menu.cityButton
 check(add.enabled, "i Goldshire: kan legges til")
 add.scripts.OnClick(add)
-check(#cities == 4 and cities[4] == "Goldshire" and Chat("Goldshire vaktes nå."), "Goldshire lagt til")
-check(not Menu.cityButton.enabled, "nå grå")
-local d = findLink("Darnassus")
-d.scripts.OnClick(d)
-check(#cities == 3 and not findLink("Darnassus") and Chat("Darnassus vaktes ikke lenger."), "klikk en by: slutt å vakte")
+check(#cities == 4 and cities[4] == "Goldshire" and Chat("Goldshire voktes nå."), "Goldshire lagt til")
+check(not Menu.cityButton.enabled and Menu.cityListButton.text == "Voktes (4)", "nå grå, og telleren følger")
+-- Dra Darnassus ut av lista: fjernet. Slipp inni lista: ingenting skjer.
+local darn
+for _, r in ipairs(cityRows()) do if r.city == "Darnassus" then darn = r end end
+darn.scripts.OnDragStart(darn)
+Menu.cityBox.mouse = true
+darn.scripts.OnDragStop(darn)
+eq(#cities, 4, "slipp inni lista: ingenting fjernet")
+darn.scripts.OnDragStart(darn)
+Menu.cityBox.mouse = false
+darn.scripts.OnDragStop(darn)
+check(#cities == 3 and Chat("Darnassus voktes ikke lenger."), "dra ut: Darnassus fjernet")
+SlashCmdList.CONTROL("angre")
+check(#cities == 4 and cities[3] == "Darnassus", "angre: Darnassus tilbake på plassen sin")
+Menu.cityListButton.scripts.OnClick(Menu.cityListButton)
+check(#cityRows() == 0, "klikk igjen: lista foldes inn")
 
--- Bytt sider
-check(Menu.dirText.text == "Party buffs til venstre · Mine buffs til høyre", "retningen står")
-Menu.swapButton.scripts.OnClick(Menu.swapButton)
+-- Bytt side: én lang knapp, midtstilt
+local sw = Menu.swapButton
+check(sw.text == "Bytt side på gruppene" and sw.points[1][4] == 40 and sw.width == 340 - 20 - 80, "lang knapp, midtstilt")
+sw.scripts.OnClick(sw)
 eq(ControlCharDB.ui.partySide, "right", "byttet")
-check(Menu.dirText.text == "Party buffs til høyre · Mine buffs til venstre", "teksten følger")
-check(Menu.heads[1].right.text == "venstre", "Mine buffs står nå til venstre")
+check(Menu.heads[1].right.text == "venstre" and Menu.heads[2].right.text == "høyre", "kategorilinjene sier hvor de står")
 check(ns.Tray.Get("left").ids[1] == flask.id, "flasken står ute på venstre side")
 Menu.swapButton.scripts.OnClick(Menu.swapButton)
 
@@ -136,6 +159,8 @@ sl.scripts.OnMouseDown(sl)
 sl:SetValue(150)
 eq(ControlCharDB.ui.scale, 1.0, "mens du drar: ingen endring ennå")
 eq(sl.label.text, "150 %", "tallet følger med")
+ns.Refresh(false) -- menyen tegnes på nytt mens du drar
+eq(sl:GetValue(), 150, "slideren hopper ikke tilbake mens du drar")
 sl.scripts.OnMouseUp(sl)
 eq(ControlCharDB.ui.scale, 1.5, "slipp: 150 %")
 eq(M.Extra(), 16, "kanten står 16 px lenger ut")
