@@ -57,6 +57,11 @@ Siste 40 sekunder før en buff går ut, teller knappen ned.
 **Lys og rammer:** pulserende gull = trykk her. En rolig oransje eller rød ramme viser hva som gjør medaljongen
 oransje eller rød, men som du ikke kan fikse med et klikk akkurat nå (for eksempel for få bandasjer i baggen).
 
+## Én tast for neste buff
+
+Velg en tast under **Esc → Options → Keybindings → AddOns → Control → Neste buff**. Tasten trykker den første
+knappen ved medaljongen (dine egne buffer først, så gruppas) – også i kamp, der den går videre til neste.
+
 ## Party
 
 - Dra en buff du kan gi andre (eller en **scroll**) til **Party**-siden.

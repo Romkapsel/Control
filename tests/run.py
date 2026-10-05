@@ -15,7 +15,8 @@ from lupa import lua51
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TESTS = os.path.join(ROOT, "tests")
 TOC = os.path.join(ROOT, "Control.toc")
-ALLOWED_GLOBALS = {"ControlCharDB", "SLASH_CONTROL1", "SLASH_CONTROL2", "NS", "KlarsjekkDB"}  # KlarsjekkDB settes av testen
+ALLOWED_GLOBALS = {"ControlCharDB", "SLASH_CONTROL1", "SLASH_CONTROL2", "NS", "KlarsjekkDB",
+                   "BINDING_HEADER_CONTROL", "BINDING_NAME_CLICK ControlNextBuff:LeftButton"}  # KlarsjekkDB settes av testen
 
 MOCK = r"""
 T = { chat = {}, now = 1000, handlers = {}, combat = false, secret = false, party = {}, auras = {},

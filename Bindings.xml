@@ -1,0 +1,5 @@
+<Bindings>
+	<!-- Én tast for «neste buff» (Daniel 5. okt): trykker den første knappen ved medaljongen.
+	     Teksten i tasteoppsettet står i Core.lua (BINDING_HEADER_CONTROL og BINDING_NAME_…). -->
+	<Binding name="CLICK ControlNextBuff:LeftButton" header="CONTROL" category="ADDONS" />
+</Bindings>

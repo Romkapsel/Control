@@ -134,6 +134,28 @@ Tray.AFTER_CLICK = [[
   else
     owner:SetWidth(2 + air + n * 46 + 2)
   end
+  -- Tasten «neste buff» (ControlNextBuff) går videre til den første knappen som står igjen – her eller på den
+  -- andre siden. Til slutt, så en feil her (om spillet ikke tillater det) ikke stopper det over.
+  local nb = owner:GetFrameRef("next")
+  if nb then
+    local first
+    for order = 1, last do
+      if not first and slots[order] then first = slots[order] end
+    end
+    if not first then
+      local other = owner:GetFrameRef("other")
+      if other and other:IsShown() then
+        local okids = newtable(other:GetChildren())
+        local best
+        for i = 1, #okids do
+          local k = okids[i]
+          local order = k:GetAttribute("ks-order")
+          if order and k:IsShown() and (not best or order < best) then best = order first = k end
+        end
+      end
+    end
+    nb:SetAttribute("clickbutton", first)
+  end
 ]]
 
 -- Gruppebuff i kamp (fase 7): neste klikk kaster på neste som manglet før kampen (ks-q1, ks-q2 …),
@@ -260,3 +282,41 @@ function Tray.Paint(side, byId, st, L)
 end
 
 function Tray.Get(side) return trays[side] end
+
+------------------------------------------------------------------------
+-- Én tast for «neste buff» (Daniel 5. okt): en usynlig, sikker knapp med navn (ControlNextBuff), som tasten i
+-- spillets tasteoppsett trykker. Den sender trykket videre til den første knappen ved medaljongen (type «click»).
+-- Utenfor kamp velger Lua knappen (mine buffer først, så gruppa); i kamp flytter AFTER_CLICK den videre.
+------------------------------------------------------------------------
+
+local nextBtn
+function Tray.CreateNext()
+  nextBtn = CreateFrame("Button", "ControlNextBuff", UIParent, "SecureActionButtonTemplate")
+  nextBtn:SetAttribute("type", "click")
+  local ok, v = pcall(GetCVar, "ActionButtonUseKeyDown")
+  nextBtn:RegisterForClicks((ok and v == "1") and "AnyDown" or "AnyUp")
+  nextBtn:Hide()
+  Tray.nextBtn = nextBtn
+  return nextBtn
+end
+
+-- Trayene må kjenne tasten og hverandre (bare utenfor kamp)
+function Tray.SetNextRefs()
+  if InCombatLockdown() or not nextBtn then return end
+  for side, t in pairs(trays) do
+    SecureHandlerSetFrameRef(t.frame, "next", nextBtn)
+    local other = trays[side == "left" and "right" or "left"]
+    if other then SecureHandlerSetFrameRef(t.frame, "other", other.frame) end
+  end
+end
+
+-- Hvilken knapp tasten trykker: den første ved medaljongen på min side, ellers på gruppas (bare utenfor kamp)
+function Tray.UpdateNext(selfSide, partySide)
+  if InCombatLockdown() or not nextBtn then return end
+  local target
+  for _, side in ipairs({ selfSide, partySide }) do
+    local t = trays[side]
+    if not target and t and #t.ids > 0 and t.buttons[1] and t.buttons[1]:IsShown() then target = t.buttons[1] end
+  end
+  if nextBtn:GetAttribute("clickbutton") ~= target then nextBtn:SetAttribute("clickbutton", target) end
+end

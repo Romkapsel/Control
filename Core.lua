@@ -87,6 +87,7 @@ function Core.Draw()
     ns.Tray.Layout(pb, trayEntries(view.tray.party, pmap), model.st, ns.L, ns.SideBar.IsOpen(pb))
     ns.SideBar.Layout(mb, model.self, model.st, view, false, ns.L)
     ns.SideBar.Layout(pb, model.party, model.st, view, true, ns.L)
+    ns.Tray.UpdateNext(mb, pb) -- tasten «neste buff»: den første knappen ved medaljongen
     ns.Menu.Layout(model, members, ns.SideBar.IsOpen(mb) or ns.SideBar.IsOpen(pb))
     prevTray = view.tray
   end
@@ -433,7 +434,9 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Medallion.isMenuOpen = ns.Menu.IsOpen
     -- Det sikre skriptet på medaljongen åpner/lukker disse i kamp (fase 7)
     -- (Referansene kan ikke settes i kamp; /reload midt i kamp: de settes når kampen er over.)
+    ns.Tray.CreateNext()
     ns.RunAfterCombat(function()
+      ns.Tray.SetNextRefs()
       ns.Medallion.SetRefs({
         sbleft = ns.SideBar.Get("left").frame, sbright = ns.SideBar.Get("right").frame,
         trleft = ns.Tray.Get("left").frame, trright = ns.Tray.Get("right").frame,
@@ -535,6 +538,10 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
 end)
 
 ------------------------------------------------------------------------
+-- Tasteoppsettet (Bindings.xml): «Control» › «Neste buff»
+BINDING_HEADER_CONTROL = "Control"
+_G["BINDING_NAME_CLICK ControlNextBuff:LeftButton"] = "Neste buff"
+
 -- Kommandoer: /ctrl (Daniel 5. okt: alltid /ctrl). /control virker fortsatt, men nevnes ikke noe sted.
 ------------------------------------------------------------------------
 

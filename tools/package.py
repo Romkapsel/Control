@@ -44,6 +44,7 @@ def main():
         if not os.path.isfile(os.path.join(ROOT, path)):
             sys.exit("mangler bilde: " + path)
         files.append(path)
+    files.append("Bindings.xml")  # tasten «Neste buff» (lastes av spillet uten å stå i TOC)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for f in files:
             z.write(os.path.join(ROOT, f), "Control/" + f)
