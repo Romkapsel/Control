@@ -413,7 +413,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     self:RegisterEvent("GROUP_ROSTER_UPDATE")
     for e in pairs(CAST) do pcall(self.RegisterUnitEvent, self, e, "player") end
     for _, e in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
-                         "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED", "UI_SCALE_CHANGED", "DISPLAY_SIZE_CHANGED",
+                         "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED",
                          "ZONE_CHANGED_NEW_AREA", "TAXIMAP_OPENED", "GOSSIP_SHOW" }) do
       pcall(self.RegisterEvent, self, e)
     end
@@ -453,8 +453,6 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     afterCombat = {}
     for _, fn in ipairs(queue) do pcall(fn) end
     ns.Refresh(true) -- les alt på nytt, legg ut knappene på nytt (SPEC §6.8)
-  elseif event == "UI_SCALE_CHANGED" or event == "DISPLAY_SIZE_CHANGED" then
-    ns.Medallion.Resnap() -- nye skjermpiksler: strekene rundes på nytt
   elseif event == "PLAYER_REGEN_DISABLED" then
     ns.Medallion.SetCombat(true)
     auraCache, partyAuraCache = nil, nil

@@ -14,6 +14,7 @@ local OUTER_R = 33    -- utenfor ringen teller ikke
 local SYM_OFFSET = 17 -- lås og meny ut mot kanten av kjernen
 local SYM_SIDE = 15   -- hodene litt innenfor: de er bredere enn de er høye
 local DOT_R = 29      -- lysprikken på bronsekanten, utenfor symbolene
+local MEDAL = 80      -- bildene til medaljongen (Media/medal_*): 80 × 80 enheter rundt sirkelen på 64
 local ZONE_ANGLE = { up = 90, right = 0, down = -90, left = 180 }
 
 ------------------------------------------------------------------------
@@ -80,8 +81,10 @@ local function v(key, default)
 end
 
 ------------------------------------------------------------------------
--- Symbolene (tegnet med streker og flater, ingen teksturer)
+-- Symbolene: hvite bilder (24 × 24 enheter) med glatte kanter, farget gull i spillet (Style.Tint).
 ------------------------------------------------------------------------
+
+local SYM = 24
 
 local function symbolFrame(parent, x, y)
   local f = CreateFrame("Frame", nil, parent)
@@ -97,82 +100,9 @@ local function add(f, p)
   return p
 end
 
--- Strekene i symbolene: spillet glatter ikke kantene på streker, så en tykkelse mellom to piksler blir ujevn
--- (synlig når medaljongen er større, Daniel 5. okt). Vi husker grunntykkelsen og runder den til hele
--- skjermpiksler for størrelsen som gjelder (M.Resnap).
-local lines = {}
-local function line(parent, layer, sub, x1, y1, x2, y2, t, c, a)
-  local l = Style.Line(parent, layer, sub, x1, y1, x2, y2, t, c, a)
-  lines[#lines + 1] = { l = l, t = t }
-  return l
-end
-
--- Symbolene er tynne konturer som i designet (SPEC §7.1), ikke fylte flater.
-local STROKE = 1.3
-
-local function joint(f, x, y, t, c, sub)
-  add(f, Style.Disc(f, "OVERLAY", sub or 2, t, c, 1, x, y))
-end
-
-local function polyline(f, pts, t, c)
-  for i = 2, #pts do
-    add(f, line(f, "OVERLAY", 2, pts[i - 1][1], pts[i - 1][2], pts[i][1], pts[i][2], t, c))
-    if i < #pts then joint(f, pts[i][1], pts[i][2], t, c) end -- knekkpunkt: rundt, ikke hakk
-  end
-end
-
-local function drawLock(f, s, open)
-  local c, t = C.goldDim, STROKE * s
-  local w, h, by = 4.5 * s, 3.5 * s, -2.2 * s -- kroppen: halv bredde, halv høyde, midtpunkt
-  polyline(f, { { -w, by - h }, { w, by - h }, { w, by + h }, { -w, by + h }, { -w, by - h } }, t, c)
-  local lift = open and 1.6 * s or 0
-  local sx, top, r = 2.8 * s, 5.6 * s + lift, 1.3 * s
-  local right = open and { sx, top - 2.6 * s } or { sx, by + h }
-  polyline(f, { { -sx, by + h }, { -sx, top - r }, { -sx + r, top }, { sx - r, top }, { sx, top - r }, right }, t, c)
-  add(f, Style.Disc(f, "OVERLAY", 2, 1.8 * s, c, 1, 0, by)) -- nøkkelhull
-end
-
-local function drawMenu(f)
-  for _, y in ipairs({ 3.5, 0, -3.5 }) do
-    add(f, line(f, "OVERLAY", 2, -4.5, y, 4.5, y, STROKE, C.goldDim))
-  end
-end
-
--- Hode som ring og skuldre som bue. Det indre av hodet har kjernens farge og farges ikke ved mus over.
--- Kompakt (ca. 8 × 11 px), så symbolet holder seg inne i kjernen også når det vokser 25 %.
-local function drawPerson(f, x, s)
-  local c, t = C.goldDim, STROKE
-  add(f, Style.Disc(f, "OVERLAY", 2, 5.4 * s, c, 1, x, 2.6 * s))
-  Style.Disc(f, "OVERLAY", 3, 5.4 * s - 2 * t, C.core, 1, x, 2.6 * s)
-  local pts = {}
-  for i = 0, 6 do
-    local a = math.pi * i / 6
-    pts[#pts + 1] = { x + 4 * s * math.cos(a), -5.2 * s + 3.6 * s * math.sin(a) }
-  end
-  polyline(f, pts, t, c)
-end
-
-local function drawOne(f) drawPerson(f, 0, 1) end
-local function drawTwo(f) drawPerson(f, 2.4, 0.78) drawPerson(f, -2.2, 0.78) end
-
-local function drawCheck(f)
-  add(f, line(f, "OVERLAY", 3, -7, 1, -2, -5, 3, C.goldDim))
-  add(f, line(f, "OVERLAY", 3, -2, -5, 8, 6, 3, C.goldDim))
-  joint(f, -2, -5, 3, C.goldDim, 3) -- bunnen av haken: rund
-end
-
-local function drawMove(f)
-  local c = C.goldLight
-  add(f, Style.Disc(f, "OVERLAY", 1, 22, c, 0.45))
-  add(f, Style.Disc(f, "OVERLAY", 2, 19, C.core, 1))
-  add(f, line(f, "OVERLAY", 3, -7, 0, 7, 0, 1.6, c))
-  add(f, line(f, "OVERLAY", 3, 0, -7, 0, 7, 1.6, c))
-  for _, d in ipairs({ { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }) do -- pilspisser
-    local tx, ty = 7 * d[1], 7 * d[2]
-    local px, py = -d[2] * 2.5, d[1] * 2.5
-    add(f, line(f, "OVERLAY", 3, tx, ty, tx - 2.5 * d[1] + px, ty - 2.5 * d[2] + py, 1.4, c))
-    add(f, line(f, "OVERLAY", 3, tx, ty, tx - 2.5 * d[1] - px, ty - 2.5 * d[2] - py, 1.4, c))
-  end
+local function symbol(f, name, scale, sub)
+  local size = SYM * (scale or 1)
+  return add(f, Style.Image(f, name, size, size, "OVERLAY", sub or 2))
 end
 
 ------------------------------------------------------------------------
@@ -240,7 +170,7 @@ M.TOGGLE = [[
 -- 128 × 128, ett sverd med spissen opp til venstre, i en boks på ±48 enheter rundt midten. Det andre sverdet er
 -- samme bilde speilvendt. Stien bygges fra mappenavnet; tests/run.py sjekker at fila finnes (en ukjent sti
 -- krasjer Forever-klienten).
-local SWORD_TEX = "Interface\\AddOns\\" .. addonName .. "\\Media\\sword"
+local SWORD_TEX = Style.Media("sword")
 M.SWORD_TEX = SWORD_TEX
 
 local function sword(parent, ux, uy)
@@ -261,7 +191,8 @@ buildSwords = function()
   swordFrame:SetPoint("CENTER")
   swordFrame:SetFrameLevel(root:GetFrameLevel() + 1) -- under medaljongen, under sidemenyene
   -- Glimt rundt kanten når sverdene låses
-  swordFlash = Style.Disc(swordFrame, "BACKGROUND", 0, 72, C.goldLight, 0)
+  swordFlash = Style.Image(swordFrame, "medal_glow", MEDAL * 1.05, MEDAL * 1.05, "BACKGROUND", 0)
+  Style.Tint({ swordFlash }, C.goldLight, 0)
   local r = math.sqrt(0.5)
   swords = { sword(swordFrame, -r, r), sword(swordFrame, r, r) } -- spissene opp til venstre og høyre
   swordFrame:SetAlpha(0)
@@ -335,23 +266,18 @@ local function build()
   face:SetPoint("CENTER")
   face:SetFrameLevel(root:GetFrameLevel() + 10) -- over knappene ved siden av, som starter under medaljongen
 
-  -- Lag utenfra og inn (SPEC §7.1)
-  -- Gløden: tre lag som blir svakere utover (en myk overgang uten tekstur)
-  parts.glow = {
-    { tex = Style.Disc(face, "BACKGROUND", -8, 76, C.red, 0), k = 0.10 },
-    { tex = Style.Disc(face, "BACKGROUND", -8, 72, C.red, 0), k = 0.16 },
-    { tex = Style.Disc(face, "BACKGROUND", -8, 68, C.red, 0), k = 0.24 },
-  }
-  parts.shadow = Style.Disc(face, "BACKGROUND", -7, 68, C.black, 0.55, 0, -2)
-  parts.outer = Style.Disc(face, "BACKGROUND", -6, 64, C.black, 1)
-  parts.bronze = Style.Disc(face, "BACKGROUND", -5, 62, { 1, 1, 1 }, 1)
-  Style.Gradient(parts.bronze, C.bronzeDark, C.bronzeLight, C.bronzeMid)
-  parts.bronzeEdge = Style.Disc(face, "BACKGROUND", -4, 56, C.bronzeLight, 0.30)
-  parts.inner = Style.Disc(face, "BACKGROUND", -3, 54, C.black, 1)
-  parts.ring = Style.Disc(face, "BACKGROUND", -2, 52, C.black, 1)
-  parts.coreLo = Style.Disc(face, "BACKGROUND", -1, 48, C.coreLo, 1)
-  parts.core = Style.Disc(face, "BACKGROUND", 0, 44, C.core, 1)
-  parts.coreHi = Style.Disc(face, "BACKGROUND", 1, 30, C.coreHi, 0.55, 0, 4)
+  -- Lag utenfra og inn (SPEC §7.1), som ferdige bilder på 80 × 80 enheter (skygge og glød rundt sirkelen på 64):
+  -- glød (farges som ringen), selve medaljongen (skygge, bronse, kjerne), lyset i bronsen ved mus over
+  -- (legges på), og statusringen (farges rød/oransje/svart).
+  parts.glow = Style.Image(face, "medal_glow", MEDAL, MEDAL, "BACKGROUND", -8)
+  parts.glow:SetAlpha(0)
+  parts.base = Style.Image(face, "medal_base", MEDAL, MEDAL, "BACKGROUND", -6)
+  parts.rim = Style.Image(face, "medal_rim", MEDAL, MEDAL, "BACKGROUND", -5)
+  parts.rim:SetBlendMode("ADD")
+  parts.rim:SetVertexColor(C.bronzeLight[1], C.bronzeLight[2], C.bronzeLight[3])
+  parts.rim:SetAlpha(0)
+  parts.ring = Style.Image(face, "medal_ring", MEDAL, MEDAL, "BACKGROUND", -2)
+  parts.ring:SetVertexColor(0, 0, 0)
 
   parts.count = face:CreateFontString(nil, "OVERLAY")
   if not parts.count:SetFont(Style.FONT_HEAD, 25, "OUTLINE") then parts.count:SetFontObject(GameFontNormalHuge) end
@@ -359,28 +285,34 @@ local function build()
   parts.count:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
 
   parts.check = symbolFrame(face, 0, 0)
-  drawCheck(parts.check)
+  symbol(parts.check, "sym_check", 1, 3)
+  Style.Tint(parts.check.parts, C.goldDim)
 
   sym.up = symbolFrame(face, 0, SYM_OFFSET)
   sym.up.open = symbolFrame(sym.up, 0, 0)
-  drawLock(sym.up.open, 1, true)
+  symbol(sym.up.open, "sym_lock_open")
   sym.up.closed = symbolFrame(sym.up, 0, 0)
-  drawLock(sym.up.closed, 1, false)
+  symbol(sym.up.closed, "sym_lock_closed")
   sym.down = symbolFrame(face, 0, -SYM_OFFSET)
-  drawMenu(sym.down)
+  symbol(sym.down, "sym_menu")
   sym.left = symbolFrame(face, -SYM_SIDE, 0)
-  sym.left.one = symbolFrame(sym.left, 0, 0) drawOne(sym.left.one)
-  sym.left.two = symbolFrame(sym.left, 0, 0) drawTwo(sym.left.two)
+  sym.left.one = symbolFrame(sym.left, 0, 0) symbol(sym.left.one, "sym_one")
+  sym.left.two = symbolFrame(sym.left, 0, 0) symbol(sym.left.two, "sym_two")
   sym.right = symbolFrame(face, SYM_SIDE, 0)
-  sym.right.one = symbolFrame(sym.right, 0, 0) drawOne(sym.right.one)
-  sym.right.two = symbolFrame(sym.right, 0, 0) drawTwo(sym.right.two)
+  sym.right.one = symbolFrame(sym.right, 0, 0) symbol(sym.right.one, "sym_one")
+  sym.right.two = symbolFrame(sym.right, 0, 0) symbol(sym.right.two, "sym_two")
 
-  parts.dotHalo = Style.Disc(face, "OVERLAY", 4, 9, C.goldLight, 0)
-  parts.dot = Style.Disc(face, "OVERLAY", 5, 4, C.goldLight, 0)
+  -- Lysprikken på kanten: myk glorie og en liten prikk
+  parts.dotHalo = Style.Image(face, "soft", 9, 9, "OVERLAY", 4)
+  parts.dot = Style.Image(face, "disc", 4, 4, "OVERLAY", 5)
+  Style.Tint({ parts.dotHalo, parts.dot }, C.goldLight, 0)
+  -- Midten ved mus over: flyttekors på en mørk skive, eller en lås når den er låst
   parts.hubMove = symbolFrame(face, 0, 0)
-  drawMove(parts.hubMove)
+  local hubDisc = Style.Image(parts.hubMove, "disc", 19, 19, "OVERLAY", 1)
+  Style.Tint({ hubDisc }, C.core)
+  Style.Tint({ symbol(parts.hubMove, "sym_move", 1, 3) }, C.goldLight)
   parts.hubLock = symbolFrame(face, 0, 0)
-  drawLock(parts.hubLock, 1.3, false)
+  symbol(parts.hubLock, "sym_lock_closed", 1.3)
   Style.Tint(parts.hubLock.parts, C.goldLight)
 
   -- Klikkflaten er en sikker knapp (Daniel 5. okt): i kamp åpner og lukker et sikkert skript sidemenyene og
@@ -412,14 +344,8 @@ end
 function applyAll()
   local grow = v("grow", 0)
   face:SetScale(M.Size() * (1 + 0.06 * grow))
-  -- Bronsen lyser opp (115 %) ved mus over. Gradienten lages på nytt med lysere farger: SetVertexColor ville
-  -- overskrevet den, fordi en gradient er hjørnefarger.
-  local b = 0.87 + 0.13 * grow
-  if b ~= parts.bronze.bright then
-    parts.bronze.bright = b
-    local function mul(c) return { math.min(1, c[1] * b), math.min(1, c[2] * b), math.min(1, c[3] * b) } end
-    Style.Gradient(parts.bronze, mul(C.bronzeDark), mul(C.bronzeLight), mul(C.bronzeMid))
-  end
+  -- Bronsen lyser opp ved mus over: lyset legges oppå (ADD), sterkest oppe
+  parts.rim:SetAlpha(0.22 * grow)
 
   local num = v("num", 1)
   local showCheck = view.allOk
@@ -448,9 +374,9 @@ function applyAll()
   parts.hubLock:SetAlpha(v("hubLock", 0))
 
   local r, g, bl = v("ringR", 0), v("ringG", 0), v("ringB", 0)
-  parts.ring:SetColorTexture(r, g, bl, 1)
-  local ga = v("glowA", 0)
-  for _, layer in ipairs(parts.glow) do layer.tex:SetColorTexture(r, g, bl, ga * layer.k) end
+  parts.ring:SetVertexColor(r, g, bl)
+  parts.glow:SetVertexColor(r, g, bl)
+  parts.glow:SetAlpha(v("glowA", 0))
 end
 
 local function refreshHover()
@@ -567,24 +493,10 @@ function M.Size() return (db and db.ui.scale) or 1 end
 -- Hvor mye lenger ut kanten av sirkelen står enn ved 100 % (px)
 function M.Extra() return math.floor(SIZE / 2 * (M.Size() - 1) + 0.5) end
 
-function M.Lines() return lines end -- for testene
-
-function M.Resnap()
-  if not root then return end
-  local k = M.Size()
-  local px = Style.OnePixel(root) -- UI-enheter per skjermpiksel
-  if not px or px <= 0 then px = 1 end
-  for _, it in ipairs(lines) do
-    local n = math.max(1, math.floor(it.t * k / px + 0.5))
-    it.l:SetThickness(n * px / k)
-  end
-end
-
 function M.SetScale(s)
   if inCombat() or type(s) ~= "number" or s <= 0 then return false end
   db.ui.scale = s
   applySize()
-  M.Resnap()
   applyAll()
   return true
 end
@@ -651,7 +563,6 @@ function M.Create(database, locale)
   build()
   M.ApplyPosition()
   applySize()
-  M.Resnap()
   hit:SetScript("OnEnter", function() setHover(cursorZone()) trackFrame:SetScript("OnUpdate", M.TrackMouse) end)
   hit:SetScript("OnLeave", function() trackFrame:SetScript("OnUpdate", nil) setHover(nil) GameTooltip:Hide() end)
   hit:HookScript("PostClick", function()

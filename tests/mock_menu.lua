@@ -173,12 +173,7 @@ eq(ControlCharDB.ui.scale, 1.5, "slipp: 150 %")
 eq(M.Extra(), 16, "kanten står 16 px lenger ut")
 eq(M.frame.scale, 1, "selve rammen skaleres ikke: knappene og menyene har samme størrelse")
 eq(st.hit.width, 96, "klikkflaten følger sirkelen")
-local whole = #M.Lines() > 0
-for _, it in ipairs(M.Lines()) do
-  local px = it.l.thickness * 1.5
-  if math.abs(px - math.floor(px + 0.5)) > 1e-6 or px < 1 then whole = false end
-end
-check(whole, "150 %: alle strekene i symbolene er hele skjermpiksler")
+eq(M.State().face.scale, 1.5, "150 %: medaljongen (bildene) skaleres, rammen ikke")
 local tray = ns.Tray.Get("right")
 eq(tray.buttons[1].points[1][4], 2 + 33 + 16, "knappen ved medaljongen flyttet 16 px ut")
 eq(Menu.frame.points[1][5], -86, "menyen 16 px lenger ned")

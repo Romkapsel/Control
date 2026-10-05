@@ -79,12 +79,11 @@ local function emptySlot(bar, i)
   s.plus:SetTextColor(pc[1], pc[2], pc[3])
   s.plus:SetPoint("CENTER")
   s.plus:SetText("+")
-  -- Kryssede sverd i siste tomme rute i kamp (frosset)
-  local sw = Style.hex("8A7A5A")
-  s.swords = {
-    Style.Line(s, "OVERLAY", 1, -9, -9, 9, 9, 2, sw, 1),
-    Style.Line(s, "OVERLAY", 1, -9, 9, 9, -9, 2, sw, 1),
-  }
+  -- Kryssede sverd i siste tomme rute i kamp (frosset): samme bilde som bak medaljongen, i liten størrelse
+  local a = Style.Image(s, "sword", 30, 30, "OVERLAY", 1)
+  local b = Style.Image(s, "sword", 30, 30, "OVERLAY", 1)
+  b:SetTexCoord(1, 0, 0, 1)
+  s.swords = { a, b }
   s:SetScript("OnReceiveDrag", function() SB.DropOn(bar.side) end)
   s:SetScript("OnMouseUp", function() if GetCursorInfo() then SB.DropOn(bar.side) end end)
   s:SetScript("OnEnter", function(self)

@@ -24,9 +24,12 @@ check(M.frame ~= nil and st.root == M.frame, "medaljongen lages ved innlogging")
 eq(st.count, "7", "testdata start: tallet 7")
 check(near(st.anim.ringR.to, 1) and near(st.anim.ringG.to, 0x20 / 255), "rød ring")
 check(st.anim.glowA.to > 0, "rød ring har glød")
-local onlyOwn = true
-for path in pairs(T.texPaths) do if path ~= M.SWORD_TEX then onlyOwn = false end end
-check(T.atlasUsed.CircleMaskScalable and onlyOwn, "runde former med atlas-maske; eneste teksturfil er vårt eget sverdbilde")
+local onlyOwn, n = true, 0
+for path in pairs(T.texPaths) do
+  n = n + 1
+  if not path:find("\\AddOns\\Control\\Media\\", 1, true) then onlyOwn = false end
+end
+check(onlyOwn and n >= 10, "runde former er våre egne bilder i Media/, ingen av spillets filer")
 local p = st.root.points[1]
 check(p[1] == "CENTER" and p[3] == "CENTER" and p[4] == 0 and p[5] == 200, "standardplass: midt på, 200 px opp")
 check(st.root.clamp and st.root.clamp[1] <= -138 and st.root.clamp[2] >= 138, "holdes innenfor skjermen med menyen utfoldet (138 px hver side)")
@@ -37,7 +40,11 @@ check(st.root.clamp[2] == math.max(138, 32 + rv - 64), "høyre grense regnet med
 local function settle() local f = st.animFrame.scripts.OnUpdate if f then f(st.animFrame, 5) end end
 settle()
 check(st.animFrame.scripts.OnUpdate == nil, "animasjonen stopper når alt står stille")
-check(near(st.parts.ring.color[1], 1), "ringen er rød etter overgangen")
+check(near(st.parts.ring.vertex[1], 1) and near(st.parts.ring.vertex[2], 0x20 / 255), "ringen er rød etter overgangen")
+check(near(st.parts.glow.vertex[1], 1) and st.parts.glow.alpha > 0.5, "gløden er rød og synlig")
+check(st.parts.base.texture:find("medal_base", 1, true) and st.parts.ring.texture:find("medal_ring", 1, true),
+  "medaljongen er ferdige bilder med glatte kanter (fase 9)")
+check(st.sym.up.open.parts[1].texture:find("sym_lock_open", 1, true) and st.sym.up.open.parts[1].isImage, "låsen er et bilde")
 
 -- Mus over øvre sone
 local function mouse(dx, dy) T.mouse = { T.center[1] + dx, T.center[2] + dy } end

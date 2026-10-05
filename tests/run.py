@@ -254,6 +254,15 @@ def run_mock(test_file, prelude=""):
     for f in toc_files():
         load(src(f), f, ns)
     n, fails = collect(*lua.execute(open(os.path.join(TESTS, test_file), encoding="utf-8").read()))
+    # Hver bildesti addonen ba om under testen: våre egne må finnes i Media/, og spillets egne filer brukes ikke
+    paths = lua.eval('function() local t = {} for p in pairs(T.texPaths) do t[#t+1] = p end return t end')()
+    for p in paths.values():
+        n += 1
+        prefix = "Interface\\AddOns\\Control\\Media\\"
+        if not p.startswith(prefix):
+            fails.append("teksturfil utenfor Media/: " + p)
+        elif not os.path.isfile(os.path.join(ROOT, "Media", p[len(prefix):] + ".tga")):
+            fails.append("bildet finnes ikke: " + p)
     leaks = lua.eval('function() local t = {} for k in pairs(_G) do if not GLOBALS_BEFORE[k] then t[#t+1] = tostring(k) end end return t end')()
     extra = [k for k in leaks.values() if k not in ALLOWED_GLOBALS]
     n += 1
@@ -297,13 +306,17 @@ def main():
             static.append("enkel bakstrek i " + f)
     if not re.search(r"^## Interface: 16001", toc, re.M):
         static.append("interface 16001 mangler i TOC")
-    # Egne bilder: en sti som ikke finnes, krasjer Forever-klienten. Hver «\\Media\\navn» i koden må ha en
-    # Media/navn.tga som spillet kan lese: ukomprimert (type 2), 32 bit med alfa, sider som er potenser av 2.
+    # Egne bilder: en sti som ikke finnes, krasjer Forever-klienten. Hvert bilde koden ber om – Style.Image(x, "navn",
+    # Style.Media("navn"), eller et navn i anførselstegn som begynner som et av bildene – må ha en Media/navn.tga
+    # som spillet kan lese: ukomprimert (type 2), 32 bit med alfa, sider som er potenser av 2.
+    # (I tillegg sjekker run_mock hver bildesti testene faktisk satte.)
     media = set()
     for f in toc_files():
-        media.update(re.findall(r'\\\\Media\\\\(\w+)', src(f)))
-    if not media:
-        static.append("fant ingen bilder i koden (ventet minst Media/sword)")
+        text = src(f)
+        media.update(re.findall(r'Style\.(?:Image\(\s*[\w.]+\s*,|Media\()\s*"(\w+)"', text))
+        media.update(re.findall(r'"((?:sym|medal|chevron)_\w+)"', text))
+    if len(media) < 10:
+        static.append("fant for få bilder i koden (%d) – sjekken leter kanskje feil" % len(media))
     for name in sorted(media):
         path = os.path.join(ROOT, "Media", name + ".tga")
         if not os.path.isfile(path):
