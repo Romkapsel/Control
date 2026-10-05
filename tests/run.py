@@ -50,6 +50,7 @@ local function frame(name, kind)
   function f:GetText() return self.text end
   function f:SetFont() return true end
   function f:SetTexture(p) if type(p) == "string" then T.texPaths[p] = true end self.texture = p end
+  function f:SetTexCoord(...) self.coords = { ... } end
   function f:SetAtlas(a) T.atlasUsed[a] = true self.atlas = a end
   function f:SetColorTexture(r, g, b, a) self.color = { r, g, b, a } end
   function f:SetVertexColor(r, g, b) self.vertex = { r, g, b } end
@@ -296,7 +297,23 @@ def main():
             static.append("enkel bakstrek i " + f)
     if not re.search(r"^## Interface: 16001", toc, re.M):
         static.append("interface 16001 mangler i TOC")
-    report("kildekode", len(toc_files()) + 1, static)
+    # Egne bilder: en sti som ikke finnes, krasjer Forever-klienten. Hver «\\Media\\navn» i koden må ha en
+    # Media/navn.tga som spillet kan lese: ukomprimert (type 2), 32 bit med alfa, sider som er potenser av 2.
+    media = set()
+    for f in toc_files():
+        media.update(re.findall(r'\\\\Media\\\\(\w+)', src(f)))
+    if not media:
+        static.append("fant ingen bilder i koden (ventet minst Media/sword)")
+    for name in sorted(media):
+        path = os.path.join(ROOT, "Media", name + ".tga")
+        if not os.path.isfile(path):
+            static.append("bildet finnes ikke: Media/%s.tga" % name)
+            continue
+        h = open(path, "rb").read(18)
+        w, hgt = h[12] | h[13] << 8, h[14] | h[15] << 8
+        if h[2] != 2 or h[16] != 32 or w & (w - 1) or hgt & (hgt - 1):
+            static.append("Media/%s.tga: må være ukomprimert 32 bit med sider som er potenser av 2" % name)
+    report("kildekode", len(toc_files()) + 2 + len(media), static)
 
     for name in sorted(os.listdir(TESTS)):
         try:

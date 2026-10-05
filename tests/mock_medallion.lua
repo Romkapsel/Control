@@ -24,7 +24,9 @@ check(M.frame ~= nil and st.root == M.frame, "medaljongen lages ved innlogging")
 eq(st.count, "7", "testdata start: tallet 7")
 check(near(st.anim.ringR.to, 1) and near(st.anim.ringG.to, 0x20 / 255), "rød ring")
 check(st.anim.glowA.to > 0, "rød ring har glød")
-check(T.atlasUsed.CircleMaskScalable and next(T.texPaths) == nil, "runde former med atlas-maske, ingen teksturstier")
+local onlyOwn = true
+for path in pairs(T.texPaths) do if path ~= M.SWORD_TEX then onlyOwn = false end end
+check(T.atlasUsed.CircleMaskScalable and onlyOwn, "runde former med atlas-maske; eneste teksturfil er vårt eget sverdbilde")
 local p = st.root.points[1]
 check(p[1] == "CENTER" and p[3] == "CENTER" and p[4] == 0 and p[5] == 200, "standardplass: midt på, 200 px opp")
 check(st.root.clamp and st.root.clamp[1] <= -138 and st.root.clamp[2] >= 138, "holdes innenfor skjermen med menyen utfoldet (138 px hver side)")

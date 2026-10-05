@@ -50,6 +50,9 @@ at(0.6)
 check(near(s1.points[1][4], 0) and near(s1.points[1][5], 0) and st.swordFrame.alpha == 1, "låst i kryss bak medaljongen")
 check(st.swordFrame.scripts.OnUpdate == nil, "animasjonen stopper")
 check(st.swords[1].ux < 0 and st.swords[2].ux > 0 and st.swords[1].uy > 0, "spissene opp til venstre og høyre")
+check(st.swords[1].tex.texture == M.SWORD_TEX and M.SWORD_TEX:find("AddOns", 1, true) and M.SWORD_TEX:find("Control", 1, true),
+  "sverdene er bildet fra Control-mappa")
+check(st.swords[1].tex.coords == nil and st.swords[2].tex.coords ~= nil, "det høyre sverdet er speilvendt")
 
 -- Sidemenyen i kamp: klikk høyre sone
 local sbR = ns.SideBar.Get("right")
