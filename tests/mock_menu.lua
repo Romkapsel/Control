@@ -1,5 +1,5 @@
--- Fase 6: menyen (SPEC §7.6) – nå bare innstillingene; lista ordnes i utvidede sidemenyer (Daniel 5. okt):
--- slipp inn i rad I/II, Shift + dra (flytt tier, fjern, angre), hvem en gruppebuff følges på (Q7), byvakt, bytt sider, retning, og størrelse (slider, Daniel 5. okt):
+-- Fase 6: menyen (SPEC §7.6). Delene, slipp inn i rad I/II, Shift + dra (flytt tier, fjern, angre),
+-- fell sammen, hvem en gruppebuff følges på (Q7), byvakt, bytt sider, retning, og størrelse (slider, Daniel 5. okt):
 -- bare medaljongen vokser, alt annet flytter seg utover.
 local ns = NS
 local fails, n = {}, 0
@@ -15,6 +15,9 @@ local function zoneClick(dx, dy) mouse(dx, dy) M.TrackMouse() st.hit.scripts.OnM
 local function shown(list) local out = {} for _, x in ipairs(list) do if x.shown then out[#out + 1] = x end end return out end
 local function findLink(text)
   for _, c in ipairs(Menu.frame.children or {}) do if c.shown and c.text == text and c.onClick then return c end end
+end
+local function slot(party, tier)
+  for _, s in ipairs(Menu.host.slots) do if s.shown and s.drop.party == party and s.drop.tier == tier then return s end end
 end
 
 local cities = ControlCharDB.cityWatch.cities
@@ -35,73 +38,62 @@ local p = Menu.frame.points[1]
 check(p[1] == "TOP" and p[3] == "TOP" and p[5] == -70, "under medaljongen: 6 px luft (toppen 70 px under medaljongens topp)")
 eq(Menu.frame.width, 356, "like bred som to sidemenyer med 2 knapper og 1 pluss")
 local sb2 = ns.SideBar.Get("right")
-eq(#Menu.heads, 2, "uten party-buffer: bare innstillingene – Byvakt og Oppsett")
-check(Menu.heads[1].title.text == "Byvakt" and Menu.heads[2].title.text == "Oppsett", "delene i rekkefølge")
-check(Menu.heads[2].pm.text == "", "Oppsett kan ikke felles sammen")
+eq(#Menu.heads, 4, "fire deler")
+check(Menu.heads[1].title.text == "Meg" and Menu.heads[2].title.text == "Party"
+  and Menu.heads[3].title.text == "Byvakt" and Menu.heads[4].title.text == "Oppsett", "delene i rekkefølge")
+check(Menu.heads[1].right.text == "høyre" and Menu.heads[2].right.text == "venstre", "hvilken side de står på")
+check(Menu.heads[4].pm.text == "", "Oppsett kan ikke felles sammen")
 
--- Lista ordnes i sidemenyene (Daniel 5. okt): klikk på navnet for å vise alt
-local mb, pb = ns.SideBar.Get("right"), ns.SideBar.Get("left")
-ns.SideBar.SetOpen("right", true)
-ns.Refresh(false)
-check(mb.status.text:find("Meg", 1, true), "navnet står også når sidemenyen er tom")
-mb.nameBtn.scripts.OnEnter(mb.nameBtn)
-eq(T.tooltip.text, "Klikk: vis alt og ordne lista", "tooltip på navnet")
-mb.nameBtn.scripts.OnClick(mb.nameBtn)
-check(ControlCharDB.ui.expanded.self and mb.expanded, "klikk på Meg: sidemenyen er utvidet")
-local function sslot(bar, tier)
-  for _, x in ipairs(bar.slots) do if x.shown and x.drop and x.drop.tier == tier then return x end end
-end
-check(sslot(mb, 1) and sslot(mb, 2), "utvidet: én «+» i hver rad")
+-- Slipp inn i rad I og rad II
+check(slot(false, 1) and slot(false, 2) and slot(true, 1) and slot(true, 2), "tomme rader: én «+»-rute hver")
 T.counts[13510] = 3
 T.cursor = { "item", 13510, "[Flask of the Titans]" }
-sslot(mb, 1).scripts.OnReceiveDrag(sslot(mb, 1))
+slot(false, 1).scripts.OnReceiveDrag(slot(false, 1))
 local flask = ControlCharDB.self[1]
 check(flask and flask.tier == 1 and Chat("Flask of the Titans lagt til i tier I."), "slipp i rad I: tier I")
 T.cursor = { "spell", 3, "spell", 5232 }
-sslot(mb, 2).scripts.OnReceiveDrag(sslot(mb, 2))
+slot(false, 2).scripts.OnReceiveDrag(slot(false, 2))
 local motw = ControlCharDB.self[2]
 check(motw and motw.tier == 2 and Chat("Mark of the Wild lagt til i tier II."), "slipp i rad II: tier II")
-local bf, bm = mb.buttons[1], mb.buttons[2]
-check(bf.entry == flask and bm.entry == motw, "flasken først, så MotW")
-check(bf.points[1][5] == -8 and bm.points[1][5] == -(8 + 46 + 6), "rad II står under rad I")
-check(mb.frame.height > 88 and mb.hSep.shown, "høyere enn én rad, med strek mellom radene")
+eq(#Menu.host.buttons, 2, "to knapper i menyen")
+local bm = Menu.host.buttons[2]
+check(bm.entry == motw and bm:GetAttribute("spell") == "Mark of the Wild", "knappen i menyen kaster som overalt ellers")
+bm.scripts.hookOnEnter(bm)
+local hasHint = false
+for _, l in ipairs(T.tooltip.lines) do if l == "Tier II: bare i sidemenyen" then hasHint = true end end
+check(hasHint, "tooltip i menyen forklarer tieren")
 
 -- Shift + dra MotW til «+» i rad I: bytter tier
 T.shift = true
 bm.scripts.OnDragStart(bm)
-mb.frame.mouse = true
-sslot(mb, 1).mouse = true
+Menu.frame.mouse = true
+slot(false, 1).mouse = true
 bm.scripts.OnDragStop(bm)
-sslot(mb, 1).mouse = false
-eq(motw.tier, 1, "dra til «+» i rad I: tier I")
--- Shift + dra ut: fjernet, og /ctrl angre gir den tilbake
-bm = mb.buttons[2]
+slot(false, 1).mouse = false
+eq(motw.tier, 1, "dra til rad I: tier I")
+-- Shift + dra ut av menyen: fjernet, og /ctrl angre gir den tilbake
+bm = Menu.host.buttons[2]
 check(bm.entry == motw, "MotW står sist i rad I")
 bm.scripts.OnDragStart(bm)
-mb.frame.mouse = false
+Menu.frame.mouse = false
 bm.scripts.OnDragStop(bm)
 check(#ControlCharDB.self == 1 and Chat("Mark of the Wild fjernet (/ctrl angre)."), "dra ut: fjernet")
 SlashCmdList.CONTROL("angre")
 check(#ControlCharDB.self == 2, "angre: tilbake")
 T.shift = false
--- Klikk på navnet igjen: tilbake til det korte
-mb.nameBtn.scripts.OnClick(mb.nameBtn)
-check(not ControlCharDB.ui.expanded.self and not mb.expanded and mb.frame.height == 88, "klikk igjen: kort sidemeny")
-ns.SideBar.SetOpen("right", false)
 
--- Party: legg til i den utvidede gruppesiden; da kommer «Party» i menyen med hvem buffene følges på (Q7)
-ns.SideBar.SetOpen("left", true)
-ns.Refresh(false)
-pb.nameBtn.scripts.OnClick(pb.nameBtn)
+-- Fell sammen
+Menu.heads[1].scripts.OnClick(Menu.heads[1])
+check(ControlCharDB.ui.menuSections.self == false and Menu.heads[1].pm.text == "+", "Mine buffs felt sammen")
+eq(#Menu.host.buttons, 0, "ingen knapper fra en sammenfelt del")
+Menu.heads[1].scripts.OnClick(Menu.heads[1])
+eq(#Menu.host.buttons, 2, "foldet ut igjen")
+
+-- Party buffs: hvem den følges på (Q7)
 T.cursor = { "spell", 3, "spell", 1126 }
-sslot(pb, 1).scripts.OnReceiveDrag(sslot(pb, 1))
+slot(true, 1).scripts.OnReceiveDrag(slot(true, 1))
 local g = ControlCharDB.party[1]
 check(g and g.type == "partyspell" and g.tier == 1, "gruppebuff i rad I")
-pb.nameBtn.scripts.OnClick(pb.nameBtn)
-ns.SideBar.SetOpen("left", false)
-ns.Refresh(false)
-eq(#Menu.heads, 3, "med en party-buff: Party, Byvakt, Oppsett")
-check(Menu.heads[1].title.text == "Party" and Menu.heads[1].right.text == "venstre", "Party først, med siden den står på")
 T.party = { party1 = "Brakk", party2 = "Mira" }
 T.partyClass = { party1 = "WARRIOR", party2 = "MAGE" }
 T.pa = { party1 = {}, party2 = {} }
@@ -175,7 +167,7 @@ eq(sw.points[1][4], math.floor((Menu.frame.width - sw.width) / 2), "midtstilt")
 check(sw.width < 300, "bredden kommer fra teksten, ikke fra menyen")
 sw.scripts.OnClick(sw)
 eq(ControlCharDB.ui.partySide, "right", "byttet")
-check(Menu.heads[1].right.text == "høyre", "Party-delen sier hvor den står")
+check(Menu.heads[1].right.text == "venstre" and Menu.heads[2].right.text == "høyre", "kategorilinjene sier hvor de står")
 check(ns.Tray.Get("left").ids[1] == flask.id, "flasken står ute på venstre side")
 Menu.swapButton.scripts.OnClick(Menu.swapButton)
 

@@ -82,12 +82,8 @@ local function emptySlot(bar, i)
   local b = Style.Image(s, "sword", 30, 30, "OVERLAY", 1)
   b:SetTexCoord(1, 0, 0, 1)
   s.swords = { a, b }
-  -- Utvidet: hver rad har sin «+» (s.drop = { party, tier }); ellers havner det i tier II
-  local function drop(self)
-    if self.drop and SB.onDropTier then SB.onDropTier(self.drop.party, self.drop.tier) else SB.DropOn(bar.side) end
-  end
-  s:SetScript("OnReceiveDrag", drop)
-  s:SetScript("OnMouseUp", function(self) if GetCursorInfo() then drop(self) end end)
+  s:SetScript("OnReceiveDrag", function() SB.DropOn(bar.side) end)
+  s:SetScript("OnMouseUp", function() if GetCursorInfo() then SB.DropOn(bar.side) end end)
   s:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
     GameTooltip:SetText(self.hint or "", 1, 1, 1)
@@ -135,26 +131,6 @@ function SB.Create(root, side)
   bar.status:SetHeight(ROW2)
   anchorInner(bar)
 
-  -- Navnet («Meg»/«Party») kan klikkes: utvid sidemenyen og vis alt, eller gå tilbake til det korte
-  bar.nameBtn = CreateFrame("Button", nil, f)
-  bar.nameBtn:SetAllPoints(bar.status)
-  bar.nameBtn:SetFrameLevel(f:GetFrameLevel() + 3)
-  bar.nameBtn:SetScript("OnClick", function()
-    if InCombatLockdown() then return end
-    if SB.onToggleExpand then SB.onToggleExpand(side) end
-  end)
-  bar.nameBtn:SetScript("OnEnter", function(self)
-    GameTooltip:SetOwner(self, "ANCHOR_TOP")
-    GameTooltip:SetText(InCombatLockdown() and ns.L.NOT_IN_COMBAT or (bar.expanded and ns.L.COLLAPSE_TIP or ns.L.EXPAND_TIP), 1, 1, 1)
-    GameTooltip:Show()
-  end)
-  bar.nameBtn:SetScript("OnLeave", function() GameTooltip:Hide() end)
-  -- Skillestrek mellom rad I og rad II i utvidet visning
-  bar.hSep = f:CreateTexture(nil, "ARTWORK")
-  local sc = Style.hex("4A3920")
-  bar.hSep:SetColorTexture(sc[1], sc[2], sc[3], 1)
-  bar.hSep:Hide()
-
   -- Lukke-pil nederst i ytterste hjørne, pekende mot medaljongen. Virker også i kamp.
   bar.close = Style.CloseArrow(f, side == "right" and "left" or "right", SB.CLOSE, ns.L.CLOSE,
     function() if SB.onClosed then SB.onClosed(side) end end)
@@ -176,12 +152,12 @@ local function slotX(slot, n1, hasGroove, a)
   return x
 end
 
-local function place(bar, frame, x, top)
+local function place(bar, frame, x)
   frame:ClearAllPoints()
   if bar.side == "right" then
-    frame:SetPoint("TOPLEFT", bar.frame, "TOPLEFT", x, -(top or 8))
+    frame:SetPoint("TOPLEFT", bar.frame, "TOPLEFT", x, -8)
   else
-    frame:SetPoint("TOPRIGHT", bar.frame, "TOPRIGHT", -x, -(top or 8))
+    frame:SetPoint("TOPRIGHT", bar.frame, "TOPRIGHT", -x, -8)
   end
 end
 
@@ -206,15 +182,6 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
   local n1, groove = #sideView.tier1, sideView.groove
   local a = airNow()
   if a ~= bar.air then bar.air = a anchorInner(bar) end
-  bar.expanded = sideView.expanded == true
-  -- Hvor knapp nr. i (og «+»-rutene) står: på én rad, eller i rutenettet når sidemenyen er utvidet
-  local cols, top2 = sideView.cols, nil
-  if bar.expanded then top2 = 8 + sideView.lines1 * (BTN + GAP) + 6 end
-  local function pos(tier, k) -- k = 0-basert plass i raden for tieren
-    if not bar.expanded then return slotX(k + (tier == 2 and n1 or 0), n1, groove, a), 8 end
-    local col, line = k % cols, math.floor(k / cols)
-    return 2 + a + col * (BTN + GAP), (tier == 1 and 8 or top2) + line * (BTN + GAP)
-  end
   bar.ids = {}
   for i, e in ipairs(order) do
     local b = bar.buttons[i]
@@ -225,8 +192,7 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
       bar.buttons[i] = b
     end
     b.side, b.index, b.isParty = sideKey, i, isParty
-    local tier = (i <= n1) and 1 or 2
-    place(bar, b, pos(tier, tier == 1 and (i - 1) or (i - 1 - n1)))
+    place(bar, b, slotX(i - 1, n1, groove, a))
     ns.EntryButton.Bind(b, e, st[e.id]) -- setter attributter bare når noe er endret
     ns.EntryButton.Paint(b, e, st[e.id], L)
     b:Show()
@@ -235,17 +201,9 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
   for i = #order + 1, #bar.buttons do bar.buttons[i]:Hide() end
   for k = 1, sideView.slots do
     local s = emptySlot(bar, k)
-    if bar.expanded then -- én «+» sist i hver rad
-      local tier = k
-      place(bar, s, pos(tier, tier == 1 and n1 or (#order - n1)))
-      s.drop = { party = isParty and true or false, tier = tier }
-      s.hint = (isParty and L.EMPTY_PARTY or L.EMPTY_SELF) .. "\n" .. (tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT)
-    else
-      place(bar, s, slotX(#order + k - 1, n1, groove, a))
-      s.drop = nil
-      s.hint = isParty and L.EMPTY_PARTY or L.EMPTY_SELF
-    end
-    s.plus:SetShown(true)
+    place(bar, s, slotX(#order + k - 1, n1, groove, a))
+    s.plus:SetShown(k == 1)
+    s.hint = isParty and L.EMPTY_PARTY or L.EMPTY_SELF
     swordsAlpha(s, 0)
     s:Show()
   end
@@ -258,34 +216,9 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
     place(bar, bar.vB, x + 1)
   end
   bar.frame:SetWidth(sideView.width + (a - AIR))  -- a = AIR - SEAM + extra
-  -- Høyden: én rad (88), eller rutenettet + navnelinja når sidemenyen er utvidet
-  if bar.expanded then
-    local rowsBottom = top2 + sideView.lines2 * (BTN + GAP) - GAP + 4
-    bar.frame:SetHeight(rowsBottom + GROOVE + ROW2 + 4)
-    local sepY = 8 + sideView.lines1 * (BTN + GAP) - GAP + 6
-    bar.hSep:SetWidth(sideView.cols and math.min(sideView.cols, math.max(n1, #order - n1) + 1) * (BTN + GAP) - GAP or 100)
-    Style.HairlineAt(bar.hSep, bar.side == "right" and "TOPLEFT" or "TOPRIGHT", bar.frame,
-      bar.side == "right" and "TOPLEFT" or "TOPRIGHT", (bar.side == "right" and 1 or -1) * (2 + a), -sepY)
-    bar.hSep:Show()
-  else
-    bar.frame:SetHeight(HEIGHT)
-    bar.hSep:Hide()
-  end
-  -- Navnet står alltid (det kan klikkes for å vise alt, også når alt er i orden og sidemenyen ellers er tom)
-  bar.status:SetText(SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
+  -- Tom side: ingen statuslinje (den får ikke plass, og «+»-ruta sier hva du kan gjøre)
+  bar.status:SetText(#bar.ids == 0 and "" or SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
   return true
-end
-
--- Hvor langt ned åpne sidemenyer går (fra medaljongens topp), så menyen under kan legge seg under dem
-function SB.OpenBottom()
-  local bottom
-  for _, bar in pairs(bars) do
-    if bar.frame:IsShown() then
-      local h = 4 + (bar.frame:GetHeight() or HEIGHT)
-      if not bottom or h > bottom then bottom = h end
-    end
-  end
-  return bottom
 end
 
 -- Utseende i kamp: tider, lager, glød, statuslinje; sverd i siste tomme rute
@@ -298,7 +231,8 @@ function SB.Paint(sideKey, entries, st, view, isParty, L)
     local e = byId[id]
     if e then ns.EntryButton.Paint(bar.buttons[i], e, st[id], L) end
   end
-  bar.status:SetText(SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
+  -- Tom side: ingen statuslinje (den får ikke plass, og «+»-ruta sier hva du kan gjøre)
+  bar.status:SetText(#bar.ids == 0 and "" or SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
   local inCombat = InCombatLockdown()
   local last
   for _, s in ipairs(bar.slots) do if s:IsShown() then last = s end end

@@ -171,26 +171,7 @@ local function shownInSide(e, st)
   return e.type ~= "item" or Rules.stockSeverity(e, st[e.id]) > 0
 end
 
--- Utvidet sidemeny (Daniel 5. okt: lista ordnes i sidemenyene, menyen har bare innstillinger): alt vises, i et
--- rutenett – rad I over rad II, brutt etter EXPAND_COLS, med en «+»-rute sist i hver rad.
-Rules.EXPAND_COLS = 6
-
-local function sideGrid(entries)
-  local t1, t2 = byTier(entries)
-  local ids1, ids2 = {}, {}
-  for _, e in ipairs(t1) do ids1[#ids1 + 1] = e.id end
-  for _, e in ipairs(t2) do ids2[#ids2 + 1] = e.id end
-  local cols = Rules.EXPAND_COLS
-  local used = math.min(cols, math.max(#ids1, #ids2) + 1)
-  return {
-    tier1 = ids1, tier2 = ids2, expanded = true, groove = false, slots = 2, cols = cols,
-    lines1 = math.ceil((#ids1 + 1) / cols), lines2 = math.ceil((#ids2 + 1) / cols),
-    width = Rules.FRAME_BASE + used * 46,
-  }
-end
-
-local function sideBar(entries, st, expanded)
-  if expanded then return sideGrid(entries) end
+local function sideBar(entries, st)
   local shown = {}
   for _, e in ipairs(entries) do if shownInSide(e, st or {}) then shown[#shown + 1] = e end end
   entries = shown
@@ -357,8 +338,7 @@ function Rules.render(model, L, opts)
     empty = #selfList == 0 and #partyList == 0,
     tray = frozen and opts.prevTray or newTray,
     trayFrozen = frozen,
-    side = { self = sideBar(selfList, st, opts.expanded and opts.expanded.self),
-             party = sideBar(partyList, st, opts.expanded and opts.expanded.party) },
+    side = { self = sideBar(selfList, st), party = sideBar(partyList, st) },
     status = { self = selfStatus(selfList, st, L), party = partyStatus(partyList, st, L) },
   }
 end

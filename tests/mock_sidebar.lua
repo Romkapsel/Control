@@ -25,7 +25,7 @@ check(mb.slots[1].shown and mb.slots[1].plus.shown and mb.slots[1].hint == "Dra 
   "tom side: én slipprute med «+» og hjelpetekst")
 check(not (mb.slots[2] and mb.slots[2].shown), "tom side: bare én rute")
 eq(mb.frame.width, 37 + 46, "tom side: bredde")
-check(mb.status.text:find("Meg", 1, true), "tom side: navnet står (det kan klikkes for å vise alt)")
+eq(mb.status.text, "", "tom side: ingen statuslinje (får ikke plass)")
 
 -- Slipp på sidemenyen: sist i tier II
 T.cursor = { "spell", 3, "spell", 5232 }
