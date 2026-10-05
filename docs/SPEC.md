@@ -410,7 +410,9 @@ Prosessen vises med form og bevegelse, ikke bare farge:
 
 **Retning:** står medaljongen i nedre halvdel av skjermen, åpner menyen **oppover** (bunnen 8 px over medaljongen) og glir opp.
 
-Innhold, ovenfra. Hver del har en kategorilinje i Reputation-stil (24 px, klikk = fell sammen, «−»/«+» til høyre):
+**Slik ble den (fase 6, 5. okt):** «Mine buffs», «Party buffs», «Byvakt», «Oppsett» (Retning + Størrelse). Hver rad (I og II) slutter med én «+»-rute som er slippmål for den tieren; Shift + dra en knapp til «+» i den andre raden bytter tier. Under gruppeknappene: én linje per gruppebuff med ikon og navnene i partyet – klikk et navn for å slå det av/på (grå = følges ikke, Q7). Uten party: «Ingen i party nå». Byvakt: klikk en by for å slutte å vakte den. Ingen glideanimasjon ennå (fase 9), bare en kort inntoning.
+
+Innhold, ovenfra (opprinnelig plan). Hver del har en kategorilinje i Reputation-stil (24 px, klikk = fell sammen, «−»/«+» til høyre):
 
 1. **Mine buffer og ting** (ikon: ett hode; til høyre: «høyre»/«venstre», hvilken side den står på)
    - Rad **I** og rad **II**: tier-tall (overskriftsskrift, gull, 22 px bred kolonne med fure til høyre) og knappene, som brytes over flere linjer ved behov.
@@ -451,7 +453,8 @@ I menyen kommer i tillegg tier-forklaringen: «Tier I: dukker opp ved knappen n�
 
 ### 7.9 Skala
 
-- 70–150 % i steg på 5 %. Hele addonen skaleres rundt medaljongens midtpunkt.
+- **Gjeldende (Daniel 5. okt):** en slider «Størrelse» i menyen (Oppsett), 70–150 % i steg på 5 % (også musehjul). **Bare medaljongen** vokser; knappene ved den, sidemenyene og menyen beholder størrelsen og flytter seg utover like mye som kanten av sirkelen (32 px × (størrelse − 1)), så sirkelen aldri dekker dem. Midten står stille. Endres når du slipper slideren, og ikke i kamp.
+- (Opprinnelig: 70–150 % i steg på 5 %. Hele addonen skaleres rundt medaljongens midtpunkt.)
 - Når ulåst: hold musa over et ytterhjørne av trayen/sidemenyen, så vises en tynn gullvinkel og markøren endres. Dra for å skalere. Motsatt side står stille. (Se `tavle-samhandling.png`, «Låse og skalere».) Se **ÅPENT Q5** om plasseringen.
 - Låst: ingen skalering.
 

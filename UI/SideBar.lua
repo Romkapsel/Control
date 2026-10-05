@@ -19,6 +19,25 @@ local TIER_GAP = 12 -- fura mellom tier I og II: 2 px streker + marg
 
 local bars = {}
 
+-- Luft på medaljongsiden: vokser med medaljongen (størrelse i menyen), så sirkelen ikke dekker knappene
+local function airNow() return AIR + ((ns.Medallion.Extra and ns.Medallion.Extra()) or 0) end
+
+-- Fura under rad 1 og statuslinja starter etter lufta; flyttes når medaljongen endrer størrelse
+local function anchorInner(bar)
+  local f, side, a = bar.frame, bar.side, bar.air
+  bar.hA:ClearAllPoints()
+  bar.hA:SetPoint("TOPLEFT", f, "TOPLEFT", side == "right" and (2 + a - 6) or 8, -ROW1)
+  bar.hA:SetPoint("TOPRIGHT", f, "TOPRIGHT", side == "right" and -8 or -(2 + a - 6), -ROW1)
+  bar.status:ClearAllPoints()
+  if side == "right" then
+    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2 + a + 2, 4)
+    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -12, 4)
+  else
+    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -(2 + a + 2), 4)
+    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 12, 4)
+  end
+end
+
 local function chrome(f) Style.Frame(f) end -- lik kant hele veien rundt (UI/Style.lua)
 
 -- Fure: 1 px svart + 1 px bronse (vannrett under rad 1, loddrett mellom tier I og II)
@@ -89,11 +108,8 @@ function SB.Create(root, side)
   f:SetScript("OnReceiveDrag", function() SB.DropOn(side) end)
   f:SetScript("OnMouseUp", function() if GetCursorInfo() then SB.DropOn(side) end end)
 
-  local bar = { frame = f, side = side, buttons = {}, slots = {}, ids = {} }
+  local bar = { frame = f, side = side, buttons = {}, slots = {}, ids = {}, air = AIR }
   bar.hA, bar.hB = groove(f, true)
-  local y = -ROW1
-  bar.hA:SetPoint("TOPLEFT", f, "TOPLEFT", side == "right" and (2 + AIR - 6) or 8, y)
-  bar.hA:SetPoint("TOPRIGHT", f, "TOPRIGHT", side == "right" and -8 or -(2 + AIR - 6), y)
   bar.hB:SetPoint("TOPLEFT", bar.hA, "BOTTOMLEFT")
   bar.hB:SetPoint("TOPRIGHT", bar.hA, "BOTTOMRIGHT")
   bar.vA, bar.vB = groove(f, false)
@@ -107,13 +123,7 @@ function SB.Create(root, side)
   bar.status:SetWordWrap(false)
   bar.status:SetJustifyH(side == "right" and "LEFT" or "RIGHT")
   bar.status:SetHeight(ROW2)
-  if side == "right" then
-    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2 + AIR + 2, 4)
-    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -12, 4)
-  else
-    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -(2 + AIR + 2), 4)
-    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 12, 4)
-  end
+  anchorInner(bar)
 
   f.fadeIn = f:CreateAnimationGroup()
   local a = f.fadeIn:CreateAnimation("Alpha")
@@ -126,8 +136,8 @@ function SB.Create(root, side)
 end
 
 -- x for plass nr. «slot» (0-basert), med fure før tier II
-local function slotX(slot, n1, hasGroove)
-  local x = 2 + AIR + slot * (BTN + GAP)
+local function slotX(slot, n1, hasGroove, a)
+  local x = 2 + (a or AIR) + slot * (BTN + GAP)
   if hasGroove and slot >= n1 then x = x + TIER_GAP end
   return x
 end
@@ -160,6 +170,8 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
   for _, id in ipairs(sideView.tier1) do order[#order + 1] = byId[id] end
   for _, id in ipairs(sideView.tier2) do order[#order + 1] = byId[id] end
   local n1, groove = #sideView.tier1, sideView.groove
+  local a = airNow()
+  if a ~= bar.air then bar.air = a anchorInner(bar) end
   bar.ids = {}
   for i, e in ipairs(order) do
     local b = bar.buttons[i]
@@ -169,7 +181,7 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
       bar.buttons[i] = b
     end
     b.side, b.index, b.isParty = sideKey, i, isParty
-    place(bar, b, slotX(i - 1, n1, groove))
+    place(bar, b, slotX(i - 1, n1, groove, a))
     ns.EntryButton.Bind(b, e, st[e.id]) -- setter attributter bare når noe er endret
     ns.EntryButton.Paint(b, e, st[e.id], L)
     b:Show()
@@ -178,7 +190,7 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
   for i = #order + 1, #bar.buttons do bar.buttons[i]:Hide() end
   for k = 1, sideView.slots do
     local s = emptySlot(bar, k)
-    place(bar, s, slotX(#order + k - 1, n1, groove))
+    place(bar, s, slotX(#order + k - 1, n1, groove, a))
     s.plus:SetShown(k == 1)
     s.hint = (k == 1) and (isParty and L.EMPTY_PARTY or L.EMPTY_SELF) or L.FREE_SLOT
     swordsAlpha(s, 0)
@@ -188,11 +200,11 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
   bar.vA:SetShown(groove)
   bar.vB:SetShown(groove)
   if groove then
-    local x = slotX(n1, n1, false) + 2
+    local x = slotX(n1, n1, false, a) + 2
     place(bar, bar.vA, x)
     place(bar, bar.vB, x + 1)
   end
-  bar.frame:SetWidth(sideView.width)
+  bar.frame:SetWidth(sideView.width + (a - AIR))
   -- Tom side: ingen statuslinje (den får ikke plass, og «+»-ruta sier hva du kan gjøre)
   bar.status:SetText(#bar.ids == 0 and "" or SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
   return true
@@ -263,7 +275,7 @@ end
 function SB.BeginDrag(b)
   if InCombatLockdown() or not b.canDrag or not b.entry then return end
   local g = ensureGhost()
-  dragging = { button = b, bar = bars[b.side] }
+  dragging = { button = b, bar = b.dragHost or bars[b.side] } -- menyen har sin egen vert (UI/Menu.lua)
   g.icon:SetTexture(b.icon:GetTexture())
   b:SetAlpha(0.35)
   g:SetScript("OnUpdate", function(self)
@@ -290,7 +302,14 @@ function SB.EndDrag(b)
   else
     local to = hoveredButton(bar)
     if to and to ~= b.index and SB.onMove then
-      SB.onMove(b.entry, bars[b.side].ids[to], b.isParty)
+      SB.onMove(b.entry, bar.ids[to], b.isParty)
+      return
+    end
+    for _, s in ipairs(bar.slots or {}) do
+      if s.drop and s:IsShown() and s:IsMouseOver() and s.drop.party == (b.isParty and true or false) and SB.onTier then
+        SB.onTier(b.entry, s.drop.tier) -- menyen: slipp på «+» i den andre raden
+        return
+      end
     end
   end
 end

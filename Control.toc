@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: Control
-## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk. (Fase 4: sidemenyene)
+## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk. (Fase 6: menyen)
 ## Author: Daniel
-## Version: 0.5.0
+## Version: 0.6.0
 ## SavedVariablesPerCharacter: ControlCharDB
 
 Locale\nbNO.lua
@@ -15,5 +15,6 @@ UI\Medallion.lua
 UI\EntryButton.lua
 UI\Tray.lua
 UI\SideBar.lua
+UI\Menu.lua
 Core.lua
 Debug.lua

@@ -37,6 +37,18 @@ local DEFAULTS = {
   cityWatch = { cities = {} },
 }
 
+-- Hovedstedene for fraksjonen din, vaktet fra start (SPEC §10). Spillets egne sonenavn.
+Data.CITIES = {
+  Alliance = { "Stormwind City", "Ironforge", "Darnassus" },
+  Horde = { "Orgrimmar", "Thunder Bluff", "Undercity" },
+}
+
+function Data.SeedCities(db, faction)
+  if db.cityWatch.seeded or not Data.CITIES[faction] then return end
+  for _, c in ipairs(Data.CITIES[faction]) do table.insert(db.cityWatch.cities, c) end
+  db.cityWatch.seeded = true
+end
+
 -- Gjør lagringen komplett uten å røre det som alt står der (fase 0 la data under .debug).
 function Data.Init(db)
   if type(db) ~= "table" then db = {} end

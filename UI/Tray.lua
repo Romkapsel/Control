@@ -15,6 +15,9 @@ local HEIGHT = 56 -- 4 kant + 4 luft + 40 knapp + 4 luft + 4 kant
 
 local trays = {}
 
+-- Luft på medaljongsiden: vokser med medaljongen (størrelse i menyen), så sirkelen ikke dekker knappene
+local function air() return AIR + ((ns.Medallion.Extra and ns.Medallion.Extra()) or 0) end
+
 -- Bakgrunn og bronsekant som sidemenyen (SPEC §13.2)
 local function chrome(f) Style.Frame(f) end -- lik kant hele veien rundt (UI/Style.lua)
 
@@ -84,7 +87,7 @@ function Tray.Create(root, side)
   end
   chrome(f)
   f:Hide()
-  trays[side] = { frame = f, side = side, buttons = {}, ids = {} }
+  trays[side] = { frame = f, side = side, buttons = {}, ids = {}, air = AIR }
   return trays[side]
 end
 
@@ -96,7 +99,7 @@ local function button(t, i)
     t.buttons[i] = b
   end
   b:SetAttribute("ks-order", i)
-  local x = 2 + AIR + (i - 1) * (BTN + GAP)
+  local x = 2 + t.air + (i - 1) * (BTN + GAP)
   b:ClearAllPoints()
   if t.side == "right" then
     b:SetPoint("TOPLEFT", t.frame, "TOPLEFT", x, -8)
@@ -113,6 +116,12 @@ function Tray.Layout(side, entries, st, L)
   -- Samme knapper som sist: bare nytt utseende (attributter settes ikke på nytt hvert kvarter sekund)
   -- (Et sikkert skript kan ha skjult knapper i kamp: da legges alt ut på nytt.)
   local same = #entries == #t.ids and (#entries == 0 or t.frame:IsShown())
+  local a = air()
+  if a ~= t.air then -- medaljongen har endret størrelse: legg alt ut på nytt
+    t.air = a
+    t.frame:SetAttribute("ks-air", a)
+    same = false
+  end
   for i, e in ipairs(entries) do
     if t.ids[i] ~= e.id or not t.buttons[i]:IsShown() then same = false break end
   end
@@ -137,7 +146,7 @@ function Tray.Layout(side, entries, st, L)
   for i = #entries + 1, #t.buttons do t.buttons[i]:Hide() end
   local n = #entries
   if n > 0 then
-    t.frame:SetWidth(2 + AIR + n * BTN + (n - 1) * GAP + 6 + 2)
+    t.frame:SetWidth(2 + t.air + n * BTN + (n - 1) * GAP + 6 + 2)
     t.frame:Show()
   else
     t.frame:Hide()

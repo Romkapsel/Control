@@ -372,6 +372,7 @@ function EB.ShowTooltip(b)
     partyTooltip(b, e, st, L)
     local h = C.help
     GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_1 or L.TIER_2), h[1], h[2], h[3])
+    if b.inMenu then GameTooltip:AddLine(e.tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT, h[1], h[2], h[3]) end
     if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
     GameTooltip:Show()
     return
@@ -401,6 +402,7 @@ function EB.ShowTooltip(b)
   local h = C.help
   if e.type == "buffitem" or e.type == "item" then GameTooltip:AddLine(L.TIP_WHEEL, h[1], h[2], h[3]) end
   GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_1 or L.TIER_2), h[1], h[2], h[3])
+  if b.inMenu then GameTooltip:AddLine(e.tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT, h[1], h[2], h[3]) end
   if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
   GameTooltip:Show()
 end

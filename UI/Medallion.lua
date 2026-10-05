@@ -250,7 +250,7 @@ end
 
 function applyAll()
   local grow = v("grow", 0)
-  face:SetScale(1 + 0.06 * grow)
+  face:SetScale(M.Size() * (1 + 0.06 * grow))
   -- Bronsen lyser opp (115 %) ved mus over. Gradienten lages på nytt med lysere farger: SetVertexColor ville
   -- overskrevet den, fordi en gradient er hjørnefarger.
   local b = 0.87 + 0.13 * grow
@@ -326,7 +326,10 @@ end
 
 local function zoneText(z)
   if z == "up" then return db.ui.locked and L.ZONE_UNLOCK or L.ZONE_LOCK end
-  if z == "down" then return string.format(L.ZONE_MENU_OPEN, view.count or 0), L.COMING_MENU end
+  if z == "down" then
+    local open = M.isMenuOpen and M.isMenuOpen()
+    return string.format(open and L.ZONE_MENU_CLOSE or L.ZONE_MENU_OPEN, view.count or 0), InCombatLockdown() and L.NOT_IN_COMBAT or nil
+  end
   if z == "hub" then return db.ui.locked and L.HUB_LOCKED or L.HUB_MOVE end
   local isParty = (z == "left") == partyLeft()
   local open = M.isSideOpen and M.isSideOpen(z)
@@ -356,7 +359,7 @@ local function cursorZone()
   local x, y = GetCursorPosition()
   local cx, cy = root:GetCenter()
   if not cx then return nil end
-  local fs = face:GetScale()
+  local fs = face:GetScale() -- størrelse og hover-vekst: sonene følger sirkelen
   return M.ZoneAt((x / s - cx) / fs, (y / s - cy) / fs)
 end
 
@@ -382,6 +385,29 @@ function M.ApplyPosition()
   local p = db.ui.point
   root:ClearAllPoints()
   root:SetPoint(p[1] or "CENTER", UIParent, p[3] or p[1] or "CENTER", p[4] or 0, p[5] or 200)
+end
+
+-- Størrelse (slider i menyen, Daniel 5. okt): bare selve medaljongen vokser. Knappene, sidemenyene og menyen
+-- beholder størrelsen og flytter seg utover med M.Extra(), så sirkelen ikke dekker dem.
+-- Rammen (root) er alltid 64 px; det er den alt annet er forankret i, og midten står derfor stille.
+local function applySize()
+  local s = db.ui.scale or 1
+  hit:ClearAllPoints()
+  hit:SetPoint("CENTER", root, "CENTER")
+  hit:SetSize(SIZE * s, SIZE * s)
+end
+
+function M.Size() return (db and db.ui.scale) or 1 end
+
+-- Hvor mye lenger ut kanten av sirkelen står enn ved 100 % (px)
+function M.Extra() return math.floor(SIZE / 2 * (M.Size() - 1) + 0.5) end
+
+function M.SetScale(s)
+  if inCombat() or type(s) ~= "number" or s <= 0 then return false end
+  db.ui.scale = s
+  applySize()
+  applyAll()
+  return true
 end
 
 function M.SetLocked(locked)
@@ -429,9 +455,10 @@ function M.UpdateClamp(sideWidths)
   local wParty = (sideWidths and sideWidths.party) or 100
   local wL, wR = partyLeft() and wParty or wSelf, partyLeft() and wSelf or wParty
   -- Sidemenyene starter i midtpunktet (32 px inn); menyen stikker 138 px ut på hver side (340 px, sentrert)
-  local left = math.max(138, SIZE / 2 + wL - SIZE)
-  local right = math.max(138, SIZE / 2 + wR - SIZE)
-  root:SetClampRectInsets(-left, right, 0, -28)
+  local extra = M.Extra()
+  local left = math.max(138, SIZE / 2 + wL + extra - SIZE)
+  local right = math.max(138, SIZE / 2 + wR + extra - SIZE)
+  root:SetClampRectInsets(-left, right, extra, -28 - extra)
   M.clamp = { left = left, right = right }
 end
 
@@ -443,7 +470,7 @@ function M.Create(database, locale)
   db, L = database, locale
   build()
   M.ApplyPosition()
-  root:SetScale(db.ui.scale or 1)
+  applySize()
   hit:SetScript("OnEnter", function() setHover(cursorZone()) hit:SetScript("OnUpdate", M.TrackMouse) end)
   hit:SetScript("OnLeave", function() hit:SetScript("OnUpdate", nil) setHover(nil) GameTooltip:Hide() end)
   hit:SetScript("OnMouseDown", onMouseDown)

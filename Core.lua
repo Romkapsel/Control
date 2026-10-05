@@ -78,6 +78,7 @@ function Core.Draw()
     ns.Tray.Paint(pb, pmap, model.st, ns.L)
     ns.SideBar.Paint(mb, model.self, model.st, view, false, ns.L)
     ns.SideBar.Paint(pb, model.party, model.st, view, true, ns.L)
+    ns.Menu.Paint(model)
   else
     -- Sidemenyen dekker knappene ved medaljongen på sin side mens den er åpen (SPEC §7.4)
     local mbOut = ns.SideBar.IsOpen(mb) and {} or trayEntries(view.tray.self, map)
@@ -86,6 +87,7 @@ function Core.Draw()
     ns.Tray.Layout(pb, pbOut, model.st, ns.L)
     ns.SideBar.Layout(mb, model.self, model.st, view, false, ns.L)
     ns.SideBar.Layout(pb, model.party, model.st, view, true, ns.L)
+    ns.Menu.Layout(model, members, ns.SideBar.IsOpen(mb) or ns.SideBar.IsOpen(pb))
     prevTray = view.tray
   end
 end
@@ -212,9 +214,13 @@ end
 
 -- Slipp på en sidemeny: sist i tier II på den siden. En spell på gruppesiden = gruppebuff (SPEC §8).
 function Actions.DropOnSide(sideKey)
+  return Actions.DropOn(sideKey == pbSide(), 2)
+end
+
+-- Slipp i menyen: i raden du slapp på (tier I eller II)
+function Actions.DropOn(party, tier)
   if InCombatLockdown() then return end
   local kind, a, _, d = GetCursorInfo()
-  local party = sideKey == pbSide()
   local info
   if kind == "spell" then
     info = Core.Resolve("spell", d or a)
@@ -231,10 +237,86 @@ function Actions.DropOnSide(sideKey)
   local list = party and ns.db.party or ns.db.self
   local dup = ns.Data.FindDuplicate(list, info)
   if dup then return Say(string.format(ns.L.DUPLICATE, dup.name)) end
-  local e = party and ns.Data.MakePartyEntry(ns.db, info) or ns.Data.MakeEntry(ns.db, info, 2)
+  local e = party and ns.Data.MakePartyEntry(ns.db, info) or ns.Data.MakeEntry(ns.db, info, tier or 2)
+  e.tier = tier or 2
   table.insert(list, e)
-  Say(string.format(ns.L.ADDED_SIDE, e.name))
+  Say(string.format(e.tier == 1 and ns.L.ADDED or ns.L.ADDED_SIDE, e.name))
   ns.Refresh(true)
+end
+
+function Actions.SetTier(e, tier)
+  if InCombatLockdown() or e.tier == tier then return end
+  e.tier = tier
+  ns.Refresh(false)
+end
+
+-- Hvem en gruppebuff følges på (Q7). names = de som er i party nå. Alle valgt igjen = onlyOn nil (følg alle).
+function Actions.ToggleFollow(e, name, names)
+  if InCombatLockdown() then return end
+  local set = {}
+  if e.onlyOn then
+    for n, v in pairs(e.onlyOn) do set[n] = v end
+  else
+    for _, n in ipairs(names) do set[n] = true end
+  end
+  set[name] = (not set[name]) or nil
+  local all = true
+  for _, n in ipairs(names) do if not set[n] then all = false end end
+  for n in pairs(set) do
+    local present = false
+    for _, m in ipairs(names) do if m == n then present = true end end
+    if not present then all = false end
+  end
+  e.onlyOn = (not all) and set or nil
+  if e.onlyOn then
+    local list = {}
+    for n in pairs(e.onlyOn) do list[#list + 1] = n end
+    table.sort(list)
+    Say(string.format(ns.L.FOLLOW_SET, e.short or e.name, #list > 0 and table.concat(list, ", ") or "–"))
+  else
+    Say(string.format(ns.L.FOLLOW_ALL, e.short or e.name))
+  end
+  ns.Refresh(true)
+end
+
+function Actions.AddCity(zone)
+  if InCombatLockdown() or not zone then return end
+  for _, c in ipairs(ns.db.cityWatch.cities) do if c == zone then return end end
+  table.insert(ns.db.cityWatch.cities, zone)
+  Say(string.format(ns.L.CITY_ADDED, zone))
+  Core.Draw()
+end
+
+function Actions.RemoveCity(zone)
+  if InCombatLockdown() then return end
+  local cities = ns.db.cityWatch.cities
+  for i, c in ipairs(cities) do
+    if c == zone then
+      table.remove(cities, i)
+      Say(string.format(ns.L.CITY_REMOVED, zone))
+      break
+    end
+  end
+  Core.Draw()
+end
+
+-- Bytt sider: gruppa og mine buffer bytter plass. Sidemenyene lukkes, alt legges ut på nytt.
+function Actions.SwapSides()
+  if InCombatLockdown() then return end
+  ns.db.ui.partySide = ns.db.ui.partySide == "right" and "left" or "right"
+  ns.SideBar.SetOpen("left", false)
+  ns.SideBar.SetOpen("right", false)
+  prevTray = nil
+  Core.Draw()
+end
+
+function Actions.SetScale(s)
+  if InCombatLockdown() then return end
+  local D = ns.Data
+  s = math.max(D.SCALE_MIN, math.min(D.SCALE_MAX, math.floor(s / D.SCALE_STEP + 0.5) * D.SCALE_STEP))
+  s = math.floor(s * 100 + 0.5) / 100 -- 1.45, ikke 1.4500000000000002
+  ns.Medallion.SetScale(s)
+  Core.Draw()
 end
 
 ------------------------------------------------------------------------
@@ -266,10 +348,26 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.SideBar.onDrop = Actions.DropOnSide
     ns.SideBar.onRemove = Actions.Remove
     ns.SideBar.onMove = Actions.Move
+    ns.SideBar.onTier = Actions.SetTier
     ns.Medallion.isSideOpen = ns.SideBar.IsOpen
-    ns.Medallion.onZoneClick = function(z) -- menyen (nede) kommer i fase 6
-      if (z == "left" or z == "right") and not InCombatLockdown() then
+    local okF, faction = pcall(UnitFactionGroup, "player")
+    if okF and not ns.Scan.isSecret(faction) then ns.Data.SeedCities(ns.db, faction) end
+    ns.Menu.Create(ns.Medallion.frame, ns.db, ns.L)
+    ns.Menu.onChange = Core.Draw
+    ns.Menu.onDrop = Actions.DropOn
+    ns.Menu.onFollow = Actions.ToggleFollow
+    ns.Menu.onAddCity = Actions.AddCity
+    ns.Menu.onRemoveCity = Actions.RemoveCity
+    ns.Menu.onSwap = Actions.SwapSides
+    ns.Menu.onScale = Actions.SetScale
+    ns.Medallion.isMenuOpen = ns.Menu.IsOpen
+    ns.Medallion.onZoneClick = function(z)
+      if InCombatLockdown() then return end
+      if z == "left" or z == "right" then
         ns.SideBar.SetOpen(z, not ns.SideBar.IsOpen(z))
+        Core.Draw()
+      elseif z == "down" then
+        ns.Menu.SetOpen(not ns.Menu.IsOpen())
         Core.Draw()
       end
     end
@@ -349,7 +447,8 @@ SlashCmdList.CONTROL = function(msg)
     ns.db.ui.point = { "CENTER", "UIParent", "CENTER", 0, 200 }
     ns.db.ui.scale = 1.0
     ns.Medallion.ApplyPosition()
-    ns.Medallion.frame:SetScale(1.0)
+    ns.Medallion.SetScale(1.0)
+    Core.Draw()
     Say(ns.L.RESET_DONE)
   else
     Say(ns.L.HELP)

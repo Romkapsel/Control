@@ -73,6 +73,14 @@ local function frame(name, kind)
   function f:SetDesaturated(v) self.desat = v end
   function f:SetWidth(w) self.width = w end
   function f:SetHeight(h) self.height = h end
+  function f:SetSize(w, h) self.width, self.height = w, h end
+  function f:SetMinMaxValues(a, b) self.minv, self.maxv = a, b end
+  function f:SetValue(v)
+    if self.minv then v = math.max(self.minv, math.min(self.maxv, v)) end
+    self.value = v
+    if self.scripts.OnValueChanged then self.scripts.OnValueChanged(self, v) end
+  end
+  function f:GetValue() return self.value end
   function f:CreateAnimationGroup()
     local g = frame(nil, "AnimationGroup")
     g.playing = false
@@ -108,6 +116,7 @@ function SecureClick(b, mouse)
   end
 end
 UIParent = frame("UIParent")
+function UIParent:GetHeight() return 768 end
 GameTooltip = frame("GameTooltip")
 function GameTooltip:SetOwner(o) T.tooltip = { lines = {}, owner = o } end
 function GameTooltip:IsOwned(o) return T.tooltip.owner == o and not T.tooltip.hidden end
@@ -130,7 +139,8 @@ function CreateColor(r, g, b, a) return { r = r, g = g, b = b, a = a } end
 function GetFileIDFromPath(p) return T.files[p] end
 C_Texture = { GetAtlasInfo = function(a) if T.atlases[a] then return { width = 64 } end end }
 function GetBuildInfo() return "1.60.1", "70205", "Oct 2 2026", 16001 end
-function GetRealZoneText() return S("Stormwind City") end
+function GetRealZoneText() return S(T.zone or "Stormwind City") end
+function UnitFactionGroup() return "Alliance", "Alliance" end
 function GetSubZoneText() return S("Trade District") end
 C_Map = { GetBestMapForUnit = function() return S(1453) end }
 function IsInInstance() return false, "none" end
