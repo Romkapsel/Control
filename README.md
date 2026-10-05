@@ -81,8 +81,8 @@ knappen ved medaljongen (dine egne buffer først, så gruppas) – også i kamp,
 Sier fra når du drar fra et sted som voktes – ut porten, med båt eller portal, eller når du snakker med en
 flight master – hvis du mangler noe i baggen:
 
-- **Rødt + lyd:** noe i tier I er tomt.
-- **Oransje:** noe er tomt i tier II, eller du har færre enn du vil ha.
+- **Rødt + «Watch it!»:** noe du må ha, er tomt.
+- **Oransje:** noe som er fint å ha, er tomt, eller du har færre enn du vil ha.
 - **Grønn «Alt med»:** alt er i orden.
 
 Byvakta sjekker også **reparasjon** (dårligste utstyr: under 100 % oransje, under 50 % rødt) og **bagplass**
