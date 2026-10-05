@@ -1,7 +1,8 @@
 -- Control: varsel midt på skjermen (SPEC §11, nivå 3 – øyeblikk du ikke kan angre, som byvakt).
 -- Én linje: rød + én lyd når noe er tomt (eller mangler i tier I), oransje uten lyd når noe er under ønsket,
 -- kort grønn «Alt med» som tones ut. Over linja, i grått og mindre: hvor du drar fra.
--- Ingen mus: varselet stjeler aldri et klikk.
+-- Ingen mus: varselet stjeler aldri et klikk. Står i samme bronseramme som menyen, med en tynn stripe i
+-- varselets farge øverst, så det ikke drukner i alt rundt (Daniel 5. okt). Ramma følger teksten i bredden.
 local addonName, ns = ...
 local Style = ns.Style
 local C = Style.C
@@ -19,19 +20,35 @@ local shownAt, hold
 local function hexOf(c) return string.format("%02x%02x%02x", c[1] * 255, c[2] * 255, c[3] * 255) end
 local function colored(text, c) return "|cff" .. hexOf(c) .. text .. "|r" end
 
+local PADX, MINW, HEIGHT = 28, 240, 76
+
+local function width(fs)
+  local ok, w = pcall(fs.GetStringWidth, fs)
+  if not ok or type(w) ~= "number" or w <= 0 then w = #(fs:GetText() or "") * 7 end
+  return w
+end
+
 local function build()
   f = CreateFrame("Frame", nil, UIParent)
-  f:SetSize(600, 60)
+  f:SetSize(MINW, HEIGHT)
   f:SetPoint("CENTER", UIParent, "CENTER", 0, 160)
   f:SetFrameStrata("HIGH")
   f:EnableMouse(false)
+  Style.Frame(f)
+  -- Stripe i varselets farge, rett innenfor kanten øverst
+  f.stripe = f:CreateTexture(nil, "ARTWORK")
+  f.stripe:SetPoint("TOPLEFT", f, "TOPLEFT", 4, -4)
+  f.stripe:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
+  f.stripe:SetHeight(2)
   title = f:CreateFontString(nil, "OVERLAY")
-  if not title:SetFont(Style.FONT_HEAD, 13, "OUTLINE") then title:SetFontObject(GameFontNormal) end
-  title:SetPoint("BOTTOM", f, "CENTER", 0, 6)
+  if not title:SetFont(Style.FONT_HEAD, 13, "") then title:SetFontObject(GameFontNormal) end
+  title:SetPoint("TOP", f, "TOP", 0, -16)
   title:SetTextColor(C.help[1], C.help[2], C.help[3])
+  title:SetShadowColor(0, 0, 0, 1)
+  title:SetShadowOffset(1, -1)
   main = f:CreateFontString(nil, "OVERLAY")
   if not main:SetFont(Style.FONT_HEAD, 22, "OUTLINE") then main:SetFontObject(GameFontNormalHuge) end
-  main:SetPoint("TOP", f, "CENTER", 0, 0)
+  main:SetPoint("TOP", title, "BOTTOM", 0, -8)
   main:SetWordWrap(false)
   f:SetScript("OnUpdate", function(self)
     local t = GetTime() - shownAt
@@ -67,6 +84,9 @@ function Alert.Show(where, d)
     text = table.concat(parts, colored(ns.L.SEP, C.help))
   end
   main:SetText(text)
+  local c = SEVC[d.sev] or C.text
+  f.stripe:SetColorTexture(c[1], c[2], c[3], 1)
+  f:SetWidth(math.max(MINW, math.ceil(math.max(width(title), width(main))) + 2 * PADX))
   Alert.sev = d.sev
   shownAt, hold = GetTime(), HOLD[d.sev] or 4
   f:SetAlpha(1)

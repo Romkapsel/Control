@@ -30,6 +30,8 @@ check(A.main.text:find("Bandage", 1, true) and A.main.text:find("0/1", 1, true),
 eq(A.sev, 2, "tomt: rødt")
 eq(sounds(), 1, "én lyd")
 eq(A.frame.mouseEnabled, false, "varselet tar ikke musa")
+check(A.frame.stripe.color[1] == ns.Style.C.red[1] and A.frame.stripe.color[2] == ns.Style.C.red[2], "rød stripe øverst i ramma")
+check(A.frame.width >= 240, "ramma har minst 240 px bredde")
 
 -- Ikke to ganger for samme avreise; ikke fra et sted som ikke voktes
 zone("Westfall")
@@ -90,6 +92,7 @@ T.counts[14529] = 5
 zone("Ironforge")
 zone("Dun Morogh")
 check(A.sev == 0 and A.main.text:find("Alt med", 1, true), "alt med: grønt")
+eq(A.frame.stripe.color[2], ns.Style.C.green[2], "grønn stripe")
 eq(sounds(), 5, "grønt: ingen lyd")
 T.now = T.now + 2.5
 A.frame.scripts.OnUpdate(A.frame)
