@@ -13,6 +13,8 @@ local W, PAD, HEAD = 340, 10, 24
 local BTN, GAP = 40, 6
 local TIERCOL = 22
 local LINE = 18
+local G = 10 -- lik luft mellom alt i menyen (Daniel 5. okt): elementer, rader, streker og kategorilinjer
+local TEXTH = 14 -- høyden på en tekstlinje (12 px skrift)
 local BX = PAD + TIERCOL + 8 -- første knapp i en rad, etter tier-tallet og fura
 local PER_LINE = math.floor((W - PAD - BX + GAP) / (BTN + GAP))
 
@@ -192,7 +194,7 @@ local function header(key, title, right)
   local isOpen = key == nil or db.ui.menuSections[key] ~= false
   h.pm:SetText(key and (isOpen and "-" or "+") or "") -- vanlig bindestrek: Friz Quadrata har ikke U+2212
   Menu.heads[#Menu.heads + 1] = h
-  y = y + HEAD + 8
+  y = y + HEAD + G
   return isOpen
 end
 
@@ -207,8 +209,8 @@ local function separator()
     return s
   end)
   t:SetWidth(W - 80)
-  place(t, 40, y + 5)
-  y = y + 11
+  place(t, 40, y)
+  y = y + 1 + G -- like mye luft over (fra elementet over) som under
 end
 
 local function sideWord(isParty)
@@ -264,7 +266,7 @@ local function rows(list, isParty, st)
         host.slots[#host.slots + 1] = s
       end
     end
-    y = y + h + 8
+    y = y + h + G
   end
 end
 
@@ -285,7 +287,7 @@ local function picker(list, members)
   if #members == 0 then
     local t = text(L.NO_PARTY, C.help)
     place(t, PAD, y)
-    y = y + LINE + 6
+    y = y + TEXTH + G
     return
   end
   local names, classes = {}, {}
@@ -318,9 +320,9 @@ local function picker(list, members)
       l.entry, l.followed = e, on
       x = x + w + 12
     end
-    y = y + LINE + 4
+    y = y + LINE
   end
-  y = y + 2
+  y = y + G - (LINE - TEXTH)
 end
 
 local function safeZone()
@@ -425,7 +427,7 @@ local function cityWatch()
   here:SetWidth(W - 2 * PAD - aw - 10) -- lange sonenavn kuttes med «…» i stedet for å gå inn i knappen
   here:SetJustifyH("LEFT")
   place(here, PAD, y + 4)
-  y = y + 22 + 8
+  y = y + 22 + G
   local ww = wideWidth()
   local list = action(string.format(L.CITY_LIST, #cities), true, nil, function()
     citiesOpen = not citiesOpen
@@ -434,7 +436,7 @@ local function cityWatch()
   place(list, math.floor((W - ww) / 2), y)
   list.edge:SetAlpha(citiesOpen and 1 or 0.6)
   Menu.cityListButton = list
-  y = y + 22 + 6
+  y = y + 22 + G
   Menu.cityBox = nil
   if citiesOpen then
     local box = take("box", makeBox)
@@ -455,7 +457,7 @@ local function cityWatch()
       r:SetWidth(bw - 2)
       place(r, bx + 1, y + 3 + (i - 1) * LINE)
     end
-    y = y + rowsN * LINE + 6 + 8
+    y = y + rowsN * LINE + 6 + G
   end
 end
 Menu.CitiesOpen = function() return citiesOpen end
@@ -503,12 +505,12 @@ end
 
 local function scaleRow()
   local t = text(L.SCALE, C.text)
-  place(t, PAD, y + 2)
+  place(t, PAD, y + 1)
   if not Menu.slider then Menu.slider = makeSlider() end
   local s = Menu.slider
   s:Show()
   s.label:Show()
-  place(s, PAD + 80, y + 2)
+  place(s, PAD + 80, y)
   -- Menyen tegnes fire ganger i sekundet. Mens du drar, skal slideren stå der musa er, ikke hoppe tilbake
   -- til lagret verdi (det var hakkingen, Daniel 5. okt).
   if not s.dragging then
@@ -517,8 +519,8 @@ local function scaleRow()
     s.setting = false
   end
   s.label:ClearAllPoints()
-  s.label:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD + 80 + 150 + 12, -(y + 2))
-  y = y + 22 + 6
+  s.label:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD + 80 + 150 + 12, -(y + 1))
+  y = y + 16 + G
 end
 
 -- Bytt side: én lang knapp, midtstilt (Daniel 5. okt). Hvilken side som er hvor, står i kategorilinjene over.
@@ -527,7 +529,7 @@ local function direction()
   local a = action(L.DIR_SWAP, true, nil, function() if Menu.onSwap then Menu.onSwap() end end, ww)
   place(a, math.floor((W - ww) / 2), y)
   Menu.swapButton = a
-  y = y + 22 + 4
+  y = y + 22 + G
 end
 
 ------------------------------------------------------------------------

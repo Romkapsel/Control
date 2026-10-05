@@ -94,12 +94,27 @@ local function add(f, p)
   return p
 end
 
+-- Strekene i symbolene: spillet glatter ikke kantene på streker, så en tykkelse mellom to piksler blir ujevn
+-- (synlig når medaljongen er større, Daniel 5. okt). Vi husker grunntykkelsen og runder den til hele
+-- skjermpiksler for størrelsen som gjelder (M.Resnap).
+local lines = {}
+local function line(parent, layer, sub, x1, y1, x2, y2, t, c, a)
+  local l = Style.Line(parent, layer, sub, x1, y1, x2, y2, t, c, a)
+  lines[#lines + 1] = { l = l, t = t }
+  return l
+end
+
 -- Symbolene er tynne konturer som i designet (SPEC §7.1), ikke fylte flater.
 local STROKE = 1.3
 
+local function joint(f, x, y, t, c, sub)
+  add(f, Style.Disc(f, "OVERLAY", sub or 2, t, c, 1, x, y))
+end
+
 local function polyline(f, pts, t, c)
   for i = 2, #pts do
-    add(f, Style.Line(f, "OVERLAY", 2, pts[i - 1][1], pts[i - 1][2], pts[i][1], pts[i][2], t, c))
+    add(f, line(f, "OVERLAY", 2, pts[i - 1][1], pts[i - 1][2], pts[i][1], pts[i][2], t, c))
+    if i < #pts then joint(f, pts[i][1], pts[i][2], t, c) end -- knekkpunkt: rundt, ikke hakk
   end
 end
 
@@ -116,7 +131,7 @@ end
 
 local function drawMenu(f)
   for _, y in ipairs({ 3.5, 0, -3.5 }) do
-    add(f, Style.Line(f, "OVERLAY", 2, -4.5, y, 4.5, y, STROKE, C.goldDim))
+    add(f, line(f, "OVERLAY", 2, -4.5, y, 4.5, y, STROKE, C.goldDim))
   end
 end
 
@@ -138,21 +153,22 @@ local function drawOne(f) drawPerson(f, 0, 1) end
 local function drawTwo(f) drawPerson(f, 2.4, 0.78) drawPerson(f, -2.2, 0.78) end
 
 local function drawCheck(f)
-  add(f, Style.Line(f, "OVERLAY", 3, -7, 1, -2, -5, 3, C.goldDim))
-  add(f, Style.Line(f, "OVERLAY", 3, -2, -5, 8, 6, 3, C.goldDim))
+  add(f, line(f, "OVERLAY", 3, -7, 1, -2, -5, 3, C.goldDim))
+  add(f, line(f, "OVERLAY", 3, -2, -5, 8, 6, 3, C.goldDim))
+  joint(f, -2, -5, 3, C.goldDim, 3) -- bunnen av haken: rund
 end
 
 local function drawMove(f)
   local c = C.goldLight
   add(f, Style.Disc(f, "OVERLAY", 1, 22, c, 0.45))
   add(f, Style.Disc(f, "OVERLAY", 2, 19, C.core, 1))
-  add(f, Style.Line(f, "OVERLAY", 3, -7, 0, 7, 0, 1.6, c))
-  add(f, Style.Line(f, "OVERLAY", 3, 0, -7, 0, 7, 1.6, c))
+  add(f, line(f, "OVERLAY", 3, -7, 0, 7, 0, 1.6, c))
+  add(f, line(f, "OVERLAY", 3, 0, -7, 0, 7, 1.6, c))
   for _, d in ipairs({ { 1, 0 }, { -1, 0 }, { 0, 1 }, { 0, -1 } }) do -- pilspisser
     local tx, ty = 7 * d[1], 7 * d[2]
     local px, py = -d[2] * 2.5, d[1] * 2.5
-    add(f, Style.Line(f, "OVERLAY", 3, tx, ty, tx - 2.5 * d[1] + px, ty - 2.5 * d[2] + py, 1.4, c))
-    add(f, Style.Line(f, "OVERLAY", 3, tx, ty, tx - 2.5 * d[1] - px, ty - 2.5 * d[2] - py, 1.4, c))
+    add(f, line(f, "OVERLAY", 3, tx, ty, tx - 2.5 * d[1] + px, ty - 2.5 * d[2] + py, 1.4, c))
+    add(f, line(f, "OVERLAY", 3, tx, ty, tx - 2.5 * d[1] - px, ty - 2.5 * d[2] - py, 1.4, c))
   end
 end
 
@@ -402,10 +418,24 @@ function M.Size() return (db and db.ui.scale) or 1 end
 -- Hvor mye lenger ut kanten av sirkelen står enn ved 100 % (px)
 function M.Extra() return math.floor(SIZE / 2 * (M.Size() - 1) + 0.5) end
 
+function M.Lines() return lines end -- for testene
+
+function M.Resnap()
+  if not root then return end
+  local k = M.Size()
+  local px = Style.OnePixel(root) -- UI-enheter per skjermpiksel
+  if not px or px <= 0 then px = 1 end
+  for _, it in ipairs(lines) do
+    local n = math.max(1, math.floor(it.t * k / px + 0.5))
+    it.l:SetThickness(n * px / k)
+  end
+end
+
 function M.SetScale(s)
   if inCombat() or type(s) ~= "number" or s <= 0 then return false end
   db.ui.scale = s
   applySize()
+  M.Resnap()
   applyAll()
   return true
 end
@@ -471,6 +501,7 @@ function M.Create(database, locale)
   build()
   M.ApplyPosition()
   applySize()
+  M.Resnap()
   hit:SetScript("OnEnter", function() setHover(cursorZone()) hit:SetScript("OnUpdate", M.TrackMouse) end)
   hit:SetScript("OnLeave", function() hit:SetScript("OnUpdate", nil) setHover(nil) GameTooltip:Hide() end)
   hit:SetScript("OnMouseDown", onMouseDown)

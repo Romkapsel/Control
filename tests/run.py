@@ -74,6 +74,7 @@ local function frame(name, kind)
   function f:SetWidth(w) self.width = w end
   function f:SetHeight(h) self.height = h end
   function f:SetSize(w, h) self.width, self.height = w, h end
+  function f:SetThickness(t) self.thickness = t end
   function f:SetMinMaxValues(a, b) self.minv, self.maxv = a, b end
   function f:SetValue(v)
     if self.minv then v = math.max(self.minv, math.min(self.maxv, v)) end
