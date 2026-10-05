@@ -87,17 +87,29 @@ eq(motw.tier, 1, "høyreklikk: Må ha")
 bm = Menu.host.buttons[1]
 check(bm.entry == motw and bm.mark.shown, "Må ha: gullmerke i hjørnet")
 check(not ns.Tray.Get("right").buttons[1].mark.shown, "ved medaljongen: ikke merke (der er alt Må ha)")
-T.shift = true
--- Shift + dra ut av menyen: fjernet, og /ctrl angre gir den tilbake
+-- Dra uten Shift i menyen (Daniel 5. okt): knappen kaster når du slipper museknappen, så et dra kaster ingenting
 bm = Menu.host.buttons[1]
 check(bm.entry == motw, "MotW står først (Buffer)")
+check(bm.attrs.useOnKeyDown == false and bm.releaseCast, "menyknapp: kaster når du slipper")
+check(not ns.Tray.Get("right").buttons[1].releaseCast, "knappene ved medaljongen: som før")
+bm.scripts.hookOnEnter(bm)
+local dragTip = false
+for _, l in ipairs(T.tooltip.lines) do if l == "Dra ut av menyen: fjern · til en annen knapp: flytt" then dragTip = true end end
+check(dragTip, "tooltip: dra ut av menyen")
+-- Slipp inne i menyen (ikke på en annen knapp): den går rett inn igjen
+bm.scripts.OnDragStart(bm)
+Menu.frame.mouse = true
+bm.scripts.OnDragStop(bm)
+Menu.frame.mouse = false
+eq(#ControlCharDB.self, 2, "slipp inne i menyen: ingenting fjernet")
+-- Dra helt ut av menyen: fjernet, og /ctrl angre gir den tilbake
+bm = Menu.host.buttons[1]
 bm.scripts.OnDragStart(bm)
 Menu.frame.mouse = false
 bm.scripts.OnDragStop(bm)
 check(#ControlCharDB.self == 1 and Chat("Mark of the Wild fjernet (/ctrl angre)."), "dra ut: fjernet")
 SlashCmdList.CONTROL("angre")
 check(#ControlCharDB.self == 2, "angre: tilbake")
-T.shift = false
 
 -- Fell sammen
 Menu.heads[1].scripts.OnClick(Menu.heads[1])

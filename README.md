@@ -70,6 +70,7 @@ ting og sin egen «Må ha». Party-buffene er felles.
 | Høyreklikk | Bytter mellom «Må ha» og «Fint å ha» |
 | Musehjul | Hvor mange du vil ha (Shift = 5 om gangen) |
 | Shift + dra | Flytt den (gullstreken viser hvor), eller dra den ut for å fjerne |
+| Dra (i menyen) | Det samme uten Shift: slipp helt utenfor menyen for å fjerne – inne i menyen går den rett inn igjen |
 | `/ctrl angre` | Får tilbake det du nettopp fjernet |
 
 Siste 40 sekunder før en buff går ut, teller knappen ned.

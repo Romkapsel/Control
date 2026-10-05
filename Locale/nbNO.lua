@@ -169,6 +169,7 @@ ns.L = {
   EQUIP_ALL_ON = "Utstyret i %s er på.",
   EQUIP_MISSING = "Ikke i baggen: %s.",
   TIP_DRAG = "Shift + dra: flytt eller fjern",
+  TIP_DRAG_MENU = "Dra ut av menyen: fjern · til en annen knapp: flytt",
 
   -- Gruppebuffer (fase 5, SPEC §7.7)
   TIP_PARTY_MISSING = "%d av %d mangler",

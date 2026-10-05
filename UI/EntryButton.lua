@@ -55,6 +55,15 @@ local all = {}
 
 -- Etter kamp: bind alle knappene på nytt. Det sikre skriptet kan ha flyttet en gruppeknapp videre i køen (unit,
 -- ks-qi) for kast som ikke gikk gjennom; uten dette pekte den fortsatt på feil person etterpå.
+-- Knappene i menyen: kast når du slipper museknappen, ikke når du trykker den ned. Da kan du dra en knapp uten at
+-- den kaster eller bruker noe først (et dra gir ikke noe klikk når du slipper). useOnKeyDown = false sier det til
+-- spillets sikre knapp, uansett hva ActionButtonUseKeyDown står på.
+function EB.CastOnRelease(b)
+  b.releaseCast = true
+  b:SetAttribute("useOnKeyDown", false)
+  b:RegisterForClicks("AnyUp")
+end
+
 function EB.ResetBindings()
   for _, b in ipairs(all) do b.sig = nil end
 end
@@ -201,7 +210,8 @@ function EB.Create(parent)
     end
   end)
   b:SetScript("OnDragStart", function(self)
-    if IsShiftKeyDown() and ns.SideBar then ns.SideBar.BeginDrag(self) end
+    -- I menyen holder det å dra (Daniel 5. okt); ellers Shift + dra (der kaster knappen når du trykker ned)
+    if (IsShiftKeyDown() or self.releaseCast) and ns.SideBar then ns.SideBar.BeginDrag(self) end
   end)
   b:SetScript("OnDragStop", function(self)
     if ns.SideBar then ns.SideBar.EndDrag(self) end
@@ -476,7 +486,7 @@ function EB.ShowTooltip(b)
     local h = C.help
     GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2_WITH or L.TIER_1_WITH), h[1], h[2], h[3])
     if b.inMenu then GameTooltip:AddLine(e.tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT, h[1], h[2], h[3]) end
-    if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
+    if b.canDrag then GameTooltip:AddLine(b.releaseCast and L.TIP_DRAG_MENU or L.TIP_DRAG, h[1], h[2], h[3]) end
     GameTooltip:Show()
     return
   elseif e.type == "item" then
@@ -505,6 +515,6 @@ function EB.ShowTooltip(b)
   if (e.type == "buffitem" or e.type == "item") and e.cat ~= "gear" then GameTooltip:AddLine(L.TIP_WHEEL, h[1], h[2], h[3]) end
   GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2_WITH or L.TIER_1_WITH), h[1], h[2], h[3])
   if b.inMenu then GameTooltip:AddLine(e.tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT, h[1], h[2], h[3]) end
-  if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
+  if b.canDrag then GameTooltip:AddLine(b.releaseCast and L.TIP_DRAG_MENU or L.TIP_DRAG, h[1], h[2], h[3]) end
   GameTooltip:Show()
 end

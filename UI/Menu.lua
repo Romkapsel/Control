@@ -1,6 +1,7 @@
 -- Control: menyen (SPEC §7.6). Åpnes med nedre sone, bare utenfor kamp (den har sikre knapper).
 -- Fire deler, ovenfra: Mine buffs, Party buffs, Byvakt, Retning. Hver del har en kategorilinje (klikk = fell sammen),
--- unntatt Retning. Knappene oppfører seg som overalt ellers: klikk, høyreklikk = tier, hjul = antall, Shift + dra.
+-- unntatt Retning. Knappene oppfører seg som overalt ellers: klikk, høyreklikk = tier, hjul = antall – men her holder
+-- det å dra (uten Shift): slipp utenfor menyen = fjern.
 -- Står medaljongen i nedre halvdel av skjermen, åpner menyen oppover.
 local addonName, ns = ...
 local Style = ns.Style
@@ -252,6 +253,7 @@ local function rows(list, isParty, st)
       local nb = ns.EntryButton.Create(frame)
       SecureHandlerWrapScript(nb, "OnClick", ns.EntryButton.Header(), ns.Tray.PRE, ns.Tray.RETARGET) -- gruppebuff i kamp
       nb.canDrag, nb.inMenu, nb.dragHost = true, true, host
+      ns.EntryButton.CastOnRelease(nb) -- dra uten Shift: ut av menyen = fjern, inne i menyen = flytt / tilbake
       return nb
     end)
     place(b, x, top)
