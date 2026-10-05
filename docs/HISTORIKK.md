@@ -214,3 +214,4 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | 2026-10-05 | For at det ikke skal gi falske varsler når du går inn på et vertshus i en vaktet by: før varselet spør byvakta kartet om du fortsatt er inne i stedet du kom fra (`Scan.InsideZone`, kartets foreldrekjede). Vertshus er fortsatt egne steder (Daniels valg står) | Claude |
 | 2026-10-05 | Byvakt ut av Anvilmar testet av Daniel: virker. **Utgave 0.9.8 på GitHub** | Daniel |
 | 2026-10-05 | **Lyden ved rødt byvaktvarsel er «Watch it!» med grov dvergestemme** (Daniel). Fil-ID 547866 (`sound/creature/dwarfmalegrimnpc/dwarfmalegrimnpcpissed01.ogg`), funnet i spillets filliste og bekreftet ved å transkribere selve lydfila. Alternativ: 547906 (vanlig dverg, «…watch it»). Kan fila ikke spilles, brukes raid warning | Daniel |
+| 2026-10-05 | «Watch it!»-lyden testet av Daniel: virker. **Utgave 0.9.9 på GitHub** | Daniel |
