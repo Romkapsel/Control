@@ -56,9 +56,13 @@ local function build()
   Alert.frame, Alert.title, Alert.main = f, title, main
 end
 
+-- «Watch it!» med grov dvergestemme (Daniel 5. okt): sound/creature/dwarfmalegrimnpc/dwarfmalegrimnpcpissed01.ogg,
+-- fil-ID fra spillets filliste og bekreftet ved å transkribere selve lydfila. Kan den ikke spilles: vanlig varsellyd.
+Alert.VOICE = 547866
 local function playSound()
-  local id = (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959
-  pcall(PlaySound, id, "Master")
+  local ok, willPlay = pcall(PlaySoundFile, Alert.VOICE, "Master")
+  if ok and willPlay then return end
+  pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master")
 end
 
 -- where = «Du forlater Stormwind City», d = Rules.departure(...)

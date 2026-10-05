@@ -29,6 +29,8 @@ eq(A.title.text, "Du forlater Stormwind City", "hvor du drar fra")
 check(A.main.text:find("Bandage", 1, true) and A.main.text:find("0/1", 1, true), "hva som mangler")
 eq(A.sev, 2, "tomt: rødt")
 eq(sounds(), 1, "én lyd")
+check(T.soundFiles and T.soundFiles[1] == 547866 and T.soundFiles[2] == nil, "lyden er «Watch it!» (grov dvergestemme), én gang")
+check(T.soundKits == nil, "ikke den gamle varsellyden")
 eq(A.frame.mouseEnabled, false, "varselet tar ikke musa")
 check(A.frame.width >= 240, "ramma har minst 240 px bredde")
 
@@ -153,5 +155,12 @@ Tick()
 -- /control varsel: se varselet når som helst
 SlashCmdList.CONTROL("varsel")
 check(A.frame.shown and A.title.text == "Du forlater Teldrassil", "/control varsel viser varselet")
+
+-- Kan lydfila ikke spilles: vanlig varsellyd i stedet
+T.soundOk = false
+T.counts[14529] = 0
+SlashCmdList.CONTROL("varsel")
+check(T.soundKits and T.soundKits[1] == 8959, "fila kan ikke spilles: raid warning i stedet")
+T.soundOk, T.soundKits = nil, nil
 
 return n, fails
