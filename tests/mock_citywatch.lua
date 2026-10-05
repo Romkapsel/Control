@@ -163,4 +163,23 @@ SlashCmdList.CONTROL("varsel")
 check(T.soundKits and T.soundKits[1] == 8959, "fila kan ikke spilles: raid warning i stedet")
 T.soundOk, T.soundKits = nil, nil
 
+-- Reparasjon og bagplass i varselet (Daniel 5. okt): under 100 % oransje, under 50 % rødt; 4 ledige oransje
+T.counts[14529] = 10
+for _, e in ipairs(ControlCharDB.self) do if e.itemId == 14529 then e.want = 1 end end
+T.dura = { [1] = { 60, 100 }, [5] = { 100, 100 } }
+T.free = { [0] = { 2, 0 }, [1] = { 1, 0 }, [2] = { 6, 2048 } } -- bag 2 er en spesialbag (teller ikke)
+ControlCharDB.cityWatch.checkBags = true -- av som standard; slått på her
+SlashCmdList.CONTROL("varsel")
+check(A.sev == 1 and A.main.text:find("Reparasjon", 1, true) and A.main.text:find("60%", 1, true)
+  and A.main.text:find("Bagplass", 1, true) and A.main.text:find("3", 1, true), "60 % og 3 ledige: oransje, begge i varselet")
+T.dura = { [1] = { 30, 100 } }
+SlashCmdList.CONTROL("varsel")
+eq(A.sev, 2, "30 %: rødt")
+ControlCharDB.cityWatch.checkRepair = false
+ControlCharDB.cityWatch.checkBags = false
+SlashCmdList.CONTROL("varsel")
+check(A.sev == 0 and A.main.text:find("Alt med", 1, true), "slått av i menyen: ikke med i varselet")
+ControlCharDB.cityWatch.checkRepair, ControlCharDB.cityWatch.checkBags = true, true
+T.dura, T.free = nil, nil
+
 return n, fails

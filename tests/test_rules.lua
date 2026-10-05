@@ -264,4 +264,21 @@ check(c and c.self and c.group and c.spell == "Battle Shout", "shout: på deg se
 c = R.partyCast(shout, sst, { inParty = true })
 check(c and not c.self and not c.group and c.target.unit == "party1", "uten selfCast: som før")
 
+------------------------------------------------------------------------
+-- Byvakt: reparasjon og bagplass (Daniel 5. okt)
+------------------------------------------------------------------------
+eq(R.repairSeverity(100), 0, "100 %: ok")
+eq(R.repairSeverity(99), 1, "under 100 %: oransje")
+eq(R.repairSeverity(49), 2, "under 50 %: rødt")
+eq(R.repairSeverity(nil), 0, "ikke sjekket: ok")
+eq(R.bagSeverity(5), 0, "5 ledige: ok")
+eq(R.bagSeverity(4), 1, "4 ledige: oransje")
+eq(R.bagSeverity(0), 2, "ingen ledige: rødt")
+d = R.departure({}, {}, L, { repair = 73.4, bags = 2 })
+check(d.sev == 1 and d.text == "Reparasjon 73% · Bagplass 2", "byvakt: reparasjon og bagplass i varselet: " .. tostring(d.text))
+d = R.departure(flaskModel, { f = { count = 0 }, b = { count = 4 } }, L, { repair = 40, bags = 8 })
+check(d.sev == 2 and d.text == "Reparasjon 40% · Flask 0/1 · Bandage 4/10", "byvakt: verst først, reparasjon først blant like")
+d = R.departure({}, {}, L, { repair = 100, bags = 12 })
+check(d.sev == 0 and d.text == "Alt med", "byvakt: helt utstyr og god plass: alt med")
+
 return n, fails

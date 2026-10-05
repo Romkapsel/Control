@@ -36,7 +36,7 @@ local DEFAULTS = {
     menuSections = { self = true, party = true, city = true },
   },
   durations = {},
-  cityWatch = { cities = {} },
+  cityWatch = { cities = {}, checkRepair = true, checkBags = false }, -- reparasjon på, bagplass av som standard (Daniel 5. okt)
 }
 
 -- Hovedstedene for fraksjonen din, vaktet fra start (SPEC §10). Spillets egne sonenavn.

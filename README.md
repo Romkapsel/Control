@@ -73,6 +73,9 @@ flight master – hvis du mangler noe i baggen:
 - **Oransje:** noe er tomt i tier II, eller du har færre enn du vil ha.
 - **Grønn «Alt med»:** alt er i orden.
 
+Byvakta sjekker også **reparasjon** (dårligste utstyr: under 100 % oransje, under 50 % rødt) og **bagplass**
+(4 eller færre ledige plasser oransje, ingen rødt). Reparasjon er på og bagplass av fra start – begge slås av og på under Byvakt i menyen.
+
 Hovedbyene for fraksjonen din voktes fra start. I menyen: **Legg til** stedet du står, og **Voktes (n)** viser lista –
 dra et sted ut av lista for å fjerne det.
 

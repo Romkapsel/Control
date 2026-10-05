@@ -29,6 +29,7 @@ local db, L, root
 local frame
 local pools = {}
 local dimForCombat -- defineres lenger ned (før Menu.Paint), brukes også i Layout
+local toggleRow -- av/på-linje; defineres lenger ned, brukes i Byvakt og Oppsett
 local y = 0
 
 -- Kallbakker fra Core (handlingene ligger der)
@@ -40,7 +41,8 @@ Menu.onRemoveCity = nil -- (zone)
 Menu.onSwap = nil
 Menu.onScale = nil
 Menu.onToggleCount = nil -- tallet i midten av medaljongen av/på
-Menu.onToggleOpenCore = nil -- gjennomsiktig midte av/på    -- (skala 0,70–1,50): settes når du slipper slideren
+Menu.onToggleOpenCore = nil -- gjennomsiktig midte av/på
+Menu.onToggleCityCheck = nil -- (key): reparasjon/bagplass i byvakta av/på    -- (skala 0,70–1,50): settes når du slipper slideren
 
 ------------------------------------------------------------------------
 -- Byggeklosser
@@ -467,6 +469,13 @@ local function cityWatch()
     end
     y = y + rowsN * LINE + 6 + G
   end
+  -- Reparasjon og bagplass i varselet (Daniel 5. okt)
+  local group = { L.CHECK_REPAIR, L.CHECK_BAGS }
+  separator()
+  Menu.repairText, Menu.repairButton = toggleRow(L.CHECK_REPAIR, function() return db.cityWatch.checkRepair ~= false end,
+    function() if Menu.onToggleCityCheck then Menu.onToggleCityCheck("checkRepair") end end, group, false)
+  Menu.bagsText, Menu.bagsButton = toggleRow(L.CHECK_BAGS, function() return db.cityWatch.checkBags == true end,
+    function() if Menu.onToggleCityCheck then Menu.onToggleCityCheck("checkBags") end end, group, false)
 end
 Menu.CitiesOpen = function() return citiesOpen end
 
@@ -551,10 +560,11 @@ end
 -- som én midtstilt gruppe. Knappene står på linje under hverandre (gruppen regnes ut fra den lengste teksten).
 -- Begge virker i kamp: de endrer bare medaljongens utseende.
 local TOGGLE_W = 52
-local function toggleRow(label, isOn, onClick)
+-- group = tekstene i samme bolk, så knappene står på linje; allowCombat = virker i kamp
+toggleRow = function(label, isOn, onClick, group, allowCombat)
   local t = text(label, C.text)
   local wide = 0
-  for _, l in ipairs({ L.COUNT_LABEL, L.OPEN_CORE_LABEL }) do
+  for _, l in ipairs(group) do
     t:SetText(l)
     wide = math.max(wide, textWidth(t))
   end
@@ -568,7 +578,7 @@ local function toggleRow(label, isOn, onClick)
     a.fs:SetText(now)
     a.text = now
   end, TOGGLE_W)
-  a.allowCombat = true
+  a.allowCombat = allowCombat
   place(a, x0 + wide + 14, y)
   y = y + 22 + G
   return t, a
@@ -576,12 +586,12 @@ end
 
 local function countRow()
   Menu.countText, Menu.countButton = toggleRow(L.COUNT_LABEL, function() return db.ui.showCount ~= false end,
-    function() if Menu.onToggleCount then Menu.onToggleCount() end end)
+    function() if Menu.onToggleCount then Menu.onToggleCount() end end, { L.COUNT_LABEL, L.OPEN_CORE_LABEL }, true)
 end
 
 local function openCoreRow()
   Menu.coreText, Menu.coreButton = toggleRow(L.OPEN_CORE_LABEL, function() return db.ui.openCore == true end,
-    function() if Menu.onToggleOpenCore then Menu.onToggleOpenCore() end end)
+    function() if Menu.onToggleOpenCore then Menu.onToggleOpenCore() end end, { L.COUNT_LABEL, L.OPEN_CORE_LABEL }, true)
 end
 
 -- Bytt side: én lang knapp, midtstilt (Daniel 5. okt). Hvilken side som er hvor, står i kategorilinjene over.

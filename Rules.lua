@@ -255,13 +255,44 @@ end
 -- sev 2 = tomt i tier I (rød + lyd), 1 = tomt i tier II eller under ønsket (oransje), 0 = alt med.
 ------------------------------------------------------------------------
 
-function Rules.departure(entries, st, L)
+-- Reparasjon og bagplass (Daniel 5. okt): dårligste utstyr i prosent, og ledige plasser i vanlige bagger
+Rules.REPAIR_WARN, Rules.REPAIR_BAD = 100, 50 -- under 100 % oransje, under 50 % rødt (Daniel 5. okt)
+Rules.BAGS_WARN, Rules.BAGS_BAD = 4, 0       -- 4 eller færre ledige oransje, ingen ledige rødt
+
+function Rules.repairSeverity(pct)
+  if type(pct) ~= "number" then return SEV_OK end
+  if pct < Rules.REPAIR_BAD then return SEV_BAD end
+  if pct < Rules.REPAIR_WARN then return SEV_WARN end
+  return SEV_OK
+end
+
+function Rules.bagSeverity(free)
+  if type(free) ~= "number" then return SEV_OK end
+  if free <= Rules.BAGS_BAD then return SEV_BAD end
+  if free <= Rules.BAGS_WARN then return SEV_WARN end
+  return SEV_OK
+end
+
+-- extra = { repair = laveste % (nil = ikke sjekk), bags = ledige plasser (nil = ikke sjekk) }
+function Rules.departure(entries, st, L, extra)
   local problems = {}
   local sev = SEV_OK
-  for i, e in ipairs(entries or {}) do
+  extra = extra or {}
+  -- Reparasjon og bagplass først blant like alvorlige (gjelder alt du har med)
+  local rs = Rules.repairSeverity(extra.repair)
+  if rs > 0 then
+    problems[#problems + 1] = { name = L.REPAIR_LABEL, stock = string.format(L.REPAIR_VALUE, math.floor(extra.repair)), sev = rs }
+  end
+  local bs = Rules.bagSeverity(extra.bags)
+  if bs > 0 then
+    problems[#problems + 1] = { name = L.BAGS_LABEL, stock = tostring(extra.bags), sev = bs }
+  end
+  for _, p in ipairs(problems) do sev = math.max(sev, p.sev) end
+  for _, e in ipairs(entries or {}) do
     local s = Rules.stockSeverity(e, st[e.id])
     if s > 0 then
-      problems[#problems + 1] = { e = e, sev = s, i = i }
+      local c = st[e.id]
+      problems[#problems + 1] = { id = e.id, name = e.short or e.name, stock = Rules.stockText(c and c.count, e.want), sev = s }
       sev = math.max(sev, s)
     end
   end
@@ -269,9 +300,8 @@ function Rules.departure(entries, st, L)
   local sorted = worstFirst(problems)
   local parts, texts = {}, {}
   for k = 1, math.min(Rules.STATUS_MAX, #sorted) do
-    local e, s = sorted[k].e, st[sorted[k].e.id]
-    local p = { id = e.id, name = e.short or e.name, nameSev = sorted[k].sev, stockSev = sorted[k].sev,
-                stock = Rules.stockText(s and s.count, e.want) }
+    local q = sorted[k]
+    local p = { id = q.id, name = q.name, nameSev = q.sev, stockSev = q.sev, stock = q.stock }
     parts[#parts + 1] = p
     texts[#texts + 1] = p.name .. " " .. p.stock
   end

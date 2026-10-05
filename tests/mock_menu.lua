@@ -147,6 +147,18 @@ check(#cities == 4 and cities[3] == "Darnassus", "angre: Darnassus tilbake på p
 Menu.cityListButton.scripts.OnClick(Menu.cityListButton)
 check(#cityRows() == 0, "klikk igjen: lista foldes inn")
 
+-- Byvakt: Sjekk reparasjon og Sjekk bagplass, av/på
+check(Menu.repairButton and Menu.repairButton.text == "På" and Menu.bagsButton.text == "Av", "reparasjon på, bagplass av som standard")
+Menu.bagsButton.scripts.OnClick(Menu.bagsButton)
+check(ControlCharDB.cityWatch.checkBags == true and Menu.bagsButton.text == "På", "Sjekk bagplass: på")
+Menu.bagsButton.scripts.OnClick(Menu.bagsButton)
+check(ControlCharDB.cityWatch.checkBags == false and Menu.bagsButton.text == "Av", "... og av igjen")
+eq(Menu.repairButton.points[1][4], Menu.bagsButton.points[1][4], "knappene står på linje")
+Menu.repairButton.scripts.OnClick(Menu.repairButton)
+check(ControlCharDB.cityWatch.checkRepair == false and Menu.repairButton.text == "Av", "Sjekk reparasjon: av")
+Menu.repairButton.scripts.OnClick(Menu.repairButton)
+check(ControlCharDB.cityWatch.checkRepair == true, "... og på igjen")
+
 -- Bytt side: én lang knapp, midtstilt
 local sw = Menu.swapButton
 check(sw.text == "Bytt side på gruppene", "Bytt side på gruppene")

@@ -172,6 +172,7 @@ function GetBuildInfo() return "1.60.1", "70205", "Oct 2 2026", 16001 end
 function GetRealZoneText() return S(T.zone or "Stormwind City") end
 function UnitFactionGroup() return "Alliance", "Alliance" end
 function UnitOnTaxi() return T.onTaxi or false end
+function GetInventoryItemDurability(slot) local d = T.dura and T.dura[slot] if d then return d[1], d[2] end end
 function UnitHealth() return S(T.hp or 800) end
 function UnitHealthMax() return S(1000) end
 function UnitPower(u, t) return S(T.mana or 500) end
@@ -208,6 +209,7 @@ function UnitIsDeadOrGhost(u) return (T.deadUnits and T.deadUnits[u]) or false e
 RAID_CLASS_COLORS = { WARRIOR = { r = 0.78, g = 0.61, b = 0.43 }, MAGE = { r = 0.25, g = 0.78, b = 0.92 } }
 function UnitInRange() return S(true), true end
 C_Container = { GetContainerNumSlots = function(b) return T.bags[b] and #T.bags[b] or 0 end,
+                GetContainerNumFreeSlots = function(b) if T.free then local f = T.free[b] if f then return f[1], f[2] or 0 end return 0, 0 end return (b == 0) and 16 or 0, 0 end, -- standard: 16 ledige
                 GetContainerItemID = function(b, s) return T.bags[b] and T.bags[b][s] end }
 T.itemNames = { [13510] = "Flask of the Titans", [14529] = "Runecloth Bandage", [21023] = "Dirge's Kickin' Chimaerok Chops",
                 [13446] = "Major Healing Potion", [4540] = "Tough Hunk of Bread" }

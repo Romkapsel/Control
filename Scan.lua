@@ -375,6 +375,34 @@ function Scan.GossipHasTaxi()
   return found, seen
 end
 
+-- Dårligste utstyr i prosent (0 = ødelagt). nil = ingenting med holdbarhet, eller kan ikke leses.
+function Scan.Durability()
+  if not GetInventoryItemDurability then return nil end
+  local low
+  for slot = 1, 19 do
+    local ok, cur, max = pcall(GetInventoryItemDurability, slot)
+    if ok and not isSecret(cur) and not isSecret(max) and type(cur) == "number" and type(max) == "number" and max > 0 then
+      local pct = cur / max * 100
+      if not low or pct < low then low = pct end
+    end
+  end
+  return low
+end
+
+-- Ledige plasser i vanlige bagger (ryggsekken og bagger uten spesialtype; ikke quiver, ammo- eller yrkesbagger)
+function Scan.FreeBagSlots()
+  local getFree = (C_Container and C_Container.GetContainerNumFreeSlots) or GetContainerNumFreeSlots
+  if not getFree then return nil end
+  local total, any = 0, false
+  for bag = 0, (NUM_BAG_SLOTS or 4) do
+    local ok, free, kind = pcall(getFree, bag)
+    if ok and not isSecret(free) and type(free) == "number" and (kind == nil or kind == 0) then
+      total, any = total + free, true
+    end
+  end
+  return any and total or nil
+end
+
 -- Er du fortsatt inne i stedet «name» ifølge kartet? (Et vertshus i Stormwind ligger på Stormwinds kart.)
 -- Byvakta varsler ikke da, selv om spillet kaller vertshuset et eget sted. Kan ikke kartet leses: nei.
 function Scan.InsideZone(name)

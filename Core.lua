@@ -315,6 +315,12 @@ function Actions.ToggleCount()
   Core.Draw()
 end
 
+-- Reparasjon/bagplass i byvakta av/på (standardene settes av Data.Init, så verdien er alltid true eller false)
+function Actions.ToggleCityCheck(key)
+  ns.db.cityWatch[key] = not ns.db.cityWatch[key]
+  Core.Draw()
+end
+
 function Actions.ToggleOpenCore()
   ns.db.ui.openCore = not ns.db.ui.openCore
   ns.Medallion.ApplyCore()
@@ -346,7 +352,12 @@ end
 function Core.Depart(zone)
   local function show()
     local model = Core.Model()
-    ns.Alert.Show(string.format(ns.L.CITY_LEAVING, zone or "?"), ns.Rules.departure(model.self, model.st, ns.L))
+    local cw = ns.db.cityWatch
+    local extra = {
+      repair = cw.checkRepair ~= false and ns.Scan.Durability() or nil,
+      bags = cw.checkBags == true and ns.Scan.FreeBagSlots() or nil,
+    }
+    ns.Alert.Show(string.format(ns.L.CITY_LEAVING, zone or "?"), ns.Rules.departure(model.self, model.st, ns.L, extra))
   end
   if InCombatLockdown() then ns.RunAfterCombat(show) else show() end
 end
@@ -395,6 +406,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onSwap = Actions.SwapSides
     ns.Menu.onToggleCount = Actions.ToggleCount
     ns.Menu.onToggleOpenCore = Actions.ToggleOpenCore
+    ns.Menu.onToggleCityCheck = Actions.ToggleCityCheck
     ns.Menu.onScale = Actions.SetScale
     ns.Medallion.isMenuOpen = ns.Menu.IsOpen
     -- Det sikre skriptet på medaljongen åpner/lukker disse i kamp (fase 7)
