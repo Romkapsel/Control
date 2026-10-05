@@ -499,7 +499,7 @@ local moving = false
 -- Nedtoning (Daniel 5. okt): er alt i orden en stund, tones medaljongen ned så den ikke tar blikket. Mus over, noe
 -- som mangler, kamp, eller en meny/sidemeny åpen: helt fram igjen med en gang. Kan slås av under Oppsett.
 -- Bare bildet (face) tones; den sikre klikkflaten står som før, så klikk og dra virker også nedtonet.
-M.FADE_ALPHA, M.FADE_WAIT, M.FADE_DUR = 0.35, 3, 1.5
+M.FADE_ALPHA, M.FADE_WAIT, M.FADE_DUR = 0.10, 3, 1.5 -- 10 % (Daniel 5. okt: 35 % var for sterkt)
 M.isBusy = nil -- (): Core sier om menyen eller en sidemeny er åpen
 local okSince
 refreshFade = function()
