@@ -1,8 +1,8 @@
 ## Interface: 16001
 ## Title: Control
-## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk. (Fase 7 og 8: kamp og byvakt)
+## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk.
 ## Author: Daniel
-## Version: 0.9.5
+## Version: 0.9.6
 ## SavedVariablesPerCharacter: ControlCharDB
 
 Locale\nbNO.lua
