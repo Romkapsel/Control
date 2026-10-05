@@ -209,3 +209,4 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | 2026-10-05 | Menyen: «Tall i midten» og «Størrelse» er midtstilte grupper (så strukket ut). Skillestrekene og streken under kategorilinjene er nøyaktig én skjermpiksel på hel piksel (én så tykkere ut) | Daniel |
 | 2026-10-05 | **Medaljongen kan dyttes helt ut til kanten** (Daniel: kunne bare flyttes innenfor en ramme langt inne fra sidene). Bare sirkelen holdes på skjermen; knappene, sidemenyene og menyen får falle utenfor hvis man vil det | Daniel |
 | 2026-10-05 | **Lagerting i sidemenyen bare når noe mangler** (Daniel: et helt healing-sett i tier I er bare støy når alt er med). Ting (utstyr, bandasjer, potions …) står i sidemenyen bare når de mangler eller er under ønsket antall, med rød/oransje ramme. Buffer og buffting står alltid (tid, klikk). Menyen viser alt og er stedet å ordne lista | Daniel |
+| 2026-10-05 | **Utgave 0.9.7 på GitHub** (Daniel) | Daniel |
