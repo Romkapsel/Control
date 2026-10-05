@@ -155,7 +155,9 @@ local function makeAction()
   b.fill:SetColorTexture(f[1], f[2], f[3], 1)
   b.fs = newText(b, 12)
   b.fs:SetPoint("CENTER")
-  b:SetScript("OnClick", function(self) if self.enabled and self.onClick and not InCombatLockdown() then self.onClick() end end)
+  b:SetScript("OnClick", function(self)
+    if self.enabled and self.onClick and (self.allowCombat or not InCombatLockdown()) then self.onClick() end
+  end)
   b:SetScript("OnEnter", function(self) if self.tip then tooltip(self, self.tip) end end)
   b:SetScript("OnLeave", function() GameTooltip:Hide() end)
   return b
@@ -182,7 +184,7 @@ local function action(str, enabled, tip, onClick, width)
   local b = take("action", makeAction)
   b.fs:SetText(str)
   setColor(b.fs, enabled and C.gold or C.help)
-  b.enabled, b.text, b.tip, b.onClick = enabled, str, tip, onClick
+  b.enabled, b.text, b.tip, b.onClick, b.allowCombat = enabled, str, tip, onClick, nil
   b:SetWidth(width or (textWidth(b.fs) + 20))
   b:SetAlpha(enabled and 1 or 0.5)
   return b
@@ -648,6 +650,18 @@ function Menu.Layout(model, members, sideOpen)
   direction()
   separator()
   scaleRow()
+  if db.debug and db.debug.rangeButton then
+    -- Avstandstest (slås på med /control avstand): ett bilde per trykk, også i kamp
+    separator()
+    local ww = W - 2 * PAD - 80
+    local a = action(L.RANGE_BUTTON, true, L.RANGE_TIP, function() if ns.RangeProbe then ns.RangeProbe() end end, ww)
+    a.allowCombat = true
+    place(a, math.floor((W - ww) / 2), y)
+    Menu.rangeButton = a
+    y = y + 22 + G
+  else
+    Menu.rangeButton = nil
+  end
   for _, p in pairs(pools) do
     for i = p.n + 1, #p.items do p.items[i]:Hide() end
   end

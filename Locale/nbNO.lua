@@ -64,6 +64,15 @@ ns.L = {
   SCALE = "Størrelse",
   SCALE_VALUE = "%d %%",
   SCALE_TIP = "Dra eller rull (70–150 %)",
+  -- Avstandstest (/control avstand)
+  RANGE_BUTTON = "Avstandstest",
+  RANGE_TIP = "Lagrer hva spillet sier om avstanden til kompisene i partyet. Trykk nær og langt unna, i og utenfor kamp.",
+  RANGE_ON = "Avstandstest er på: knappen står under Oppsett i menyen. Gjør /reload når du er ferdig.",
+  RANGE_OFF = "Avstandstest er av.",
+  RANGE_SAVED = "Avstand lagret (%d): %d i party, %s.",
+  RANGE_IN_COMBAT = "i kamp",
+  RANGE_OUT_COMBAT = "utenfor kamp",
+  RANGE_NOTHING = "ingenting kunne leses",
   FOLLOW_SET = "%s: bare %s.",
   FOLLOW_ALL = "%s: alle.",
 

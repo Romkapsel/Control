@@ -438,6 +438,94 @@ local function summary(s)
 end
 
 ------------------------------------------------------------------------
+-- Avstand (Daniel 5. okt): hvilke måter å måle avstand til en kompis virker i Forever, i og utenfor kamp?
+-- Til shouts: telle bare de som var nær nok, og la knappen lyse bare når noen som mangler er innenfor.
+-- Knappen «Avstandstest» under Oppsett i menyen (slås på med /control avstand) lagrer ett bilde per trykk
+-- i ControlCharDB.debug.range. Stå nær og langt unna en kompis, i og utenfor kamp, trykk, og gjør /reload.
+------------------------------------------------------------------------
+
+local MAX_RANGE = 40
+-- Ting med kjent rekkevidde på vennlige mål (svaret fra IsItemInRange): bandasje, mistelteinen, scroll
+local RANGE_ITEMS = { 1251, 21519, 1180, 1478 }
+local RANGE_SPELLS = { "Mark of the Wild", "Battle Shout", "Power Word: Fortitude", "Arcane Intellect", "Blessing of Might" }
+
+local function call(fn, ...)
+  if not fn then return { "<finnes ikke>" } end
+  local res = { pcall(fn, ...) }
+  if not res[1] then return { "<feil>" } end
+  local out = {}
+  for i = 2, math.max(2, #res) do out[#out + 1] = safe(res[i]) end
+  return out
+end
+
+local function mapPos(mapID, unit)
+  if not (C_Map and C_Map.GetPlayerMapPosition) or not mapID then return { "<finnes ikke>" } end
+  local ok, pos = pcall(C_Map.GetPlayerMapPosition, mapID, unit)
+  if not ok then return { "<feil>" } end
+  if pos == nil then return { "nil" } end
+  if isSecret(pos) then return { "<hemmelig>" } end
+  local ok2, x, y = pcall(function() return pos:GetXY() end)
+  if not ok2 then return { "<feil>" } end
+  return { safe(x), safe(y) }
+end
+
+local function rangeOf(unit, mapID, me)
+  local r = { unit = unit }
+  r.name = call(UnitName, unit)[1]
+  r.visible = call(UnitIsVisible, unit)[1]
+  r.pos = call(UnitPosition, unit)
+  r.dist2 = call(UnitDistanceSquared, unit)
+  r.inRange = call(UnitInRange, unit)
+  r.interact = {}
+  for i = 1, 4 do r.interact[i] = call(CheckInteractDistance, unit, i)[1] end
+  r.items = {}
+  local itemInRange = (C_Item and C_Item.IsItemInRange) or IsItemInRange
+  for _, id in ipairs(RANGE_ITEMS) do r.items[tostring(id)] = call(itemInRange, id, unit)[1] end
+  r.spells = {}
+  local spellInRange = (C_Spell and C_Spell.IsSpellInRange) or IsSpellInRange
+  for _, sp in ipairs(RANGE_SPELLS) do r.spells[sp] = call(spellInRange, sp, unit)[1] end
+  r.map = mapPos(mapID, unit)
+  -- Regnet avstand når begge posisjonene kan leses (UnitPosition gir y, x)
+  local y1, x1, y2, x2 = me[1], me[2], r.pos[1], r.pos[2]
+  if type(y1) == "number" and type(x1) == "number" and type(y2) == "number" and type(x2) == "number" then
+    r.yards = math.floor(math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2) * 10 + 0.5) / 10
+  end
+  return r
+end
+
+local function readable(v) return v ~= nil and v ~= "nil" and v ~= "<hemmelig>" and v ~= "<feil>" and v ~= "<finnes ikke>" end
+
+function ns.RangeProbe()
+  if not db then return end
+  db.range = db.range or {}
+  local okM, mapID = pcall(function() return C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player") end)
+  if not okM or isSecret(mapID) then mapID = nil end
+  local me = call(UnitPosition, "player")
+  local s = { at = stamp(), t = now(), combat = inCombat(), zone = zoneInfo(), me = me, meMap = mapPos(mapID, "player"),
+              members = {} }
+  for i = 1, 4 do
+    local unit = "party" .. i
+    local okE, exists = pcall(UnitExists, unit)
+    if okE and not isSecret(exists) and exists then s.members[#s.members + 1] = rangeOf(unit, mapID, me) end
+  end
+  push(db.range, s, MAX_RANGE)
+  -- Kort svar i chatten: hva kunne leses for hver kompis
+  Say(string.format(ns.L.RANGE_SAVED, #db.range, #s.members, s.combat and ns.L.RANGE_IN_COMBAT or ns.L.RANGE_OUT_COMBAT))
+  for _, m in ipairs(s.members) do
+    local got = {}
+    if m.yards then got[#got + 1] = m.yards .. " yd" end
+    if readable(m.dist2[1]) then got[#got + 1] = "avstand²" end
+    if readable(m.inRange[1]) then got[#got + 1] = "i rekkevidde" end
+    for i = 1, 4 do if readable(m.interact[i]) then got[#got + 1] = "nær(" .. i .. ")" break end end
+    for _, v in pairs(m.items) do if readable(v) then got[#got + 1] = "ting" break end end
+    for _, v in pairs(m.spells) do if readable(v) then got[#got + 1] = "spell" break end end
+    if readable(m.map[1]) then got[#got + 1] = "kart" end
+    Say("  " .. str(m.name) .. ": " .. (#got > 0 and table.concat(got, ", ") or ns.L.RANGE_NOTHING))
+  end
+  return s
+end
+
+------------------------------------------------------------------------
 -- Hendelser og kommandoer
 ------------------------------------------------------------------------
 

@@ -487,6 +487,12 @@ SlashCmdList.CONTROL = function(msg)
   elseif raw == "lås" or raw == "Lås" or cmd == "las" or cmd == "lock" then
     ns.Medallion.SetLocked(not ns.db.ui.locked)
     Say(ns.db.ui.locked and ns.L.LOCKED or ns.L.UNLOCKED)
+  elseif cmd == "avstand" then
+    -- Viser/skjuler knappen «Avstandstest» under Oppsett i menyen (data til shouts, Daniel 5. okt)
+    ns.db.debug = ns.db.debug or {}
+    ns.db.debug.rangeButton = not ns.db.debug.rangeButton
+    Say(ns.db.debug.rangeButton and ns.L.RANGE_ON or ns.L.RANGE_OFF)
+    Core.Draw()
   elseif cmd == "varsel" then
     Core.Depart(ns.Menu.Zone() or "?") -- se hvordan byvaktvarselet ser ut akkurat nå
   elseif cmd == "angre" then
