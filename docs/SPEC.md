@@ -447,7 +447,7 @@ I menyen kommer i tillegg tier-forklaringen: «Tier I: dukker opp ved knappen n�
 ### 7.8 Plassering, klemming og retning
 
 - Hele addonen (medaljong, tray, sidemenyer, meny) flyttes som én enhet ved å dra i midten.
-- **Holdes innenfor skjermen** som `SetClampedToScreen`, men regnet med **begge sidemenyene fullt utfoldet og menyen**, så ingenting kan havne utenfor kanten når du åpner noe. Medaljongen hopper aldri når du åpner en side; grensene gjelder der du kan plassere den.
+- **Bare selve medaljongen holdes på skjermen** (Daniel 5. okt). Den kan dyttes helt ut til kanten; knappene, sidemenyene og menyen får da falle utenfor hvis man vil det. (Opprinnelig: grensene regnet med begge sidemenyene og menyen fullt utfoldet – det holdt medaljongen langt inne fra kantene.)
 - Står knappen langt til én side på skjermen, er det brukerens valg å bytte sider i menyen (Retning › Bytt sider). Symbolene i medaljongen følger med.
 - Posisjon, skala, lås og side lagres per karakter.
 

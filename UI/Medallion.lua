@@ -544,17 +544,12 @@ end
 -- Klemming: med begge sidemenyene og menyen fullt utfoldet (SPEC §7.8)
 ------------------------------------------------------------------------
 
-function M.UpdateClamp(sideWidths)
-  local wSelf = (sideWidths and sideWidths.self) or 100
-  local wParty = (sideWidths and sideWidths.party) or 100
-  local wL, wR = partyLeft() and wParty or wSelf, partyLeft() and wSelf or wParty
-  -- Sidemenyene starter i midtpunktet (32 px inn); menyen stikker 138 px ut på hver side (340 px, sentrert)
+-- Bare selve medaljongen holdes på skjermen (Daniel 5. okt: «få lov til å dytte den helt ut» – knappene,
+-- sidemenyene og menyen får falle utenfor kanten hvis man vil det). Større medaljong: sirkelen stikker extra ut.
+function M.UpdateClamp()
   local extra = M.Extra()
-  local half = (ns.Menu and ns.Menu.Width and (ns.Menu.Width() - SIZE) / 2) or 138 -- menyen, sentrert
-  local left = math.max(half, SIZE / 2 + wL + extra - SIZE)
-  local right = math.max(half, SIZE / 2 + wR + extra - SIZE)
-  root:SetClampRectInsets(-left, right, extra, -28 - extra)
-  M.clamp = { left = left, right = right }
+  root:SetClampRectInsets(-extra, extra, extra, -extra)
+  M.clamp = { left = extra, right = extra }
 end
 
 ------------------------------------------------------------------------

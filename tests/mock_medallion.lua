@@ -32,9 +32,8 @@ end
 check(onlyOwn and n >= 10, "runde former er våre egne bilder i Media/, ingen av spillets filer")
 local p = st.root.points[1]
 check(p[1] == "CENTER" and p[3] == "CENTER" and p[4] == 0 and p[5] == 200, "standardplass: midt på, 200 px opp")
-check(st.root.clamp and st.root.clamp[1] <= -138 and st.root.clamp[2] >= 138, "holdes innenfor skjermen med menyen utfoldet (138 px hver side)")
-local rv = ns.view.side.self.width
-check(st.root.clamp[2] == math.max(138, 32 + rv - 64), "høyre grense regnet med MB-sidemenyen fullt utfoldet")
+local c = st.root.clamp
+check(c and c[1] == 0 and c[2] == 0 and c[3] == 0 and c[4] == 0, "bare selve medaljongen holdes på skjermen (kan dyttes helt ut)")
 
 -- Animasjonene går ferdig og stopper
 local function settle() local f = st.animFrame.scripts.OnUpdate if f then f(st.animFrame, 5) end end
