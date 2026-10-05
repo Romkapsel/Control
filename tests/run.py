@@ -189,6 +189,14 @@ function GetWeaponEnchantInfo()
   return S(w.mh ~= nil), S(w.mh), S(w.mhCharges or 0), S(0), S(w.oh ~= nil), S(w.oh), S(0), S(0)
 end
 function GetInventoryItemID(unit, slot) return T.equip and T.equip[slot] end
+-- Yrkesvinduet (classic): T.trade = { { name, header = true } | { name, out, made, reagents = { { id, name, n } } } }
+function GetNumTradeSkills() return T.trade and #T.trade or 0 end
+function GetTradeSkillInfo(i) local r = T.trade[i] return r.name, r.header and "header" or "optimal" end
+function GetTradeSkillItemLink(i) local r = T.trade[i] return r.out and ("item:" .. r.out .. ":") end
+function GetTradeSkillNumMade(i) local r = T.trade[i] return r.made or 1, r.made or 1 end
+function GetTradeSkillNumReagents(i) local r = T.trade[i] return r.reagents and #r.reagents or 0 end
+function GetTradeSkillReagentInfo(i, k) local x = T.trade[i].reagents[k] return x.name, 0, x.n, T.counts[x.id] or 0 end
+function GetTradeSkillReagentItemLink(i, k) return "item:" .. T.trade[i].reagents[k].id .. ":" end
 function GetInventoryItemLink(unit, slot) local id = T.equip and T.equip[slot] return id and ("item:" .. id .. ":" .. ((T.suffix and T.suffix[id]) or "")) end
 function EquipItemByName(id, slot)
   T.equipCalls = T.equipCalls or {}

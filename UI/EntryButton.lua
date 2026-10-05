@@ -526,6 +526,18 @@ function EB.ShowTooltip(b)
   end
   GameTooltip:AddLine(line, 1, 1, 1)
   if action ~= "" then GameTooltip:AddLine(action, actColor[1], actColor[2], actColor[3]) end
+  -- «Lag selv»: kan du lage tingen og har for få, hva trengs for å komme opp på grønt (Daniel 5. okt)
+  local plan = ns.Craft and ns.db and ns.Craft.Plan(ns.db, e, st.count)
+  if plan then
+    local hc = plan.ok and C.green or C.text
+    local head = plan.times == 1 and string.format(L.CRAFT_HEAD_1, plan.gets)
+      or string.format(L.CRAFT_HEAD, plan.times, plan.gets)
+    GameTooltip:AddLine(head, hc[1], hc[2], hc[3])
+    for _, p in ipairs(plan.parts) do
+      local c = p.have >= p.need and C.green or C.red
+      GameTooltip:AddLine(string.format(L.CRAFT_PART, p.name, p.have, p.need), c[1], c[2], c[3])
+    end
+  end
   local h = C.help
   if (e.type == "buffitem" or e.type == "item") and e.cat ~= "gear" then GameTooltip:AddLine(L.TIP_WHEEL, h[1], h[2], h[3]) end
   GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2_WITH or L.TIER_1_WITH), h[1], h[2], h[3])

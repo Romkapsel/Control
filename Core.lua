@@ -613,7 +613,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     for _, e in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
                          "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED",
                          "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "TAXIMAP_OPENED", "GOSSIP_SHOW",
-                         "TAXIMAP_CLOSED", "GOSSIP_CLOSED", "PLAYER_EQUIPMENT_CHANGED" }) do
+                         "TAXIMAP_CLOSED", "GOSSIP_CLOSED", "PLAYER_EQUIPMENT_CHANGED",
+                         "TRADE_SKILL_SHOW", "TRADE_SKILL_UPDATE", "TRADE_SKILL_LIST_UPDATE" }) do
       pcall(self.RegisterEvent, self, e)
     end
     C_Timer.NewTicker(0.25, function()
@@ -651,6 +652,9 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
       local ok, flying = pcall(UnitOnTaxi, "player")
       if ok and not ns.Scan.isSecret(flying) and flying == false then ns.CityWatch.Rearm() end
     end)
+  elseif event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_UPDATE" or event == "TRADE_SKILL_LIST_UPDATE" then
+    -- Yrkesvinduet: les oppskriftene litt etterpå (lista fylles etter at vinduet er åpnet), til «Lag selv» i tooltipen
+    C_Timer.After(0.3, function() ns.Craft.Read(ns.db) end)
   elseif event == "GOSSIP_SHOW" then
     Core.gossipOpen = true
     -- Flight master: si fra før du trykker «I need a ride» (Daniel 5. okt). Flykartet gir ikke et varsel til.

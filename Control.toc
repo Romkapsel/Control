@@ -9,6 +9,7 @@ Locale\nbNO.lua
 Data.lua
 Rules.lua
 Scan.lua
+Craft.lua
 Track.lua
 CityWatch.lua
 UI\Style.lua
