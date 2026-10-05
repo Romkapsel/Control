@@ -57,7 +57,7 @@ check(st.anim.symS_up.to == 1.25 and st.anim.dot.to == 1 and st.anim.angle.to ==
 eq(T.tooltip.text, "Lås", "tooltip: Lås")
 settle()
 check(near(st.face.scale, 1.06), "vokser 6 %")
-check(near(st.sym.up.scale, 1.25) and near(st.sym.up.points[1][5], 17 / 1.25), "symbolet skaleres uten å flytte seg")
+check(near(st.sym.up.scale, 1.25) and near(st.sym.up.points[1][5], 16 / 1.25), "symbolet skaleres uten å flytte seg")
 
 -- Klikk oppe = lås
 st.hit.scripts.OnMouseUp(st.hit, "LeftButton")

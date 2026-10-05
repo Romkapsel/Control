@@ -172,14 +172,21 @@ STROKE = 1.3
 
 
 def sym_lock(open_):
+    # Låsen er det høyeste symbolet (bøylen). 80 % størrelse og senket 0,35, så den holder seg innenfor
+    # statusringen også når den vokser ved mus over (Daniel 5. okt: «passer ikke helt inn»). Streken er som de andre.
     c = Canvas(SYM_PX, SYM_HALF)
+    k, dy = 0.8, -0.35
+
+    def T(pts):
+        return [(x * k, (y + dy) * k) for x, y in pts]
+
     w, h, by = 4.5, 3.5, -2.2
-    c.poly([(-w, by - h), (w, by - h), (w, by + h), (-w, by + h), (-w, by - h)], STROKE)
+    c.poly(T([(-w, by - h), (w, by - h), (w, by + h), (-w, by + h), (-w, by - h)]), STROKE)
     lift = 1.6 if open_ else 0
     sx, top, r = 2.8, 5.6 + lift, 1.3
     right = (sx, top - 2.6) if open_ else (sx, by + h)
-    c.poly([(-sx, by + h), (-sx, top - r), (-sx + r, top), (sx - r, top), (sx, top - r), right], STROKE)
-    c.disc(0, by, 0.9, WHITE)  # nøkkelhull
+    c.poly(T([(-sx, by + h), (-sx, top - r), (-sx + r, top), (sx - r, top), (sx, top - r), right]), STROKE)
+    c.disc(0, (by + dy) * k, 0.9 * k, WHITE)  # nøkkelhull
     c.save("sym_lock_open" if open_ else "sym_lock_closed")
 
 

@@ -288,7 +288,7 @@ local function build()
   symbol(parts.check, "sym_check", 1, 3)
   Style.Tint(parts.check.parts, C.goldDim)
 
-  sym.up = symbolFrame(face, 0, SYM_OFFSET)
+  sym.up = symbolFrame(face, 0, SYM_OFFSET - 1) -- låsen er høyest: 1 enhet lenger inn, så bøylen ikke når ringen
   sym.up.open = symbolFrame(sym.up, 0, 0)
   symbol(sym.up.open, "sym_lock_open")
   sym.up.closed = symbolFrame(sym.up, 0, 0)
