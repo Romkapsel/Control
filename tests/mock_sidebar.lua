@@ -40,6 +40,7 @@ check(flask and flask.tier == 2 and flask.type == "buffitem", "item sluppet på 
 eq(ns.view.ring, 1, "tier II som mangler: oransje")
 check(#mb.ids == 2 and mb.buttons[1].entry == motw and mb.buttons[2].entry == flask, "knappene i lista sin rekkefølge")
 eq(mb.frame.width, 37 + 3 * 46, "2 knapper + én «+»-rute: sida vokser én og én")
+eq((mb.frame.points[1][4] - 32) + mb.frame.width, ns.Menu.Width() / 2, "2 knapper + pluss: ytterkanten linjer opp med menyen under")
 check(not mb.vA.shown, "bare tier II: ingen fure")
 check(mb.status.text:find("Meg", 1, true) and not mb.status.text:find("Mangler", 1, true),
   "statuslinja: bare «Meg», knappene forteller resten")

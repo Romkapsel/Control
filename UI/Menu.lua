@@ -9,14 +9,21 @@ local C = Style.C
 local Menu = {}
 ns.Menu = Menu
 
-local W, PAD, HEAD = 340, 10, 24
+local PAD, HEAD = 10, 24
+-- Bredden følger sidemenyene (Daniel 5. okt): like bred som to sidemenyer med 2 knapper og 1 «+» hver, med fugen
+-- imellom – da linjer kantene opp. Fra midten: 3 px fuge + 37 px luft og kant + 3 × 46 px (+ der medaljongen er større).
+local W = 356
+function Menu.Width()
+  local extra = (ns.Medallion and ns.Medallion.Extra and ns.Medallion.Extra()) or 0
+  return 2 * (3 + 37 + 3 * 46 + extra)
+end
 local BTN, GAP = 40, 6
 local TIERCOL = 22
 local LINE = 18
 local G = 10 -- lik luft mellom alt i menyen (Daniel 5. okt): elementer, rader, streker og kategorilinjer
 local TEXTH = 14 -- høyden på en tekstlinje (12 px skrift)
 local BX = PAD + TIERCOL + 8 -- første knapp i en rad, etter tier-tallet og fura
-local PER_LINE = math.floor((W - PAD - BX + GAP) / (BTN + GAP))
+local PER_LINE = 6 -- regnes ut i Layout
 
 local db, L, root
 local frame
@@ -82,7 +89,7 @@ end
 
 local function makeHeader()
   local h = CreateFrame("Button", nil, frame)
-  h:SetSize(W - 8, HEAD)
+  h:SetHeight(HEAD)
   local bg = Style.hex("241C14")
   h.bg = h:CreateTexture(nil, "BACKGROUND")
   h.bg:SetAllPoints()
@@ -187,6 +194,7 @@ end
 
 local function header(key, title, right)
   local h = take("head", makeHeader)
+  h:SetWidth(W - 8)
   place(h, 4, y)
   h.key = key
   h.title:SetText(title)
@@ -558,7 +566,8 @@ local function anchor(sideOpen)
     frame:SetPoint("BOTTOM", root, "TOP", 0, AIRGAP + extra)
   else
     local top = 64 + AIRGAP + extra
-    if sideOpen then top = math.max(top, 4 + 88 + AIRGAP) end -- sidemenyene: 4 px ned + 88 px høye
+    -- Under sidemenyene (4 px ned + 88 px høye): et hakk tettere, så luften ser lik ut som fugen mellom dem
+    if sideOpen then top = math.max(top, 4 + 88 + 4) end
     frame:SetPoint("TOP", root, "TOP", 0, -top)
   end
   -- Pila peker mot medaljongen: opp når menyen henger under, ned når den står over
@@ -623,6 +632,9 @@ end
 -- Bygges også når den er lukket: i kamp kan den bare åpnes (av det sikre skriptet), ikke bygges.
 function Menu.Layout(model, members, sideOpen)
   if not frame or InCombatLockdown() then return false end
+  W = Menu.Width()
+  PER_LINE = math.floor((W - PAD - BX + GAP) / (BTN + GAP))
+  frame:SetWidth(W)
   for _, p in pairs(pools) do p.n = 0 end
   local host = Menu.host
   host.buttons, host.ids, host.slots = {}, {}, {}

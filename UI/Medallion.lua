@@ -656,8 +656,9 @@ function M.UpdateClamp(sideWidths)
   local wL, wR = partyLeft() and wParty or wSelf, partyLeft() and wSelf or wParty
   -- Sidemenyene starter i midtpunktet (32 px inn); menyen stikker 138 px ut på hver side (340 px, sentrert)
   local extra = M.Extra()
-  local left = math.max(138, SIZE / 2 + wL + extra - SIZE)
-  local right = math.max(138, SIZE / 2 + wR + extra - SIZE)
+  local half = (ns.Menu and ns.Menu.Width and (ns.Menu.Width() - SIZE) / 2) or 138 -- menyen, sentrert
+  local left = math.max(half, SIZE / 2 + wL + extra - SIZE)
+  local right = math.max(half, SIZE / 2 + wR + extra - SIZE)
   root:SetClampRectInsets(-left, right, extra, -28 - extra)
   M.clamp = { left = left, right = right }
 end
