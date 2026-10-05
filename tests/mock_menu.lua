@@ -163,6 +163,8 @@ Menu.swapButton.scripts.OnClick(Menu.swapButton)
 local cnt = M.State().parts.count
 local cb = Menu.countButton
 check(cb and cb.text == "På" and cnt.alpha > 0, "tallet vises som standard")
+local tx, bx = Menu.countText.points[1][4], cb.points[1][4]
+check(math.abs(tx - (Menu.frame.width - (bx + 52))) <= 1, "«Tall i midten» og knappen står midt i menyen")
 cb.scripts.OnClick(cb)
 check(ControlCharDB.ui.showCount == false and Menu.countButton.text == "Av" and cnt.alpha == 0, "Av: tallet er borte")
 check(ns.view.ring == 2 or ns.view.ring == 1, "ringen viser fortsatt at noe mangler")

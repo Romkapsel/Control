@@ -80,6 +80,18 @@ function Style.OnePixel(f)
   return 1
 end
 
+-- En strek på nøyaktig én skjermpiksel, på hel piksel (Daniel 5. okt: én skillestrek så tykkere ut enn de andre –
+-- 1 enhet ble 1 eller 2 piksler alt etter hvor den havnet). PixelUtil er Blizzards egen avrunding.
+function Style.HairlineAt(t, point, rel, relPoint, x, y)
+  t:SetHeight(Style.OnePixel(rel))
+  t:ClearAllPoints()
+  if PixelUtil and PixelUtil.SetPoint then
+    PixelUtil.SetPoint(t, point, rel, relPoint, x, y)
+  else
+    t:SetPoint(point, rel, relPoint, x, y)
+  end
+end
+
 -- Liten lukke-pil i hjørnet (Daniel 5. okt): en sikker knapp, så den virker også i kamp. dir = retningen pila
 -- peker (mot medaljongen): "left", "right", "up", "down". snippet = det sikre skriptet (_onclick).
 -- onAfter() kalles etter klikket (Lua: tegn på nytt).

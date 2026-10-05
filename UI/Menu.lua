@@ -98,9 +98,9 @@ local function makeHeader()
   h.line = h:CreateTexture(nil, "ARTWORK")
   local lc = Style.hex("4A3920")
   h.line:SetColorTexture(lc[1], lc[2], lc[3], 1)
+  h.line:SetHeight(Style.OnePixel(h))
   h.line:SetPoint("BOTTOMLEFT", h, "BOTTOMLEFT")
   h.line:SetPoint("BOTTOMRIGHT", h, "BOTTOMRIGHT")
-  h.line:SetHeight(1)
   h.title = newText(h, 13, C.gold)
   h.title:SetPoint("LEFT", h, "LEFT", 8, 0)
   h.pm = newText(h, 14, C.goldDim or C.help)
@@ -220,7 +220,7 @@ local function separator()
     return s
   end)
   t:SetWidth(W - 80)
-  place(t, 40, y)
+  Style.HairlineAt(t, "TOPLEFT", frame, "TOPLEFT", 40, -y)
   y = y + 1 + G -- like mye luft over (fra elementet over) som under
 end
 
@@ -506,14 +506,18 @@ local function makeSlider()
   return s
 end
 
+-- Størrelse: tekst, glider og prosent som én midtstilt gruppe (Daniel 5. okt: så strukket ut)
+local SLIDER_W, VALUE_W = 150, 40
 local function scaleRow()
   local t = text(L.SCALE, C.text)
-  place(t, PAD, y + 1)
+  local tw = textWidth(t)
+  local x0 = math.floor((W - (tw + 14 + SLIDER_W + 10 + VALUE_W)) / 2)
+  place(t, x0, y + 1)
   if not Menu.slider then Menu.slider = makeSlider() end
   local s = Menu.slider
   s:Show()
   s.label:Show()
-  place(s, PAD + 80, y)
+  place(s, x0 + tw + 14, y)
   -- Menyen tegnes fire ganger i sekundet. Mens du drar, skal slideren stå der musa er, ikke hoppe tilbake
   -- til lagret verdi (det var hakkingen, Daniel 5. okt).
   if not s.dragging then
@@ -522,18 +526,21 @@ local function scaleRow()
     s.setting = false
   end
   s.label:ClearAllPoints()
-  s.label:SetPoint("TOPLEFT", frame, "TOPLEFT", PAD + 80 + 150 + 12, -(y + 1))
+  s.label:SetPoint("TOPLEFT", frame, "TOPLEFT", x0 + tw + 14 + SLIDER_W + 10, -(y + 1))
   y = y + 16 + G
 end
 
 -- Tall i midten: av/på (Daniel 5. okt). Tekst til venstre, liten knapp til høyre, som «Legg til» under Byvakt.
 local function countRow()
   local on = db.ui.showCount ~= false
-  local a = action(on and L.ON or L.OFF, true, nil, function() if Menu.onToggleCount then Menu.onToggleCount() end end, 52)
-  place(a, W - PAD - 52, y)
-  Menu.countButton = a
   local t = text(L.COUNT_LABEL, C.text)
-  place(t, PAD, y + 4)
+  local tw = textWidth(t)
+  local x0 = math.floor((W - (tw + 14 + 52)) / 2) -- tekst og knapp som én midtstilt gruppe
+  place(t, x0, y + 4)
+  Menu.countText = t
+  local a = action(on and L.ON or L.OFF, true, nil, function() if Menu.onToggleCount then Menu.onToggleCount() end end, 52)
+  place(a, x0 + tw + 14, y)
+  Menu.countButton = a
   y = y + 22 + G
 end
 

@@ -96,4 +96,28 @@ M.TrackMouse()
 st.hit.scripts.OnMouseUp(st.hit, "LeftButton")
 check(ns.Menu.IsOpen() and ns.Menu.frame.unfold.playing, "menyen glir ut")
 
+-- Diskret ramme i ringens farge: bandasjer under ønsket antall (oransje), mens MotW som lyser, ikke får den
+T.counts[14529] = 2
+T.cursor = { "item", 14529, "[Runecloth Bandage]" }
+ns.Actions.DropOn(false, 2)
+local bandBtn, motwBtn
+for _, x in ipairs(mb.buttons) do
+  if x.shown and x.entry and x.entry.itemId == 14529 then bandBtn = x end
+  if x.shown and x.entry and x.entry.name == "Mark of the Wild" then motwBtn = x end
+end
+bandBtn.entry.want = 5
+ns.Refresh(false)
+check(bandBtn.warn.alpha > 0.4 and near(bandBtn.warn.vertex[1], 1) and near(bandBtn.warn.vertex[2], 0x8C / 255),
+  "bandasjer 2 av 5: diskret oransje ramme")
+check(not bandBtn.glowing, "... og den lyser ikke")
+check(motwBtn.glowing and motwBtn.warn.alpha == 0, "MotW mangler og lyser: ingen ekstra ramme")
+bandBtn.entry.tier = 1
+T.counts[14529] = 0
+ns.Refresh(false)
+for _, x in ipairs(mb.buttons) do if x.shown and x.entry and x.entry.itemId == 14529 then bandBtn = x end end -- ny plass i rad I
+check(near(bandBtn.warn.vertex[1], 1) and near(bandBtn.warn.vertex[2], 0x20 / 255), "tom i tier I: rød ramme")
+T.counts[14529] = 5
+ns.Refresh(false)
+eq(bandBtn.warn.alpha, 0, "nok på lager: ingen ramme")
+
 return n, fails

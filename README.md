@@ -49,6 +49,9 @@ Det som kan legges til:
 
 Siste 40 sekunder før en buff går ut, teller knappen ned.
 
+**Lys og rammer:** pulserende gull = trykk her. En rolig oransje eller rød ramme viser hva som gjør medaljongen
+oransje eller rød, men som du ikke kan fikse med et klikk akkurat nå (for eksempel for få bandasjer i baggen).
+
 ## Party
 
 - Dra en buff du kan gi andre (eller en **scroll**) til **Party**-siden.

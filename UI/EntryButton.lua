@@ -129,6 +129,11 @@ function EB.Create(parent)
   b.glow:SetAllPoints(b)
   b.glowTex = Style.Image(b.glow, "glow_btn", 64, 64, "OVERLAY", 5)
   b.glowTex:SetVertexColor(GLOW[1], GLOW[2], GLOW[3])
+  -- Diskret, fast ramme i ringens farge (oransje/rød) rundt det som gjør medaljongen farget, men ikke lyser
+  -- (Daniel 5. okt: «må tyde for å finne hva som er oransje»). Samme myke bilde som gløden, svakere og uten puls.
+  -- Skrus av og på med alpha (virker også i kamp).
+  b.warn = Style.Image(b, "glow_btn", 64, 64, "OVERLAY", 4)
+  b.warn:SetAlpha(0)
   b.glowAnim = b.glow:CreateAnimationGroup()
   b.glowAnim:SetLooping("BOUNCE")
   local ga = b.glowAnim:CreateAnimation("Alpha")
@@ -316,6 +321,17 @@ function EB.Paint(b, e, st, L, frozen)
     b.glow:SetAlpha(0)
   end
   b.glowing = glow
+  -- Medaljongen er farget av denne, men den lyser ikke: diskret ramme i samme farge som ringen
+  local sev = R.severity(e, st)
+  if not glow and sev > 0 then
+    local c = sev == 2 and C.red or C.orange
+    b.warn:SetVertexColor(c[1], c[2], c[3])
+    b.warn:SetAlpha(0.55)
+    b.warnSev = sev
+  else
+    b.warn:SetAlpha(0)
+    b.warnSev = nil
+  end
   b.faded = frozen and not R.canPress(e, st)
   local alpha = 1
   if b.faded then alpha = 0
