@@ -65,6 +65,8 @@ function Core.Draw()
   local view = ns.Rules.render(model, ns.L, { inCombat = inCombat, prevTray = prevTray })
   ns.view, ns.model = view, model
   ns.Medallion.Update(view)
+  -- 40 s igjen på en buff du hadde: ikon med nedtelling midt på skjermen (også i kamp)
+  ns.Expiry.Update(Core.sample and {} or ns.Rules.expiring(model.self, model.st), ns.L)
   if Core.sample then
     ns.Tray.Layout(mbSide(), {}, {}, ns.L) -- testdata har ingen ekte spells å kaste
     prevTray = nil

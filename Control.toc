@@ -2,7 +2,7 @@
 ## Title: Control
 ## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk. (Fase 8: byvakt)
 ## Author: Daniel
-## Version: 0.8.0
+## Version: 0.8.1
 ## SavedVariablesPerCharacter: ControlCharDB
 
 Locale\nbNO.lua
@@ -18,5 +18,6 @@ UI\Tray.lua
 UI\SideBar.lua
 UI\Menu.lua
 UI\Alert.lua
+UI\Expiry.lua
 Core.lua
 Debug.lua

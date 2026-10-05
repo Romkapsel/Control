@@ -235,6 +235,22 @@ end
 ------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
+-- Snart ute (SPEC §11 nivå 2, Daniel 5. okt): buffer som var på og har 40 s eller mindre igjen, kortest først
+------------------------------------------------------------------------
+
+function Rules.expiring(entries, st)
+  local out = {}
+  for _, e in ipairs(entries or {}) do
+    local s = st[e.id]
+    if (e.type == "spell" or e.type == "buffitem") and s and s.status == "expiring" and s.left then
+      out[#out + 1] = { e = e, left = s.left }
+    end
+  end
+  table.sort(out, function(a, b) return a.left < b.left end)
+  return out
+end
+
+------------------------------------------------------------------------
 -- Byvakt (SPEC §10, §11 nivå 3): hva du drar ut uten. Alle mine oppføringer, begge tier.
 -- sev 2 = noe er tomt eller mangler i tier I (rød + lyd), 1 = under ønsket / tier II (oransje), 0 = alt med.
 ------------------------------------------------------------------------
