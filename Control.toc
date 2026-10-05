@@ -2,7 +2,7 @@
 ## Title: Control
 ## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk. (Fase 7 og 8: kamp og byvakt)
 ## Author: Daniel
-## Version: 0.9.4
+## Version: 0.9.5
 ## SavedVariablesPerCharacter: ControlCharDB
 
 Locale\nbNO.lua

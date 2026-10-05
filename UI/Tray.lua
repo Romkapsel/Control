@@ -22,6 +22,53 @@ local function air() return AIR - SEAM + ((ns.Medallion.Extra and ns.Medallion.E
 -- Bakgrunn og bronsekant som sidemenyen (SPEC §13.2)
 local function chrome(f) Style.Frame(f) end -- lik kant hele veien rundt (UI/Style.lua)
 
+-- Knapper som forsvinner, krymper og tones ut (SPEC §7.3: 0,17 s). Sikre knapper kan ikke animeres i kamp,
+-- så det er en kopi som ikke er klikkbar (et bilde av ikonet) som krymper, der knappen stod.
+local ghosts = {}
+local function ghostFrame()
+  for _, g in ipairs(ghosts) do if not g:IsShown() then return g end end
+  local g = CreateFrame("Frame", nil, UIParent)
+  g:SetFrameStrata("HIGH")
+  g:EnableMouse(false)
+  g.tex = g:CreateTexture(nil, "ARTWORK")
+  g.tex:SetAllPoints()
+  g.tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  g.anim = g:CreateAnimationGroup()
+  local s = g.anim:CreateAnimation("Scale")
+  if s.SetScaleFrom then s:SetScaleFrom(1, 1) s:SetScaleTo(0.55, 0.55) end
+  s:SetDuration(0.17)
+  s:SetSmoothing("IN")
+  local a = g.anim:CreateAnimation("Alpha")
+  a:SetFromAlpha(1)
+  a:SetToAlpha(0)
+  a:SetDuration(0.17)
+  g.anim:SetScript("OnFinished", function() g:Hide() end)
+  ghosts[#ghosts + 1] = g
+  return g
+end
+
+-- Hvor knappen står på skjermen (i UIParents enheter), målt før den skjules
+local function screenRect(b)
+  local cx, cy = b:GetCenter()
+  if not cx then return nil end
+  local k = (b:GetEffectiveScale() or 1) / (UIParent:GetEffectiveScale() or 1)
+  return cx * k, cy * k, (b:GetWidth() or BTN) * k
+end
+
+function Tray.Vanish(b, x, y, w)
+  if not x then x, y, w = screenRect(b) end
+  if not x then return end
+  local g = ghostFrame()
+  g.tex:SetTexture(b.icon:GetTexture())
+  g:SetSize(w or BTN, w or BTN)
+  g:ClearAllPoints()
+  g:SetPoint("CENTER", UIParent, "BOTTOMLEFT", x, y)
+  g:SetAlpha(1)
+  g:Show()
+  g.anim:Play()
+  Tray.lastGhost = g
+end
+
 local function popIn(b)
   if not b.popIn then
     b.popIn = b:CreateAnimationGroup()
@@ -124,6 +171,13 @@ local function button(t, i)
   if not b then
     b = ns.EntryButton.Create(t.frame)
     SecureHandlerWrapScript(b, "OnClick", t.frame, Tray.PRE, Tray.AFTER_CLICK)
+    -- I kamp skjuler det sikre skriptet knappen ved klikk: la en kopi krympe der den stod
+    b:HookScript("PreClick", function(self) self.preX, self.preY, self.preW = screenRect(self) end)
+    b:HookScript("PostClick", function(self, mouse)
+      if mouse == "LeftButton" and InCombatLockdown() and not self:IsShown() then
+        Tray.Vanish(self, self.preX, self.preY, self.preW)
+      end
+    end)
     t.buttons[i] = b
   end
   b:SetAttribute("ks-order", i)
@@ -166,6 +220,15 @@ function Tray.Layout(side, entries, st, L, covered)
   end
   local old = {}
   for _, id in ipairs(t.ids) do old[id] = true end
+  -- Knapper som forsvinner (buffen er på, tingen er hentet): kopien krymper der de stod
+  local keep = {}
+  for _, e in ipairs(entries) do keep[e.id] = true end
+  if t.frame:IsShown() and not covered then
+    for i, id in ipairs(t.ids) do
+      local b = t.buttons[i]
+      if not keep[id] and b and b:IsShown() then Tray.Vanish(b) end
+    end
+  end
   t.ids = {}
   for i, e in ipairs(entries) do
     local b = button(t, i)

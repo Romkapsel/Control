@@ -300,6 +300,10 @@ local function build()
   sym.right.one = symbolFrame(sym.right, 0, 0) symbol(sym.right.one, "sym_one")
   sym.right.two = symbolFrame(sym.right, 0, 0) symbol(sym.right.two, "sym_two")
 
+  -- Lysbuen langs ringen (SPEC §7.1): myk bue på bronsekanten som peker mot sonen, sammen med lysprikken
+  parts.arc = Style.Image(face, "medal_arc", MEDAL, MEDAL, "OVERLAY", 3)
+  parts.arc:SetBlendMode("ADD")
+  Style.Tint({ parts.arc }, C.goldLight, 0)
   -- Lysprikken på kanten: myk glorie og en liten prikk
   parts.dotHalo = Style.Image(face, "soft", 9, 9, "OVERLAY", 4)
   parts.dot = Style.Image(face, "disc", 4, 4, "OVERLAY", 5)
@@ -365,6 +369,8 @@ function applyAll()
   end
   parts.dot:SetAlpha(v("dot", 0))
   parts.dotHalo:SetAlpha(v("dot", 0) * 0.35)
+  if parts.arc.SetRotation then parts.arc:SetRotation(ang) end
+  parts.arc:SetAlpha(v("dot", 0) * 0.7)
 
   parts.hubMove:SetAlpha(v("hubMove", 0))
   parts.hubLock:SetAlpha(v("hubLock", 0))

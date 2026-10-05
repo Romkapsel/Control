@@ -33,7 +33,12 @@ local function frame(name, kind)
   local f = { scripts = {}, shown = true, attrs = {}, points = {}, scale = 1, alpha = 1, name = name, kind = kind }
   function f:SetScript(k, fn) self.scripts[k] = fn end
   function f:GetScript(k) return self.scripts[k] end
-  function f:HookScript(k, fn) self.scripts["hook" .. k] = fn end
+  function f:HookScript(k, fn) -- som i spillet: flere kroker på samme skript kjøres etter hverandre
+    local prev = self.scripts["hook" .. k]
+    if prev then self.scripts["hook" .. k] = function(...) prev(...) fn(...) end else self.scripts["hook" .. k] = fn end
+  end
+  function f:SetRotation(r) self.rotation = r end
+  function f:GetWidth() return self.width end
   function f:RegisterEvent(e) T.handlers[e] = T.handlers[e] or {} table.insert(T.handlers[e], self) end
   function f:RegisterUnitEvent(e) self:RegisterEvent(e) end
   function f:Show() self.shown = true end

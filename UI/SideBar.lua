@@ -36,9 +36,6 @@ local function airNow() return AIR - SEAM + ((ns.Medallion.Extra and ns.Medallio
 -- Fura under rad 1 og statuslinja starter etter lufta; flyttes når medaljongen endrer størrelse
 local function anchorInner(bar)
   local f, side, a = bar.frame, bar.side, bar.air
-  bar.hA:ClearAllPoints()
-  bar.hA:SetPoint("TOPLEFT", f, "TOPLEFT", side == "right" and (2 + a - 6) or 8, -ROW1)
-  bar.hA:SetPoint("TOPRIGHT", f, "TOPRIGHT", side == "right" and -8 or -(2 + a - 6), -ROW1)
   bar.status:ClearAllPoints()
   if side == "right" then
     bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2 + a + 2, 4)
@@ -120,9 +117,6 @@ function SB.Create(root, side)
   f:SetScript("OnMouseUp", function() if GetCursorInfo() then SB.DropOn(side) end end)
 
   local bar = { frame = f, side = side, buttons = {}, slots = {}, ids = {}, air = AIR - SEAM }
-  bar.hA, bar.hB = groove(f, true)
-  bar.hB:SetPoint("TOPLEFT", bar.hA, "BOTTOMLEFT")
-  bar.hB:SetPoint("TOPRIGHT", bar.hA, "BOTTOMRIGHT")
   bar.vA, bar.vB = groove(f, false)
   bar.vA:SetHeight(BTN)
   bar.vB:SetHeight(BTN)
@@ -142,8 +136,14 @@ function SB.Create(root, side)
   bar.close:SetPoint(side == "right" and "BOTTOMRIGHT" or "BOTTOMLEFT", f, side == "right" and "BOTTOMRIGHT" or "BOTTOMLEFT",
     side == "right" and -8 or 8, 9)
 
-  f.fadeIn = f:CreateAnimationGroup()
-  local a = f.fadeIn:CreateAnimation("Alpha")
+  -- Folder seg ut fra medaljongsiden (SPEC §7.4: 0,35 s, opasitet 0,2 s)
+  f.unfold = f:CreateAnimationGroup()
+  local sc = f.unfold:CreateAnimation("Scale")
+  if sc.SetScaleFrom then sc:SetScaleFrom(0.2, 1) sc:SetScaleTo(1, 1) end
+  sc:SetOrigin(side == "right" and "LEFT" or "RIGHT", 0, 0)
+  sc:SetDuration(0.35)
+  sc:SetSmoothing("OUT")
+  local a = f.unfold:CreateAnimation("Alpha")
   a:SetFromAlpha(0)
   a:SetToAlpha(1)
   a:SetDuration(0.2)
@@ -253,7 +253,7 @@ function SB.SetOpen(sideKey, open)
   if not bar or InCombatLockdown() then return false end
   if open then
     bar.frame:Show()
-    bar.frame.fadeIn:Play()
+    bar.frame.unfold:Play() -- folder seg ut fra medaljongen (bare utenfor kamp; i kamp åpner det sikre skriptet)
   else
     bar.frame:Hide()
   end
@@ -298,6 +298,40 @@ local function hoveredButton(bar)
   end
 end
 
+-- Gullstrek som viser hvor knappen havner (SPEC §8): på kanten av knappen du står over, på siden den skal inn,
+-- eller foran «+» i den andre raden (menyen). Egen ramme over alt, ikke sikker: kan vises fritt.
+local marker
+local function ensureMarker()
+  if marker then return marker end
+  marker = CreateFrame("Frame", nil, UIParent)
+  marker:SetFrameStrata("TOOLTIP")
+  marker:SetSize(2, 44)
+  marker.line = marker:CreateTexture(nil, "OVERLAY")
+  marker.line:SetAllPoints()
+  marker.line:SetColorTexture(C.gold[1], C.gold[2], C.gold[3], 1)
+  marker:Hide()
+  SB.marker = marker
+  return marker
+end
+
+local function dropTarget(bar, b)
+  local to = hoveredButton(bar)
+  if to and to ~= b.index then return bar.buttons[to], (to > b.index) and "RIGHT" or "LEFT" end
+  for _, s in ipairs(bar.slots or {}) do
+    if s.drop and s:IsShown() and s:IsMouseOver() and s.drop.party == (b.isParty and true or false) then return s, "LEFT" end
+  end
+end
+
+local function showMarker(bar, b)
+  local m = ensureMarker()
+  local target, edge = nil, nil
+  if bar.frame:IsMouseOver() then target, edge = dropTarget(bar, b) end
+  if not target then m:Hide() return end
+  m:ClearAllPoints()
+  m:SetPoint("CENTER", target, edge, edge == "RIGHT" and 3 or -3, 0)
+  m:Show()
+end
+
 function SB.BeginDrag(b)
   if InCombatLockdown() or not b.canDrag or not b.entry then return end
   local g = ensureGhost()
@@ -312,6 +346,7 @@ function SB.BeginDrag(b)
     local inside = dragging and dragging.bar.frame:IsMouseOver()
     self.text:SetText(inside and "" or ns.L.DRAG_REMOVE)
     self.icon:SetDesaturated(not inside)
+    if dragging then showMarker(dragging.bar, dragging.button) end
   end)
   g:Show()
 end
@@ -322,6 +357,7 @@ function SB.EndDrag(b)
   dragging = nil
   b:SetAlpha(1)
   if ghost then ghost:Hide() ghost:SetScript("OnUpdate", nil) end
+  if marker then marker:Hide() end
   if InCombatLockdown() then return end
   if not bar.frame:IsMouseOver() then
     if SB.onRemove then SB.onRemove(b.entry, b.isParty) end

@@ -123,11 +123,12 @@ function EB.Create(parent)
   fa:SetDuration(0.17)
 
   -- Glød: pulserende gull, 2,4 s syklus (innerkant + to ytre lag)
+  -- Ett mykt bilde (Daniel 5. okt: båndene av rektangler så pikselerte og trange ut): tynn lys kant rett
+  -- innenfor knappens kant og et skinn som stopper før neste knapp. 64 × 64, sentrert på knappen.
   b.glow = CreateFrame("Frame", nil, b)
   b.glow:SetAllPoints(b)
-  edgeRects(b.glow, "OVERLAY", 5, 0, 2, GLOW, 1)
-  edgeRects(b.glow, "BACKGROUND", -1, 3, 3, GLOW, 0.35)
-  edgeRects(b.glow, "BACKGROUND", -2, 7, 4, GLOW, 0.15)
+  b.glowTex = Style.Image(b.glow, "glow_btn", 64, 64, "OVERLAY", 5)
+  b.glowTex:SetVertexColor(GLOW[1], GLOW[2], GLOW[3])
   b.glowAnim = b.glow:CreateAnimationGroup()
   b.glowAnim:SetLooping("BOUNCE")
   local ga = b.glowAnim:CreateAnimation("Alpha")

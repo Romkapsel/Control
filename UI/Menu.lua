@@ -595,8 +595,13 @@ function Menu.Create(parent, database, locale)
   frame:SetHeight(100)
   Style.Frame(frame)
   frame:EnableMouse(true)
-  frame.fadeIn = frame:CreateAnimationGroup()
-  local a = frame.fadeIn:CreateAnimation("Alpha")
+  frame.unfold = frame:CreateAnimationGroup()
+  local sc = frame.unfold:CreateAnimation("Scale")
+  if sc.SetScaleFrom then sc:SetScaleFrom(1, 0.25) sc:SetScaleTo(1, 1) end
+  sc:SetDuration(0.3)
+  sc:SetSmoothing("OUT")
+  frame.unfoldScale = sc
+  local a = frame.unfold:CreateAnimation("Alpha")
   a:SetFromAlpha(0)
   a:SetToAlpha(1)
   a:SetDuration(0.2)
@@ -622,7 +627,9 @@ function Menu.SetOpen(v)
   if InCombatLockdown() or not frame then return end
   if v then
     frame:Show()
-    frame.fadeIn:Play()
+    -- Glir ut fra medaljongen: ned når den henger under, opp når den står over (SPEC §7.6, 0,3 s)
+    frame.unfoldScale:SetOrigin(Menu.OpensUp() and "BOTTOM" or "TOP", 0, 0)
+    frame.unfold:Play()
   else
     frame:Hide()
   end

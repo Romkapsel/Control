@@ -272,8 +272,54 @@ def chevrons():
         c.save(name)
 
 
+def medal_arc():
+    # Lysbuen langs ringen ved mus over (SPEC §7.1): myk bue på bronsekanten (r = 29), ±40°, peker mot høyre (0°).
+    # Roteres i spillet mot sonen musa er i, farges lyst gull og legges på med ADD.
+    c = Canvas(MEDAL_PX, MEDAL_HALF)
+    px = c.img.load()
+    for yy in range(c.n):
+        for xx in range(c.n):
+            x = (xx - c.n / 2) / c.s
+            y = (c.n / 2 - yy) / c.s
+            r = math.hypot(x, y)
+            ang = abs(math.degrees(math.atan2(y, x)))
+            if ang > 40 or abs(r - 29) > 6:
+                continue
+            a = math.exp(-((r - 29) / 2.0) ** 2) * math.cos(math.pi / 2 * ang / 40) ** 2
+            px[xx, yy] = (255, 255, 255, round(255 * a))
+    c.save("medal_arc")
+
+
+def glow_btn():
+    # Gløden rundt en knapp på 40 (Daniel 5. okt: de harde båndene så pikselerte ut): en lys kant rett innenfor
+    # knappens kant og et mykt skinn utenfor. Bildet dekker 64 × 64 enheter, sentrert på knappen. Hvit, farges i spillet.
+    px_size, half = 128, 32
+    c = Canvas(px_size, half)
+    px = c.img.load()
+    B, R = 20.0, 1.5  # knappens halve side, hjørneradius
+    for yy in range(c.n):
+        for xx in range(c.n):
+            x = abs((xx - c.n / 2) / c.s)
+            y = abs((c.n / 2 - yy) / c.s)
+            qx, qy = x - (B - R), y - (B - R)
+            outside = math.hypot(max(qx, 0), max(qy, 0)) + min(max(qx, qy), 0) - R  # avstand til knappens kant
+            # Tynn kant (Daniel: «trangt», strekene for tykke) og et skinn som stopper før neste knapp (6 unna)
+            if -1.25 <= outside <= 0:
+                a = 1.0
+            elif 0 < outside <= 6:
+                a = 0.5 * (1 - outside / 6) ** 2
+            elif -1.75 < outside < -1.25:
+                a = (outside + 1.75) / 0.5
+            else:
+                continue
+            px[xx, yy] = (255, 255, 255, round(255 * a))
+    c.save("glow_btn")
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
+    medal_arc()
+    glow_btn()
     medal_base()
     medal_ring()
     medal_glow()
