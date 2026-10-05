@@ -192,7 +192,7 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
     local s = emptySlot(bar, k)
     place(bar, s, slotX(#order + k - 1, n1, groove, a))
     s.plus:SetShown(k == 1)
-    s.hint = (k == 1) and (isParty and L.EMPTY_PARTY or L.EMPTY_SELF) or L.FREE_SLOT
+    s.hint = isParty and L.EMPTY_PARTY or L.EMPTY_SELF
     swordsAlpha(s, 0)
     s:Show()
   end

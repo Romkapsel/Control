@@ -350,9 +350,7 @@ local function partyTooltip(b, e, st, L)
   if cast and cast.target then
     local action = cast.group and string.format(L.TIP_CAST_GROUP, cast.spell) or string.format(L.TIP_CAST_ON, cast.target.name)
     GameTooltip:AddLine(action, C.green[1], C.green[2], C.green[3])
-  else
-    GameTooltip:AddLine(L.TIP_NO_TARGET, C.help[1], C.help[2], C.help[3])
-  end
+  end -- ingen å kaste på: «Alle har den» står alt over
   local h = C.help
   GameTooltip:AddLine(e.onlyOn and L.TIP_ONLY_ON or L.TIP_PARTY_COMBAT, h[1], h[2], h[3])
 end
@@ -378,9 +376,7 @@ function EB.ShowTooltip(b)
     return
   elseif e.type == "item" then
     line = string.format(L.TIP_HAVE, st.count or 0, e.want or 1)
-    local s = R.stockSeverity(e, st)
-    action = s == 2 and L.TIP_STOCK_EMPTY or s == 1 and L.TIP_STOCK_LOW or L.TIP_STOCK_OK
-    actColor = C.help
+    -- Lagerting: «0 av 10» og fargen sier alt (Daniel 5. okt), ingen handlingslinje
   else
     if st.status == "expired" then line = L.TIP_EXPIRED
     elseif st.status == "missing" or not st.status then line = L.TIP_MISSING
@@ -389,7 +385,7 @@ function EB.ShowTooltip(b)
     if e.type == "buffitem" then
       line = line .. string.format(L.TIP_IN_BAG, st.count or 0, e.want or 1)
       if (st.count or 0) > 0 then
-        action = string.format(L.TIP_USE, e.name or "")
+        action = L.TIP_USE
       else
         action, actColor = L.TIP_NONE_IN_BAG, C.help
       end
@@ -398,7 +394,7 @@ function EB.ShowTooltip(b)
     end
   end
   GameTooltip:AddLine(line, 1, 1, 1)
-  GameTooltip:AddLine(action, actColor[1], actColor[2], actColor[3])
+  if action ~= "" then GameTooltip:AddLine(action, actColor[1], actColor[2], actColor[3]) end
   local h = C.help
   if e.type == "buffitem" or e.type == "item" then GameTooltip:AddLine(L.TIP_WHEEL, h[1], h[2], h[3]) end
   GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_1 or L.TIER_2), h[1], h[2], h[3])

@@ -21,7 +21,7 @@ eq(T.tooltip.text, "Meg", "tooltip før")
 st.hit.scripts.OnMouseUp(st.hit, "LeftButton")
 check(mb.frame.shown, "høyre sone folder ut mine")
 eq(T.tooltip.text, "Meg", "tooltip etter")
-check(mb.slots[1].shown and mb.slots[1].plus.shown and mb.slots[1].hint == "Dra en spell eller en ting fra baggen hit",
+check(mb.slots[1].shown and mb.slots[1].plus.shown and mb.slots[1].hint == "Dra en buff eller ting hit",
   "tom side: én slipprute med «+» og hjelpetekst")
 check(not (mb.slots[2] and mb.slots[2].shown), "tom side: bare én rute")
 eq(mb.frame.width, 40 + 46, "tom side: bredde")
@@ -31,7 +31,7 @@ eq(mb.status.text, "", "tom side: ingen statuslinje (får ikke plass)")
 T.cursor = { "spell", 3, "spell", 5232 }
 mb.frame.scripts.OnReceiveDrag(mb.frame)
 local motw = ControlCharDB.self[1]
-check(motw and motw.tier == 2 and Chat("Mark of the Wild er lagt til (tier II)"), "spell sluppet på sidemenyen havner i tier II")
+check(motw and motw.tier == 2 and Chat("Mark of the Wild lagt til i tier II."), "spell sluppet på sidemenyen havner i tier II")
 T.counts[13510] = 3
 T.cursor = { "item", 13510, "[Flask]" }
 mb.slots[1].scripts.OnReceiveDrag(mb.slots[1])
@@ -56,7 +56,7 @@ local p2 = mb.buttons[2].points[#mb.buttons[2].points]
 eq(p2[4], 2 + 36 + 46 + 12, "tier II starter etter fura")
 b1.scripts.hookOnEnter(b1)
 local found = false
-for _, l in ipairs(T.tooltip.lines) do if l == "Høyreklikk: bytt tier (nå I)" then found = true end end
+for _, l in ipairs(T.tooltip.lines) do if l == "Høyreklikk: tier (nå I)" then found = true end end
 check(found, "tooltip: høyreklikk-hjelp med tier")
 
 -- Musehjul på flasken: ønsket antall
@@ -83,9 +83,9 @@ mb.frame.mouse = false
 b2.scripts.OnDragStop(b2)
 T.shift = false
 eq(#ControlCharDB.self, 1, "Shift + dra ut: flasken er fjernet")
-check(Chat("Flask of the Titans er fjernet. Skriv /control angre"), "sier fra i chatten")
+check(Chat("Flask of the Titans fjernet (/control angre)."), "sier fra i chatten")
 SlashCmdList.CONTROL("angre")
-check(#ControlCharDB.self == 2 and ControlCharDB.self[2] == flask and Chat("er tilbake på lista"), "/control angre: tilbake på samme plass")
+check(#ControlCharDB.self == 2 and ControlCharDB.self[2] == flask and Chat("Flask of the Titans er tilbake."), "/control angre: tilbake på samme plass")
 SlashCmdList.CONTROL("angre")
 check(Chat("Ingenting å angre"), "angre to ganger")
 
@@ -109,7 +109,7 @@ check(ns.Tray.Get("right").frame.shown, "knappene ved medaljongen er tilbake")
 mouse(-20, 0)
 M.TrackMouse()
 st.hit.scripts.OnMouseUp(st.hit, "LeftButton")
-check(pb.frame.shown and pb.slots[1].hint == "Dra en buff du kan gi, eller en scroll, hit", "gruppesiden åpnes med egen hjelpetekst")
+check(pb.frame.shown and pb.slots[1].hint == "Dra en buff eller scroll hit", "gruppesiden åpnes med egen hjelpetekst")
 T.cursor = { "spell", 3, "spell", 1126 }
 pb.frame.scripts.OnReceiveDrag(pb.frame)
 local g = ControlCharDB.party[1]

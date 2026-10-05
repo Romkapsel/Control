@@ -49,11 +49,11 @@ T.counts[13510] = 3
 T.cursor = { "item", 13510, "[Flask of the Titans]" }
 slot(false, 1).scripts.OnReceiveDrag(slot(false, 1))
 local flask = ControlCharDB.self[1]
-check(flask and flask.tier == 1 and Chat("Flask of the Titans er lagt til (tier I)"), "slipp i rad I: tier I")
+check(flask and flask.tier == 1 and Chat("Flask of the Titans lagt til i tier I."), "slipp i rad I: tier I")
 T.cursor = { "spell", 3, "spell", 5232 }
 slot(false, 2).scripts.OnReceiveDrag(slot(false, 2))
 local motw = ControlCharDB.self[2]
-check(motw and motw.tier == 2 and Chat("Mark of the Wild er lagt til (tier II)"), "slipp i rad II: tier II")
+check(motw and motw.tier == 2 and Chat("Mark of the Wild lagt til i tier II."), "slipp i rad II: tier II")
 eq(#Menu.host.buttons, 2, "to knapper i menyen")
 local bm = Menu.host.buttons[2]
 check(bm.entry == motw and bm:GetAttribute("spell") == "Mark of the Wild", "knappen i menyen kaster som overalt ellers")
@@ -76,7 +76,7 @@ check(bm.entry == motw, "MotW står sist i rad I")
 bm.scripts.OnDragStart(bm)
 Menu.frame.mouse = false
 bm.scripts.OnDragStop(bm)
-check(#ControlCharDB.self == 1 and Chat("Mark of the Wild er fjernet"), "dra ut: fjernet")
+check(#ControlCharDB.self == 1 and Chat("Mark of the Wild fjernet (/control angre)."), "dra ut: fjernet")
 SlashCmdList.CONTROL("angre")
 check(#ControlCharDB.self == 2, "angre: tilbake")
 T.shift = false
@@ -103,11 +103,11 @@ eq(mira.color[1], 0.25, "Mira i klassefarge (mage)")
 mira.scripts.OnClick(mira)
 check(g.onlyOn and g.onlyOn.Brakk and not g.onlyOn.Mira, "klikk Mira: følges bare på Brakk")
 eq(#ns.model.st[g.id].members, 1, "bare Brakk telles")
-check(Chat("MotW følges nå på: Brakk."), "sier fra i chatten")
+check(Chat("MotW: bare Brakk."), "sier fra i chatten")
 mira = findLink("Mira")
 check(mira and not mira.followed, "Mira står grå")
 mira.scripts.OnClick(mira)
-check(g.onlyOn == nil and Chat("MotW følges nå på alle."), "klikk igjen: alle")
+check(g.onlyOn == nil and Chat("MotW: alle."), "klikk igjen: alle")
 
 -- Byvakt: «Legg til» for stedet du står, og «Voktes (n)» som folder ut lista
 local add = Menu.cityButton
@@ -140,7 +140,7 @@ eq(#cities, 4, "slipp inni lista: ingenting fjernet")
 darn.scripts.OnDragStart(darn)
 Menu.cityBox.mouse = false
 darn.scripts.OnDragStop(darn)
-check(#cities == 3 and Chat("Darnassus voktes ikke lenger."), "dra ut: Darnassus fjernet")
+check(#cities == 3 and Chat("Darnassus fjernet (/control angre)."), "dra ut: Darnassus fjernet")
 SlashCmdList.CONTROL("angre")
 check(#cities == 4 and cities[3] == "Darnassus", "angre: Darnassus tilbake på plassen sin")
 Menu.cityListButton.scripts.OnClick(Menu.cityListButton)

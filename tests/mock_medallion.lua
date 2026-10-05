@@ -119,7 +119,7 @@ check(ns.view.empty and Chat("dine egne buffer og ting"), "etter testdataene: ti
 -- Nullstill
 SlashCmdList.CONTROL("nullstill")
 p = M.State().root.points[1]
-check(p[1] == "CENTER" and p[5] == 200 and Chat("flyttet tilbake"), "/control nullstill")
+check(p[1] == "CENTER" and p[5] == 200 and Chat("Tilbakestilt."), "/control nullstill")
 SlashCmdList.CONTROL("")
 check(Chat("/control test"), "hjelpetekst")
 

@@ -16,7 +16,7 @@ local hit = ns.Medallion.State().hit
 -- Slipp Mark of the Wild (rank 2, 5232) på medaljongen
 T.cursor = { "spell", 3, "spell", 5232 }
 hit.scripts.OnReceiveDrag(hit)
-check(T.cursor == nil and Chat("Mark of the Wild er lagt til"), "spell sluppet på medaljongen er lagt til")
+check(T.cursor == nil and Chat("Mark of the Wild lagt til i tier I"), "spell sluppet på medaljongen er lagt til")
 local motw = ControlCharDB.self[1]
 check(motw and motw.type == "spell" and motw.tier == 1 and motw.short == "MotW", "MotW: spell, tier I, kortnavn")
 check(motw.auraNames[1] == "Mark of the Wild" and motw.auraNames[2] == "Gift of the Wild", "Gift of the Wild teller som på (Q9)")
@@ -35,7 +35,7 @@ check(32 + b1.points[1][4] == 64 + 6, "første knapp 6 px utenfor medaljongen")
 
 T.cursor = { "spell", 3, "spell", 1126 }
 hit.scripts.OnReceiveDrag(hit)
-check(#ControlCharDB.self == 1 and Chat("står allerede på lista"), "samme spell (annen rank) legges ikke til to ganger")
+check(#ControlCharDB.self == 1 and Chat("er allerede med"), "samme spell (annen rank) legges ikke til to ganger")
 
 -- Slipp en flask: klikk med noe på musepekeren = slipp
 T.counts[13510] = 3
@@ -120,7 +120,7 @@ eq(mb.alpha, 1, "utenfor kamp: helt synlig")
 
 -- Tooltip
 mb.scripts.hookOnEnter(mb)
-check(T.tooltip.text == "Mark of the Wild" and T.tooltip.lines[1] == "Gått ut" and T.tooltip.lines[2] == "Klikk for å kaste på deg selv",
+check(T.tooltip.text == "Mark of the Wild" and T.tooltip.lines[1] == "Gått ut" and T.tooltip.lines[2] == "Klikk: kast",
   "tooltip: navn, status, handling")
 
 -- Mat: auraen heter «Well Fed»; trykket holder den «på» mens du spiser
