@@ -103,3 +103,102 @@ function Craft.Plan(db, e, have)
   end
   return { times = times, gets = times * (rec.made or 1), parts = parts, ok = ok }
 end
+
+------------------------------------------------------------------------
+-- «+» i yrkesvinduet (Daniel 5. okt: ikonet der kan ikke dras). En egen liten knapp ved ikonet til oppskriften du har
+-- valgt: klikk = legg tingen til (Fint å ha), eller dra den dit du vil (på medaljongen = Må ha). Knappen er Controls
+-- egen og festes bare ved ikonet – spillets vindu røres ikke. Lages først når yrkesvinduet åpnes (da finnes Style).
+------------------------------------------------------------------------
+
+-- Tingen oppskriften du har valgt, lager, og ikonet den skal stå ved. Ny API: ProfessionsFrame; classic: TradeSkillFrame.
+function Craft.Selected()
+  local pf = ProfessionsFrame
+  if pf and pf.IsShown and pf:IsShown() then
+    local form = pf.CraftingPage and pf.CraftingPage.SchematicForm
+    if not form then return nil end
+    local info = form.currentRecipeInfo
+    if not info and form.GetRecipeInfo then
+      local ok, r = pcall(form.GetRecipeInfo, form)
+      info = ok and r or nil
+    end
+    local rid = type(info) == "table" and info.recipeID
+    if rid and C_TradeSkillUI and C_TradeSkillUI.GetRecipeSchematic then
+      local ok, sch = pcall(C_TradeSkillUI.GetRecipeSchematic, rid, false)
+      if ok and type(sch) == "table" and sch.outputItemID then return sch.outputItemID, form.OutputIcon or form end
+    end
+    return nil
+  end
+  local tf = TradeSkillFrame
+  if tf and tf.IsShown and tf:IsShown() and GetTradeSkillSelectionIndex then
+    local okI, i = pcall(GetTradeSkillSelectionIndex)
+    local okL, link = pcall(GetTradeSkillItemLink, okI and i or 0)
+    local id = okL and idOf(link)
+    if id then return id, TradeSkillSkillIcon or tf end
+  end
+  return nil
+end
+
+-- Hva klienten har (skrives når vinduet åpnes, så vi ser det i lagringsfila hvis knappen ikke dukker opp)
+function Craft.ProbeUI(db)
+  local pf = ProfessionsFrame
+  local form = pf and pf.CraftingPage and pf.CraftingPage.SchematicForm
+  db.debug = db.debug or {}
+  db.debug.craftUI = { professionsFrame = pf ~= nil, schematicForm = form ~= nil,
+                       outputIcon = form and form.OutputIcon ~= nil or false,
+                       currentRecipeInfo = form and type(form.currentRecipeInfo) == "table" or false,
+                       tradeSkillFrame = TradeSkillFrame ~= nil, selected = (Craft.Selected()) }
+end
+
+local btn
+local function makeButton()
+  local St, C, L = ns.Style, ns.Style.C, ns.L
+  btn = CreateFrame("Button", nil, UIParent)
+  btn:SetSize(22, 22)
+  btn:SetFrameStrata("DIALOG")
+  St.Rect(btn, "BACKGROUND", 0, 22, 22, St.hex("8A6A36"), 1)
+  St.Rect(btn, "BACKGROUND", 1, 20, 20, St.hex("1C1610"), 1)
+  btn.fs = btn:CreateFontString(nil, "OVERLAY")
+  if not btn.fs:SetFont(St.FONT_HEAD, 16, "") then btn.fs:SetFontObject(GameFontNormal) end
+  btn.fs:SetPoint("CENTER", 0, 1)
+  btn.fs:SetText("+")
+  btn.fs:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+  btn:RegisterForDrag("LeftButton")
+  btn:SetScript("OnClick", function(self)
+    if self.itemId and ns.Actions and ns.Actions.AddItem then ns.Actions.AddItem(self.itemId) end
+  end)
+  btn:SetScript("OnDragStart", function(self)
+    if not self.itemId or InCombatLockdown() then return end
+    local pick = (C_Item and C_Item.PickupItem) or PickupItem
+    if pick then pcall(pick, self.itemId) end
+  end)
+  btn:SetScript("OnEnter", function(self)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetText(L.CRAFT_ADD, 1, 1, 1)
+    GameTooltip:AddLine(L.CRAFT_ADD_DRAG, C.help[1], C.help[2], C.help[3])
+    GameTooltip:Show()
+  end)
+  btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
+  btn:Hide()
+  Craft.button = btn
+end
+
+-- Kalles av klokka i Core (4 ganger i sekundet) mens yrkesvinduet er åpent, og når det lukkes
+function Craft.UpdateButton(open)
+  if not open or InCombatLockdown() then
+    if btn then btn:Hide() end
+    return
+  end
+  local id, icon = Craft.Selected()
+  if not id then
+    if btn then btn:Hide() end
+    return
+  end
+  if not btn then makeButton() end
+  if btn.anchor ~= icon then
+    btn:ClearAllPoints()
+    btn:SetPoint("CENTER", icon, "BOTTOMRIGHT", -2, 2)
+    btn.anchor = icon
+  end
+  btn.itemId = id
+  btn:Show()
+end

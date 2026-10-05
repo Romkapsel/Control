@@ -93,4 +93,51 @@ C_TradeSkillUI = nil
 eq(db.debug.craft.api, "ny", "ny yrkes-API")
 check(db.recipes[6450] and db.recipes[6450].r[1].id == 4306 and not db.recipes[9999], "bare lærte oppskrifter")
 
+
+-- «+» i yrkesvinduet (Daniel 5. okt: ikonet der kan ikke dras): Controls egen knapp ved ikonet til oppskriften du har valgt
+T.itemNames[3390] = "Elixir of Minor Fortitude"
+T.itemClass[3390] = { 0, 2 }
+local icon = CreateFrame("Button")
+ProfessionsFrame = CreateFrame("Frame")
+ProfessionsFrame:Show()
+ProfessionsFrame.CraftingPage = { SchematicForm = { currentRecipeInfo = { recipeID = 2334 }, OutputIcon = icon } }
+C_TradeSkillUI = { GetRecipeSchematic = function(id) return { outputItemID = id == 2334 and 3390 or nil } end,
+                   GetAllRecipeIDs = function() return {} end }
+Fire("TRADE_SKILL_SHOW")
+Tick()
+local btn = ns.Craft.button
+check(btn and btn.shown and btn.itemId == 3390, "«+» ved ikonet: Elixir of Minor Fortitude")
+check(btn and btn.points[1][2] == icon, "festet ved ikonet")
+check(db.debug.craftUI and db.debug.craftUI.professionsFrame and db.debug.craftUI.outputIcon, "hva klienten har, er skrevet ned")
+-- Klikk: lagt til som Fint å ha i settet du står i
+local before = #db.self
+btn.scripts.OnClick(btn)
+local added = db.self[#db.self]
+check(#db.self == before + 1 and added.itemId == 3390 and added.tier == 2 and added.cat == "flasks", "klikk: lagt til, Fint å ha, Flasks")
+check(Chat("Elixir of Minor Fortitude lagt til (Fint å ha)."), "melding: lagt til")
+btn.scripts.OnClick(btn)
+eq(#db.self, before + 1, "to ganger: ikke dobbelt")
+-- Dra: tingen på musepekeren, så den kan slippes der du vil
+local picked
+C_Item.PickupItem = function(id) picked = id end
+btn.scripts.OnDragStart(btn)
+eq(picked, 3390, "dra: tingen på musepekeren")
+C_Item.PickupItem = nil
+-- Ny oppskrift valgt: knappen følger
+ProfessionsFrame.CraftingPage.SchematicForm.currentRecipeInfo = { recipeID = 1 }
+Tick()
+check(not btn.shown, "oppskrift uten ting: ingen knapp")
+-- Kamp og lukket vindu: borte
+ProfessionsFrame.CraftingPage.SchematicForm.currentRecipeInfo = { recipeID = 2334 }
+T.combat = true
+Tick()
+check(not btn.shown, "i kamp: ingen knapp")
+T.combat = false
+Tick()
+check(btn.shown, "etter kampen: tilbake")
+Fire("TRADE_SKILL_CLOSE")
+Tick()
+check(not btn.shown, "vinduet lukket: borte")
+ProfessionsFrame, C_TradeSkillUI = nil, nil
+
 return n, fails

@@ -70,6 +70,9 @@ for å komme opp på antallet du vil ha: «Kan lages – mangler 2 Wool Cloth».
 
 Control lærer oppskriftene når du åpner yrkesvinduet, og husker dem for karakteren. Åpne det én gang for hvert yrke.
 
+**Legge til fra yrkesvinduet:** ikonet der kan ikke dras, så Control setter en liten **+** ved ikonet til oppskriften
+du har valgt. Klikk = lagt til som «Fint å ha». Eller dra **+** dit du vil ha den (på medaljongen = «Må ha»).
+
 ## Knappene
 
 | Du gjør | Det skjer |

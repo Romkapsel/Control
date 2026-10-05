@@ -245,6 +245,20 @@ function ns.AddFromCursor()
   ns.Refresh(true)
 end
 
+-- «+» i yrkesvinduet: legg tingen til i settet du står i (Fint å ha), som å slippe den i menyen
+function Actions.AddItem(id)
+  if InCombatLockdown() or not id then return end
+  local info = Core.Resolve("item", id)
+  if not info then return Say(ns.L.NOT_KNOWN) end
+  local dup = findDuplicate(ns.db.self, info)
+  if dup then return Say(string.format(ns.L.DUPLICATE, dup.name)) end
+  local e = ns.Data.MakeEntry(ns.db, info, 2)
+  e.tier = 2
+  table.insert(ns.db.self, e)
+  Say(string.format(ns.L.ADDED_SIDE, e.name))
+  ns.Refresh(true)
+end
+
 -- Slipp på en sidemeny: sist i tier II på den siden. En spell på gruppesiden = gruppebuff (SPEC §8).
 function Actions.DropOnSide(sideKey)
   return Actions.DropOn(sideKey == pbSide(), 2)
@@ -614,7 +628,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
                          "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED",
                          "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "TAXIMAP_OPENED", "GOSSIP_SHOW",
                          "TAXIMAP_CLOSED", "GOSSIP_CLOSED", "PLAYER_EQUIPMENT_CHANGED",
-                         "TRADE_SKILL_SHOW", "TRADE_SKILL_UPDATE", "TRADE_SKILL_LIST_UPDATE" }) do
+                         "TRADE_SKILL_SHOW", "TRADE_SKILL_UPDATE", "TRADE_SKILL_LIST_UPDATE", "TRADE_SKILL_CLOSE" }) do
       pcall(self.RegisterEvent, self, e)
     end
     C_Timer.NewTicker(0.25, function()
@@ -623,6 +637,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
       ns.CityWatch.Zone(ns.Menu.Zone())
       ns.CityWatch.Check()
       Core.Draw()
+      if Core.tradeOpen and ns.Craft and ns.Craft.UpdateButton then ns.Craft.UpdateButton(true) end
     end) -- én felles klokke for nedtellingene
     ns.Refresh(true)
     return
@@ -656,6 +671,13 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     -- Yrkesvinduet: les oppskriftene litt etterpå (lista fylles etter at vinduet er åpnet), til «Lag selv» i tooltipen
     -- (ns.Craft finnes ikke hvis spillet ikke er startet på nytt etter at Craft.lua kom i TOC – /reload leser ikke TOC)
     C_Timer.After(0.3, function() if ns.Craft then ns.Craft.Read(ns.db) end end)
+    if event == "TRADE_SKILL_SHOW" then
+      Core.tradeOpen = true
+      C_Timer.After(0.5, function() if ns.Craft and ns.Craft.ProbeUI then ns.Craft.ProbeUI(ns.db) end end)
+    end
+  elseif event == "TRADE_SKILL_CLOSE" then
+    Core.tradeOpen = false
+    if ns.Craft and ns.Craft.UpdateButton then ns.Craft.UpdateButton(false) end
   elseif event == "GOSSIP_SHOW" then
     Core.gossipOpen = true
     -- Flight master: si fra før du trykker «I need a ride» (Daniel 5. okt). Flykartet gir ikke et varsel til.
