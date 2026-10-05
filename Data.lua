@@ -146,6 +146,10 @@ Data.GROUP = {
 -- En buff du kan gi gruppa (PB). Ny = sist i tier II; følges på alle (onlyOn = nil).
 function Data.MakePartyEntry(db, info)
   db.nextId = (db.nextId or 0) + 1
+  if info.kind == "item" then -- scroll: brukes på den som mangler (Daniel 5. okt)
+    return { id = "p" .. db.nextId, type = "partyitem", tier = 2, itemId = info.itemId, name = info.itemName,
+             castName = info.itemSpell, auraNames = { info.itemSpell }, short = Data.ShortName(info.itemName) }
+  end
   return { id = "p" .. db.nextId, type = "partyspell", tier = 2, spellId = info.spellId, name = info.name,
            auraNames = Data.AuraNames(info.name), short = Data.ShortName(info.name), groupSpell = Data.GROUP[info.name] }
 end

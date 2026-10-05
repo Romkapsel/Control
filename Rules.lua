@@ -2,7 +2,7 @@
 -- Inn: oppføringene (SPEC §5.2) og tilstanden per oppføring (SPEC §5.3). Ut: alt UI-et trenger:
 -- alvorlighet, hva som kan trykkes, tallet, ringfargen, hva som står ute, sidemenyene og statuslinja.
 --
--- Oppføring (entry): { id, type = "spell"|"buffitem"|"item"|"partyspell", tier = 1|2, short, name, want,
+-- Oppføring (entry): { id, type = "spell"|"buffitem"|"item"|"partyspell"|"partyitem", tier = 1|2, short, name, want,
 --                      groupSpell (gruppeversjonen, bare partyspell) }
 -- Tilstand (state):  MB: { status = "on"|"expiring"|"expired"|"missing", count = antall i baggen }
 --                    PB: { missingOn = { { name = "Brakk", unit = "party1" }, ... } }  (bare de som følges og mangler;
@@ -15,7 +15,6 @@ local Rules = {}
 ns.Rules = Rules
 
 Rules.EXPIRING_SECONDS = 40 -- SPEC §6.1, Q3
-Rules.MIN_SLOTS = 5         -- SPEC §7.4: knapper + tomme ruter fyller minst så mange plasser
 Rules.STATUS_MAX = 4        -- SPEC §6.6: maks fire i statuslinja, så «+N»
 -- Rammene (ved knappen og sidemenyene) starter i medaljongens midtpunkt, så venstre ende alltid ligger skjult
 -- bak sirkelen (Daniel 4. okt; SPEC hadde 18 px fra kanten, og hjørnene tittet fram). Første knapp står fortsatt
@@ -26,6 +25,9 @@ local SEV_OK, SEV_WARN, SEV_BAD = 0, 1, 2
 Rules.SEV_OK, Rules.SEV_WARN, Rules.SEV_BAD = SEV_OK, SEV_WARN, SEV_BAD
 
 local function hasStock(e) return e.type == "item" or e.type == "buffitem" end
+-- Gruppebuff: en spell du kaster på andre, eller en scroll du bruker på dem (Daniel 5. okt)
+local function isParty(e) return e.type == "partyspell" or e.type == "partyitem" end
+Rules.isParty = isParty
 
 ------------------------------------------------------------------------
 -- Status fra auraen (SPEC §5.3)
@@ -48,7 +50,7 @@ end
 local function missingSev(e) return e.tier == 1 and SEV_BAD or SEV_WARN end
 
 function Rules.buffSeverity(e, st)
-  if e.type == "item" or e.type == "partyspell" then return SEV_OK end
+  if e.type == "item" or isParty(e) then return SEV_OK end
   local s = st and st.status
   if s == "missing" or s == "expired" then return missingSev(e) end
   if s == "expiring" then return SEV_WARN end
@@ -68,7 +70,7 @@ function Rules.partyMissing(st)
 end
 
 function Rules.severity(e, st)
-  if e.type == "partyspell" then
+  if isParty(e) then
     return #Rules.partyMissing(st) > 0 and missingSev(e) or SEV_OK
   end
   return math.max(Rules.buffSeverity(e, st), Rules.stockSeverity(e, st))
@@ -82,6 +84,7 @@ function Rules.canPress(e, st)
   if e.type == "spell" then return Rules.buffSeverity(e, st) > 0 end
   if e.type == "buffitem" then return Rules.buffSeverity(e, st) > 0 and ((st and st.count) or 0) > 0 end
   if e.type == "partyspell" then return #Rules.partyMissing(st) > 0 end
+  if e.type == "partyitem" then return #Rules.partyMissing(st) > 0 and ((st and st.count) or 0) > 0 end
   return false
 end
 
@@ -98,7 +101,7 @@ function Rules.partyCast(e, st, ctx)
   local useGroup = e.groupSpell ~= nil and ctx.inParty == true and #missing > 2
     and ctx.groupUsable == true
   return {
-    spell = useGroup and e.groupSpell or (e.spellName or e.name),
+    spell = useGroup and e.groupSpell or (e.castName or e.spellName or e.name), -- scroll: spellen den kaster
     group = useGroup,
     target = missing[1],
   }
@@ -159,8 +162,8 @@ end
 local function sideBar(entries)
   local t1, t2 = byTier(entries)
   local n = #t1 + #t2
-  -- Tom side: én slipprute med «Dra … hit» (SPEC §6.5). Ellers fylles det opp til minst 5 plasser, alltid minst én.
-  local slots = n == 0 and 1 or math.max(1, Rules.MIN_SLOTS - n)
+  -- Bare én tom rute («+»), etter det som er lagt til: sida vokser én og én (Daniel 5. okt)
+  local slots = 1
   local groove = #t1 > 0 and #t2 > 0
   local ids1, ids2 = {}, {}
   for _, e in ipairs(t1) do ids1[#ids1 + 1] = e.id end
@@ -221,11 +224,8 @@ local function partyStatus(entries, st, L)
       texts[#texts + 1] = p.name .. ": " .. p.members
     end
   end
-  if #parts == 0 then
-    return { label = L.LABEL_PARTY, ok = true, parts = {}, text = L.LABEL_PARTY .. L.LABEL_GAP .. L.PARTY_ALL_OK }
-  end
-  return { label = L.LABEL_MISSING, ok = false, parts = parts,
-           text = L.LABEL_MISSING .. L.LABEL_GAP .. table.concat(texts, L.SEP) }
+  -- Bare navnet på sida (Daniel 5. okt): hvem som mangler, sier knappene (glød og ruter), ikke teksten
+  return { label = L.LABEL_PARTY_BUFFS, ok = #parts == 0, parts = parts, text = L.LABEL_PARTY_BUFFS }
 end
 
 ------------------------------------------------------------------------

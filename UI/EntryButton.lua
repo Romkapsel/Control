@@ -166,6 +166,15 @@ function EB.Bind(b, e, st)
       b:SetAttribute("type", nil) -- alle har den: ingenting å kaste
     end
     b:SetAttribute("item", nil)
+  elseif e.type == "partyitem" then
+    if cast and cast.target then
+      b:SetAttribute("type", "item")
+      b:SetAttribute("item", "item:" .. e.itemId)
+      b:SetAttribute("unit", cast.target.unit) -- scrollen brukes på den som mangler
+    else
+      b:SetAttribute("type", nil)
+    end
+    b:SetAttribute("spell", nil)
   elseif e.type == "spell" then
     b:SetAttribute("type", "spell")
     b:SetAttribute("spell", e.name) -- etter navn: kaster høyeste rank (fase 0, V5)
@@ -199,10 +208,17 @@ function EB.Paint(b, e, st, L, frozen)
   b.band:Hide()
   b.bandText:SetText("")
   local drain, grey, glow = 0, false, false
-  EB.Squares(b, e.type == "partyspell" and st.members or nil)
+  local party = R.isParty(e)
+  EB.Squares(b, party and st.members or nil)
 
-  if e.type == "partyspell" then
-    glow = #(st.missingOn or {}) > 0 -- gløder når noen mangler (SPEC §7.5)
+  if party then
+    glow = R.canPress(e, st) -- gløder når noen mangler (SPEC §7.5) og det er noe å gi dem
+    if e.type == "partyitem" then
+      local count = st.count or 0
+      b.stock:SetText(R.stockText(count, 1))
+      grey = count <= 0
+      if grey then b.stock:SetTextColor(C.help[1], C.help[2], C.help[3]) else b.stock:SetTextColor(1, 1, 1) end
+    end
   elseif e.type == "item" then
     local count, want = st.count or 0, e.want or 1
     if count <= 0 then
@@ -254,7 +270,7 @@ function EB.Paint(b, e, st, L, frozen)
   b.faded = frozen and not R.canPress(e, st)
   local alpha = 1
   if b.faded then alpha = 0
-  elseif e.type == "partyspell" and InCombatLockdown() then alpha = 0.45 end -- vi ser ikke hvem som har den i kamp
+  elseif party and InCombatLockdown() then alpha = 0.45 end -- vi ser ikke hvem som har den i kamp
   b:SetAlpha(alpha)
   if GameTooltip:IsOwned(b) then EB.ShowTooltip(b) end
 end
@@ -352,7 +368,7 @@ function EB.ShowTooltip(b)
   GameTooltip:SetOwner(b, "ANCHOR_RIGHT")
   GameTooltip:SetText(e.type == "buffitem" and (e.auraNames and e.auraNames[1] or e.name) or e.name, 1, 1, 1)
   local line, action, actColor = "", "", C.green
-  if e.type == "partyspell" then
+  if ns.Rules.isParty(e) then
     partyTooltip(b, e, st, L)
     local h = C.help
     GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_1 or L.TIER_2), h[1], h[2], h[3])

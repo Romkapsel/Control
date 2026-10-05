@@ -147,6 +147,7 @@ local function hexOf(c) return string.format("%02x%02x%02x", c[1] * 255, c[2] * 
 local function colored(text, c) return "|cff" .. hexOf(c) .. text .. "|r" end
 
 function SB.StatusText(status, isParty, L)
+  if isParty then return colored(status.label, C.gold) end -- «Party buffs», ikke mer
   local out = colored(status.label, C.gold) .. L.LABEL_GAP
   if status.ok then return out .. colored(isParty and L.PARTY_ALL_OK or L.ALL_OK, C.green) end
   local parts = {}

@@ -24,7 +24,9 @@ ns.L = {
 
   -- Tomme ruter (SPEC §14)
   EMPTY_SELF = "Dra en spell eller en ting fra baggen hit",
-  EMPTY_PARTY = "Dra en buff du kan gi, fra spellboken hit",
+  EMPTY_PARTY = "Dra en buff du kan gi, eller en scroll, hit",
+  LABEL_PARTY_BUFFS = "Party buffs",
+  PARTY_SCROLLS_ONLY = "Bare scrolls kan brukes på andre. Eliksirer, flasks og mat hører til dine egne.",
   FREE_SLOT = "Ledig plass",
 
   -- Medaljongen: sonene og midten (SPEC §14)

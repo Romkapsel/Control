@@ -37,6 +37,7 @@ function Core.Model()
     local s = pst[e.id]
     -- Hva knappen kaster og på hvem (SPEC §9.3, §9.5); gruppeversjonen bare når spillet sier den kan kastes nå
     s.cast = ns.Rules.partyCast(e, s, { inParty = #members > 0, groupUsable = e.groupSpell and ns.Scan.SpellUsable(e.groupSpell) })
+    if e.itemId then s.count = ns.Scan.ItemCount(e.itemId) or 0 end
     st[e.id] = s
   end
   return { self = ns.db.self, party = ns.db.party, st = st }
@@ -126,6 +127,7 @@ function Core.Resolve(kind, id)
   local isFood = classID == 0 and subClassID == 5 and ns.Scan.TooltipHas(id, wellFedName())
   local givesBuff = spell and classID == 0 and (ns.Data.BUFF_SUBCLASS[subClassID] or isFood)
   return { kind = "item", itemId = id, itemName = name, itemSpell = givesBuff and spell or nil, isFood = isFood,
+           isScroll = givesBuff and subClassID == 4 or false,
            wellFed = wellFedName(), count = ns.Scan.ItemCount(id) }
 end
 
@@ -139,7 +141,7 @@ local undo
 
 local function listOf(isParty) return isParty and ns.db.party or ns.db.self end
 local function indexOf(list, e) for i, x in ipairs(list) do if x == e or x.id == e.id then return i end end end
-local function isPartyEntry(e) return e.type == "partyspell" end
+local function isPartyEntry(e) return ns.Rules.isParty(e) end
 
 function Actions.ToggleTier(e)
   if InCombatLockdown() then return end
@@ -216,8 +218,10 @@ function Actions.DropOnSide(sideKey)
   local info
   if kind == "spell" then
     info = Core.Resolve("spell", d or a)
-  elseif kind == "item" and not party then
+  elseif kind == "item" then
     info = Core.Resolve("item", a)
+    -- Gruppesiden tar bare scrolls: eliksirer, flasks og mat kan ikke brukes på andre
+    if party and info and not info.isScroll then ClearCursor() return Say(ns.L.PARTY_SCROLLS_ONLY) end
   else
     if kind then ClearCursor() Say(party and ns.L.EMPTY_PARTY or ns.L.NOT_ADDABLE) end
     return
@@ -289,7 +293,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
   if CAST[event] then
     local e, cast = ns.Track.OnEvent(event, arg1, ...)
     if e then
-      if e.type == "partyspell" then
+      if ns.Rules.isParty(e) then
         ns.Scan.ConfirmParty(e, cast and cast.target and cast.target.name, cast and cast.group, members, ns.db.durations)
       else
         ns.Scan.Confirm(e, ns.db.durations)

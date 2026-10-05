@@ -158,3 +158,6 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | 2026-10-05 | Gruppeversjonen krever at **spillet sier den kan kastes nå** (`C_Spell.IsSpellUsable`: lært, reagens, mana) i stedet for en reagensliste per buff. Treffer alle klasser uten at vi må kjenne reagensene | Claude |
 | 2026-10-05 | Ukjent (ute av syne, offline, død) telles **ikke** som mangler. Ute av syne beholder det vi visste sist. I kamp er gruppeknappene dempet til 45 % – vi ser ikke hvem som har buffen før kastet er bekreftet | Claude |
 | 2026-10-05 | Kjent begrensning til fase 7: klikker du en gruppeknapp ved medaljongen i kamp, skjules den av det sikre skriptet selv om flere fortsatt mangler. Den kommer tilbake etter kampen | Claude |
+| 2026-10-05 | Etter første titt i spillet (Daniel): gruppesidens statuslinje er bare **«Party buffs»** – «Alle har det de skal» sto der selv uten gruppe. Prinsipp: det som ikke lyser eller blinker, er i orden; knappene forteller, ikke teksten | Daniel |
+| 2026-10-05 | Sidemenyene har bare **én** tom rute («+») etter knappene (var: fylt opp til 5 plasser). Sida vokser én og én. Gjelder begge sider | Daniel |
+| 2026-10-05 | **Scrolls på gruppesiden** (`partyitem`): brukes på den som mangler (`type=item`, `unit=partyN`), viser antall, grå når tom. Andre ting avvises med forklaring. 382/382 tester | Daniel + Claude |

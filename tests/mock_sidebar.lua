@@ -39,7 +39,7 @@ local flask = ControlCharDB.self[2]
 check(flask and flask.tier == 2 and flask.type == "buffitem", "item sluppet på den tomme ruta: tier II")
 eq(ns.view.ring, 1, "tier II som mangler: oransje")
 check(#mb.ids == 2 and mb.buttons[1].entry == motw and mb.buttons[2].entry == flask, "knappene i lista sin rekkefølge")
-eq(mb.frame.width, 40 + 5 * 46, "2 knapper + 3 tomme ruter = 5 plasser")
+eq(mb.frame.width, 40 + 3 * 46, "2 knapper + én «+»-rute: sida vokser én og én")
 check(not mb.vA.shown, "bare tier II: ingen fure")
 check(mb.status.text:find("Mangler", 1, true) and mb.status.text:find("MotW", 1, true) and mb.status.text:find("Flask", 1, true),
   "statuslinja: Mangler MotW · Flask")
@@ -51,7 +51,7 @@ b1.scripts.hookPostClick(b1, "RightButton")
 eq(motw.tier, 1, "høyreklikk: tier I")
 eq(ns.view.ring, 2, "tier I som mangler: rød")
 check(mb.vA.shown, "tier I og II: fure mellom")
-eq(mb.frame.width, 40 + 5 * 46 + 12, "bredde med fure")
+eq(mb.frame.width, 40 + 3 * 46 + 12, "bredde med fure")
 local p2 = mb.buttons[2].points[#mb.buttons[2].points]
 eq(p2[4], 2 + 36 + 46 + 12, "tier II starter etter fura")
 b1.scripts.hookOnEnter(b1)
@@ -109,12 +109,12 @@ check(ns.Tray.Get("right").frame.shown, "knappene ved medaljongen er tilbake")
 mouse(-20, 0)
 M.TrackMouse()
 st.hit.scripts.OnMouseUp(st.hit, "LeftButton")
-check(pb.frame.shown and pb.slots[1].hint == "Dra en buff du kan gi, fra spellboken hit", "gruppesiden åpnes med egen hjelpetekst")
+check(pb.frame.shown and pb.slots[1].hint == "Dra en buff du kan gi, eller en scroll, hit", "gruppesiden åpnes med egen hjelpetekst")
 T.cursor = { "spell", 3, "spell", 1126 }
 pb.frame.scripts.OnReceiveDrag(pb.frame)
 local g = ControlCharDB.party[1]
 check(g and g.type == "partyspell" and g.tier == 2 and g.groupSpell == "Gift of the Wild", "gruppebuff med gruppeversjon")
-check(pb.status.text:find("Alle har det de skal", 1, true), "gruppa med én buff: plass til hele teksten (leses fra fase 5)")
+check(pb.status.text:find("Party buffs", 1, true) and not pb.status.text:find("Alle", 1, true), "gruppesiden: bare «Party buffs»")
 T.cursor = { "item", 13510, "[Flask]" }
 pb.frame.scripts.OnReceiveDrag(pb.frame)
 eq(#ControlCharDB.party, 1, "item på gruppesiden avvises")

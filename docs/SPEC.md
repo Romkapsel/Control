@@ -299,7 +299,7 @@ Under knappe-raden i hver sidemeny står én linje:
 
 - **MB-side:** etikett «Mangler» (eller «Status» når alt er ok). Deretter oppføringene med severity > 0, verste først (**stabil** sortering: like alvorlige beholder listerekkefølgen; Luas `table.sort` er ikke stabil, så sorter på `(−severity, indeks)`), maks 4, så «+N». Hver: kortnavn farget etter buff-delen (rød/oransje/lys), og lagertall «har/vil ha» farget etter lager-delen hvis lageret er under. Alt ok: grønt «Alt med».
   Eksempel: `Mangler  MotW · Flask · Defense 4/5 · Bandage 0/10 · +1`
-- **PB-side:** etikett «Mangler» (eller «Gruppa»). Per gruppebuff: «Kortnavn: navn, navn» (navnene lyse, kortnavn grått). Alt ok: grønt «Alle har det de skal».
+- **PB-side:** bare «Party buffs» (Daniel 5. okt). Hvem som mangler, vises på knappene: glød og en rute per medlem (§7.5). Ingen tekst som påstår noe om gruppa – heller ikke når du er alene.
   Eksempel: `MotW: Brakk, Vesla · Thorns: Brakk`
 - Linja kuttes med «…» hvis den blir for lang.
 
@@ -372,7 +372,7 @@ Medaljongen deles i fire kiler fra midten ut mot hjørnene (opp, høyre, ned, ve
 Folder ut fra medaljongen når du klikker venstre eller høyre sone (`04-begge-sider-apne.png`).
 
 - Samme forankring som trayen (§7.3), og dekker trayen på den siden mens den er åpen.
-- **Rad 1, knapper:** alle tier I, så en fure (2 px: 1 px svart + 1 px `#4A3920`, 2 px marg), så alle tier II, så tomme ruter. Tomme ruter fyller opp til minst 5 plasser, alltid minst én (unntak: tom tilstand, §6.5). Første tomme rute har et «+» og er slippmål for nye oppføringer. I kamp viser siste tomme rute to kryssede sverd (frosset).
+- **Rad 1, knapper:** alle tier I, så en fure (2 px: 1 px svart + 1 px `#4A3920`, 2 px marg), så alle tier II, så tomme ruter. Det står alltid nøyaktig **én** tom rute («+») etter knappene, så sida vokser én og én (Daniel 5. okt). Den har et «+» og er slippmål for nye oppføringer. I kamp viser den tomme ruta to kryssede sverd (frosset).
 - **Fure** (2 px) under raden.
 - **Rad 2, statuslinja** (30 px): §6.6.
 - **Bredde:** gitt av innholdet: `40 + (knapper + tomme ruter) × 46 + (12 hvis både tier I og II finnes)` px (rammen starter i medaljongens midtpunkt, se §7.3; var 54 da den startet 18 px fra kanten) (fura er 2 px + 2 × 2 px marg + ett ekstra mellomrom). Prototypen bruker +10, som er 2 px for lite.
@@ -499,6 +499,10 @@ Alt gjøres med musa direkte på medaljongen og knappene. Ingen innstillingsvind
 ---
 
 ## 9. Gruppebuffer (PB)
+
+### 9.0 Hva kan legges inn
+
+En spell du kan kaste på andre (`partyspell`), eller en **scroll** (`partyitem`, Daniel 5. okt): itemet brukes på den som mangler, og knappen viser hvor mange du har. Eliksirer, flasks og mat avvises på gruppesiden – de kan ikke brukes på andre. Tom for scrolls: knappen er grå og lyser ikke.
 
 ### 9.1 Hvem følges
 

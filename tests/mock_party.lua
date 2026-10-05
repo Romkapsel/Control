@@ -135,5 +135,45 @@ Fire("GROUP_ROSTER_UPDATE")
 s = ns.model.st[g.id]
 eq(#s.members, 0, "alene: ingen ruter")
 check(ns.view.allOk, "alene: alt i orden")
+check(not tray.frame.shown or #tray.ids == 0, "alene: ingen knapp ute")
+toggleParty()
+check(pb.status.text:find("Party buffs", 1, true) and not pb.status.text:find("Alle", 1, true), "alene: bare «Party buffs», ingen påstand om gruppa")
+check(not pb.buttons[1].glowing, "alene: ingenting lyser")
+
+-- Scroll på gruppesiden: brukes på den som mangler (Daniel 5. okt)
+T.itemNames[1711] = "Scroll of Stamina II"
+T.itemSpells[1711] = { "Stamina", 8099 }
+T.itemClass[1711] = { 0, 4 }
+T.spellNames[8099] = "Stamina"
+T.counts[1711] = 2
+T.party = { party1 = "Brakk" }
+T.pa = { party1 = {} }
+Fire("GROUP_ROSTER_UPDATE")
+T.cursor = { "item", 1711, "[Scroll of Stamina II]" }
+pb.frame.scripts.OnReceiveDrag(pb.frame)
+local sc = ControlCharDB.party[2]
+check(sc and sc.type == "partyitem" and sc.castName == "Stamina" and sc.auraNames[1] == "Stamina", "scrollen er en gruppebuff")
+s = ns.model.st[sc.id]
+check(s.cast and s.cast.target.unit == "party1" and s.count == 2, "scrollen brukes på Brakk, 2 på lager")
+local sb = pb.buttons[2].entry == sc and pb.buttons[2] or pb.buttons[1]
+check(sb.entry == sc and sb:GetAttribute("type") == "item" and sb:GetAttribute("item") == "item:1711" and sb:GetAttribute("unit") == "party1",
+  "knappen bruker scrollen på party1")
+check(sb.glowing and sb.stock.text == "2", "gløder, og viser hvor mange du har")
+sb.scripts.hookPreClick(sb, "LeftButton")
+T.pa.party1 = { { "Mark of the Wild", 1126, T.now + 1800, 1800 }, { "Stamina", 8099, T.now + 1800, 1800 } }
+T.counts[1711] = 1
+Fire("UNIT_SPELLCAST_SENT", "player", "Brakk", "c3", 8099)
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "c3", 8099)
+s = ns.model.st[sc.id]
+check(#s.missingOn == 0 and s.count == 1 and not sb.glowing, "Brakk har Stamina, én scroll igjen, ingenting lyser")
+T.pa.party1 = { { "Mark of the Wild", 1126, T.now + 1800, 1800 } }
+T.counts[1711] = 0
+ns.Refresh(true)
+check(not sb.glowing and not ns.Rules.canPress(sc, ns.model.st[sc.id]), "tom for scrolls: ingenting å trykke")
+
+-- Eliksirer og flasks kan ikke brukes på andre
+T.cursor = { "item", 13510, "[Flask]" }
+pb.frame.scripts.OnReceiveDrag(pb.frame)
+check(#ControlCharDB.party == 2 and Chat("Bare scrolls kan brukes på andre"), "flask på gruppesiden avvises med forklaring")
 
 return n, fails
