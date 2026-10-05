@@ -143,6 +143,7 @@ C_Texture = { GetAtlasInfo = function(a) if T.atlases[a] then return { width = 6
 function GetBuildInfo() return "1.60.1", "70205", "Oct 2 2026", 16001 end
 function GetRealZoneText() return S(T.zone or "Stormwind City") end
 function UnitFactionGroup() return "Alliance", "Alliance" end
+C_GossipInfo = { GetOptions = function() return T.gossip or {} end }
 function GetSubZoneText() return S("Trade District") end
 C_Map = { GetBestMapForUnit = function() return S(1453) end }
 function IsInInstance() return false, "none" end

@@ -51,6 +51,26 @@ eq(sounds(), 3, "flyr ut: ikke en gang til")
 Fire("TAXIMAP_OPENED")
 eq(sounds(), 3, "flykart et sted som ikke voktes: ingenting")
 
+-- Flight master: varsel når samtalen åpnes, før «I need a ride» – og ikke igjen når kartet kommer
+zone("Stormwind City")
+T.gossip = { { name = "Can I buy something?", icon = 132060 } }
+Fire("GOSSIP_SHOW")
+eq(sounds(), 3, "vanlig samtale: ingen varsel")
+T.gossip = { { name = "I need a ride.", icon = 132057, gossipOptionID = 1 } }
+Fire("GOSSIP_SHOW")
+eq(sounds(), 4, "flight master: varsel når samtalen åpnes")
+check(ControlCharDB.debug.gossip.taxi and ControlCharDB.debug.gossip.options[1].icon == 132057, "samtalen lagres i debug")
+Fire("TAXIMAP_OPENED")
+eq(sounds(), 4, "kartet etterpå: ikke en gang til")
+zone("Westfall")
+eq(sounds(), 4, "flyr ut: ikke en gang til")
+T.gossip = { { name = "Show me where I can fly." } }
+zone("Stormwind City")
+Fire("GOSSIP_SHOW")
+eq(sounds(), 5, "kjennes også igjen på teksten alene")
+zone("Westfall")
+T.gossip = nil
+
 -- Sonenavnet kan være tomt rett etter lasteskjermen (V8)
 T.zone = ""
 Fire("PLAYER_ENTERING_WORLD")
@@ -63,14 +83,14 @@ zone("Ironforge")
 zone("Dun Morogh")
 eq(A.sev, 1, "under ønsket: oransje")
 eq(A.title.text, "Du forlater Ironforge", "fra Ironforge")
-eq(sounds(), 3, "oransje: ingen lyd")
+eq(sounds(), 5, "oransje: ingen lyd")
 
 -- Alt med: kort grønt, tones ut
 T.counts[14529] = 5
 zone("Ironforge")
 zone("Dun Morogh")
 check(A.sev == 0 and A.main.text:find("Alt med", 1, true), "alt med: grønt")
-eq(sounds(), 3, "grønt: ingen lyd")
+eq(sounds(), 5, "grønt: ingen lyd")
 T.now = T.now + 2.5
 A.frame.scripts.OnUpdate(A.frame)
 check(A.frame.shown and A.frame.alpha < 1, "tones ut etter 2 s")
@@ -87,13 +107,13 @@ zone("Dun Morogh")
 check(not A.frame.shown, "i kamp: ikke vist ennå")
 T.combat = false
 Fire("PLAYER_REGEN_ENABLED")
-check(A.frame.shown and A.sev == 2 and sounds() == 4, "etter kampen: varselet kommer")
+check(A.frame.shown and A.sev == 2 and sounds() == 6, "etter kampen: varselet kommer")
 
 -- Steder som ikke lenger voktes, varsles ikke
 zone("Darnassus")
 table.remove(ControlCharDB.cityWatch.cities, 3)
 zone("Teldrassil")
-eq(sounds(), 4, "Darnassus fjernet fra vakta: ingen varsel")
+eq(sounds(), 6, "Darnassus fjernet fra vakta: ingen varsel")
 
 -- /control varsel: se varselet når som helst
 SlashCmdList.CONTROL("varsel")

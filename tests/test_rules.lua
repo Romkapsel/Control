@@ -236,8 +236,16 @@ local d = R.departure(warnModel.self, { x = { count = 1 }, y = { status = "on" }
 eq(d.sev, 1, "byvakt: under ønsket = oransje")
 eq(d.text, "A 1/6", "byvakt: bare det som mangler")
 d = R.departure(warnModel.self, { x = { count = 0 }, y = { status = "missing" }, z = { count = 4 } }, L)
-eq(d.sev, 2, "byvakt: MotW (tier I) ikke på = rød")
-eq(d.text, "B · A 0/6", "byvakt: verst først")
+eq(d.sev, 1, "byvakt: spells telles ikke; A (tier II) tom = oransje")
+eq(d.text, "A 0/6", "byvakt: bare lageret")
+local flaskModel = {
+  { id = "f", type = "buffitem", tier = 1, short = "Flask", want = 1 },
+  { id = "b", type = "item", tier = 2, short = "Bandage", want = 10 },
+}
+d = R.departure(flaskModel, { f = { status = "missing", count = 2 }, b = { count = 4 } }, L)
+check(d.sev == 1 and d.text == "Bandage 4/10", "byvakt: flask ikke på, men 2 i baggen = ok; bandasjer under = oransje")
+d = R.departure(flaskModel, { f = { status = "on", count = 0 }, b = { count = 0 } }, L)
+check(d.sev == 2 and d.text == "Flask 0/1 · Bandage 0/10", "byvakt: tom flask i tier I = rød, verst først")
 d = R.departure(warnModel.self, { x = { count = 6 }, y = { status = "on" }, z = { count = 4 } }, L)
 check(d.sev == 0 and d.text == "Alt med", "byvakt: alt med")
 d = R.departure({}, {}, L)

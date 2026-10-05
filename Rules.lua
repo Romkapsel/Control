@@ -251,19 +251,34 @@ function Rules.expiring(entries, st)
 end
 
 ------------------------------------------------------------------------
--- Byvakt (SPEC §10, §11 nivå 3): hva du drar ut uten. Alle mine oppføringer, begge tier.
--- sev 2 = noe er tomt eller mangler i tier I (rød + lyd), 1 = under ønsket / tier II (oransje), 0 = alt med.
+-- Byvakt (SPEC §10, §11 nivå 3): hva du drar ut uten. Bare det du må hente i byen – lageret av ting og
+-- buffting, begge tier (Daniel 5. okt: spells kan kastes hvor som helst, og om flasken er på nå, er ikke poenget).
+-- sev 2 = tomt i tier I (rød + lyd), 1 = tomt i tier II eller under ønsket (oransje), 0 = alt med.
 ------------------------------------------------------------------------
 
 function Rules.departure(entries, st, L)
+  local problems = {}
   local sev = SEV_OK
-  for _, e in ipairs(entries or {}) do sev = math.max(sev, Rules.severity(e, st[e.id])) end
+  for i, e in ipairs(entries or {}) do
+    local s = Rules.stockSeverity(e, st[e.id])
+    if s > 0 then
+      problems[#problems + 1] = { e = e, sev = s, i = i }
+      sev = math.max(sev, s)
+    end
+  end
   if sev == SEV_OK then return { sev = SEV_OK, parts = {}, more = 0, text = L.ALL_OK } end
-  local s = selfStatus(entries, st, L)
-  local texts = {}
-  for _, p in ipairs(s.parts) do texts[#texts + 1] = p.stock and (p.name .. " " .. p.stock) or p.name end
-  if (s.more or 0) > 0 then texts[#texts + 1] = "+" .. s.more end
-  return { sev = sev, parts = s.parts, more = s.more or 0, text = table.concat(texts, L.SEP) }
+  local sorted = worstFirst(problems)
+  local parts, texts = {}, {}
+  for k = 1, math.min(Rules.STATUS_MAX, #sorted) do
+    local e, s = sorted[k].e, st[sorted[k].e.id]
+    local p = { id = e.id, name = e.short or e.name, nameSev = sorted[k].sev, stockSev = sorted[k].sev,
+                stock = Rules.stockText(s and s.count, e.want) }
+    parts[#parts + 1] = p
+    texts[#texts + 1] = p.name .. " " .. p.stock
+  end
+  local more = #sorted - Rules.STATUS_MAX
+  if more > 0 then texts[#texts + 1] = "+" .. more end
+  return { sev = sev, parts = parts, more = math.max(0, more), text = table.concat(texts, L.SEP) }
 end
 
 -- model = { self = { entries }, party = { entries }, st = { [id] = state } }

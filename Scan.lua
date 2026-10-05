@@ -311,5 +311,47 @@ function Scan.ConfirmParty(e, targetName, group, members, durations)
   end
 end
 
+------------------------------------------------------------------------
+-- Samtale med en flight master (Daniel 5. okt): byvakta skal si fra før du trykker «I need a ride».
+-- Kjennes igjen på et flyvalg i samtalen: type «taxi», taxi-ikonet (132057) eller teksten på valget.
+-- Det samtalen inneholdt, lagres i ControlCharDB.debug.gossip, i tilfelle Forever gjør det annerledes.
+------------------------------------------------------------------------
+
+local TAXI_ICON = 132057 -- Interface/GossipFrame/TaxiGossipIcon
+local TAXI_TEXT = { "I need a ride", "Show me where I can fly" }
+
+local function taxiText(name)
+  if type(name) ~= "string" or isSecret(name) then return false end
+  for _, t in ipairs(TAXI_TEXT) do if name:find(t, 1, true) then return true end end
+  return false
+end
+
+function Scan.GossipHasTaxi()
+  local seen, found = {}, false
+  if C_GossipInfo and C_GossipInfo.GetOptions then
+    local ok, opts = pcall(C_GossipInfo.GetOptions)
+    if ok and type(opts) == "table" then
+      for _, o in ipairs(opts) do
+        local icon, name, kind = o.icon, o.name, o.type
+        if isSecret(icon) then icon = nil end
+        if isSecret(name) then name = nil end
+        if isSecret(kind) then kind = nil end
+        seen[#seen + 1] = { icon = icon, name = name, type = kind }
+        if icon == TAXI_ICON or kind == "taxi" or taxiText(name) then found = true end
+      end
+    end
+  end
+  if not found and GetGossipOptions then -- eldre klienter: tittel, type, tittel, type …
+    local ok, list = pcall(function() return { GetGossipOptions() } end)
+    if ok then
+      for i = 1, #list - 1, 2 do
+        seen[#seen + 1] = { name = list[i], type = list[i + 1] }
+        if list[i + 1] == "taxi" or taxiText(list[i]) then found = true end
+      end
+    end
+  end
+  return found, seen
+end
+
 -- For testene
 function Scan.Reset() seen, expires, lastStatus, Scan.confirmed = {}, {}, {}, {} end

@@ -406,7 +406,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     for e in pairs(CAST) do pcall(self.RegisterUnitEvent, self, e, "player") end
     for _, e in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
                          "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED", "UI_SCALE_CHANGED", "DISPLAY_SIZE_CHANGED",
-                         "ZONE_CHANGED_NEW_AREA", "TAXIMAP_OPENED" }) do
+                         "ZONE_CHANGED_NEW_AREA", "TAXIMAP_OPENED", "GOSSIP_SHOW" }) do
       pcall(self.RegisterEvent, self, e)
     end
     C_Timer.NewTicker(0.25, function() Core.Draw() end) -- én felles klokke for nedtellingene
@@ -428,6 +428,12 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Refresh(false) -- «Du er i …» i menyen
   elseif event == "TAXIMAP_OPENED" then
     ns.CityWatch.Taxi()
+  elseif event == "GOSSIP_SHOW" then
+    -- Flight master: si fra før du trykker «I need a ride» (Daniel 5. okt). Flykartet gir ikke et varsel til.
+    local taxi, seen = ns.Scan.GossipHasTaxi()
+    ns.db.debug = ns.db.debug or {}
+    ns.db.debug.gossip = { at = date and date("%Y-%m-%d %H:%M:%S") or nil, zone = ns.Menu.Zone(), taxi = taxi, options = seen }
+    if taxi then ns.CityWatch.Taxi() end
   elseif event == "PLAYER_ENTERING_WORLD" then
     -- Båt, portal og hearthstone gir lasteskjerm. Sonenavnet kan være tomt akkurat nå (V8): prøv igjen om litt.
     ns.CityWatch.Zone(ns.Menu.Zone())
