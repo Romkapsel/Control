@@ -121,20 +121,10 @@ local function makeHeader()
   return h
 end
 
-local function makeSlot()
-  local s = CreateFrame("Button", nil, frame)
-  s:SetSize(BTN, BTN)
-  Style.Rect(s, "BACKGROUND", 0, BTN, BTN, C.black, 1)
-  Style.Rect(s, "BACKGROUND", 1, BTN - 2, BTN - 2, Style.hex("0B0907"), 1)
-  s.plus = newText(s, 20, Style.hex("5E5446"))
-  s.plus:SetPoint("CENTER")
-  s.plus:SetText("+")
-  local function drop(self) if self.drop and Menu.onDrop then Menu.onDrop(self.drop.party, self.drop.tier) end end
-  s:SetScript("OnReceiveDrag", drop)
-  s:SetScript("OnMouseUp", function(self) if GetCursorInfo() then drop(self) end end)
-  s:SetScript("OnEnter", function(self) tooltip(self, self.hint, self.sub) end)
-  s:SetScript("OnLeave", function() GameTooltip:Hide() end)
-  return s
+-- Slippflaten for en del (Meg, Party): usynlig, tar ikke musa selv. Menyrammen tar imot slippet og spør hvilken
+-- flate musa er over (Daniel 5. okt: dra rett inn i hele feltet, ingen «+»-rute i menyen).
+local function makeZone()
+  return CreateFrame("Frame", nil, frame)
 end
 
 local function makeLink()
@@ -246,8 +236,7 @@ local function sideWord(isParty)
 end
 
 -- Knappene gruppert i kategorier (Daniel 5. okt): en liten overskrift per kategori som har noe, knappene under
--- (brytes etter PER_LINE), og én «+»-rute til slutt – det du slipper der, blir «Fint å ha». «Må ha» er et merke
--- på knappen (høyreklikk bytter).
+-- (brytes etter PER_LINE). Det du slipper i feltet, blir «Fint å ha». «Må ha» er et merke på knappen (høyreklikk bytter).
 local function rows(list, isParty, st)
   local host = Menu.host
   if not isParty then Menu.equipButton = nil end
@@ -273,7 +262,6 @@ local function rows(list, isParty, st)
     ns.EntryButton.Bind(b, e, st[e.id])
     ns.EntryButton.Paint(b, e, st[e.id], L)
   end
-  local lastX, lastTop, lastCount = nil, nil, 0
   for _, cat in ipairs(ns.Data.CATEGORIES) do
     local items = byCat[cat]
     if items then
@@ -296,23 +284,15 @@ local function rows(list, isParty, st)
         local col, line = (i - 1) % per, math.floor((i - 1) / per)
         button(e, PAD + col * (BTN + GAP), y + line * (BTN + GAP))
       end
-      lastCount, lastTop = #items, y
       y = y + math.ceil(#items / per) * (BTN + GAP) - GAP + G
     end
   end
-  -- «+» sist: etter den siste knappen hvis det er plass på linja, ellers på egen linje
-  local s = take("slot", makeSlot)
-  if lastTop and lastCount % per ~= 0 then
-    local col, line = lastCount % per, math.floor(lastCount / per)
-    place(s, PAD + col * (BTN + GAP), lastTop + line * (BTN + GAP))
-  else
-    place(s, PAD, y)
-    y = y + BTN + G
+  if #list == 0 then
+    local hint = text(isParty and L.EMPTY_PARTY or L.EMPTY_SELF, C.help, 11)
+    place(hint, PAD, y)
+    host.hints[#host.hints + 1] = hint
+    y = y + TEXTH + G
   end
-  s.drop = { party = isParty, tier = 2 }
-  s.hint = isParty and L.EMPTY_PARTY or L.EMPTY_SELF
-  s.sub = L.TIER_2_HINT
-  host.slots[#host.slots + 1] = s
 end
 
 -- Sett (Daniel 5. okt): «Sett:» og en knapp per sett, det valgte i gull; «+» lager et nytt (kopi av det du står i).
@@ -352,6 +332,15 @@ local function setsRow()
   put(plus)
   Menu.newSetButton = plus
   y = y + 22 + G
+end
+
+-- Hele feltet under overskriften tar imot det du slipper (fra top til der delen slutter)
+local function dropZone(top, isParty)
+  local z = take("zone", makeZone)
+  place(z, 4, top - G)
+  z:SetSize(W - 8, math.max(1, y - top + G))
+  z.drop = { party = isParty, tier = 2 }
+  Menu.host.slots[#Menu.host.slots + 1] = z
 end
 
 local function classColor(class)
@@ -734,6 +723,15 @@ function Menu.Create(parent, database, locale)
   frame:SetHeight(100)
   Style.Frame(frame)
   frame:EnableMouse(true)
+  -- Slipp en spell eller ting hvor som helst i Meg eller Party (flaten musa er over avgjør hvilken)
+  local function dropHere()
+    if not GetCursorInfo() or not Menu.onDrop then return end
+    for _, z in ipairs(Menu.host.slots) do
+      if z:IsShown() and z:IsMouseOver() then return Menu.onDrop(z.drop.party, z.drop.tier) end
+    end
+  end
+  frame:SetScript("OnReceiveDrag", dropHere)
+  frame:SetScript("OnMouseUp", dropHere)
   -- Glir ut fra medaljongen de siste 10 px mens den tones inn (retningen settes når den åpnes)
   frame.unfold = Style.SlideIn(frame, 0.25)
   -- Lukke-piler nederst til høyre (én av dem vises, etter hvilken vei menyen åpner)
@@ -746,7 +744,7 @@ function Menu.Create(parent, database, locale)
   Menu.closeDown:Hide()
   frame:Hide()
   Menu.frame = frame
-  Menu.host = { frame = frame, buttons = {}, ids = {}, slots = {} }
+  Menu.host = { frame = frame, buttons = {}, ids = {}, slots = {}, hints = {} }
   Menu.heads = {}
   return frame
 end
@@ -783,16 +781,20 @@ function Menu.Layout(model, members, sideOpen)
   frame:SetWidth(W)
   for _, p in pairs(pools) do p.n = 0 end
   local host = Menu.host
-  host.buttons, host.ids, host.slots = {}, {}, {}
+  host.buttons, host.ids, host.slots, host.hints = {}, {}, {}, {}
   Menu.heads = {}
   y = Menu.OpensUp() and 8 + 22 or 8 -- står menyen over medaljongen, har lukke-pila en egen stripe øverst
   if header("self", L.LABEL_MY_BUFFS, sideWord(false)) then
+    local top = y
     setsRow()
     rows(model.self, false, model.st)
+    dropZone(top, false)
   end
   if header("party", L.LABEL_PARTY_BUFFS, sideWord(true)) then
+    local top = y
     rows(model.party, true, model.st)
     picker(model.party, members or {})
+    dropZone(top, true)
   end
   if header("city", L.MENU_CITY) then cityWatch() end
   local setupOpen = header("setup", L.MENU_DIR)

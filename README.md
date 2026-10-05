@@ -28,7 +28,7 @@ Ny versjon: slett den gamle `Control`-mappa, pakk ut den nye, og start spillet p
 
 - **Dra en spell fra spellboken** eller **en ting fra baggen** og slipp den:
   - på medaljongen → **Må ha**
-  - på en sidemeny eller «+» i menyen → **Fint å ha**
+  - på en sidemeny, eller hvor som helst i Meg eller Party i menyen → **Fint å ha**
 - **Må ha** (gullmerke i hjørnet): knappen dukker opp ved medaljongen når noe mangler – klikk, så er det fikset.
   Mangler noe du må ha, er ringen rød.
 - **Fint å ha:** står bare i sidemenyen; ringen blir oransje.

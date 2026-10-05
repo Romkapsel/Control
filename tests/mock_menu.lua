@@ -19,6 +19,8 @@ end
 local function slot(party, tier)
   for _, s in ipairs(Menu.host.slots) do if s.shown and s.drop.party == party and s.drop.tier == tier then return s end end
 end
+-- Slipp i feltet: musa over flaten, menyrammen tar imot
+local function dropOn(z) z.mouse = true Menu.frame.scripts.OnReceiveDrag(Menu.frame) z.mouse = false end
 
 local cities = ControlCharDB.cityWatch.cities
 check(#cities == 3 and cities[1] == "Stormwind City" and cities[3] == "Darnassus", "byvakt: Alliance-byene fra start")
@@ -48,15 +50,20 @@ check(Menu.heads[1].title.text == "Meg" and Menu.heads[2].title.text == "Party"
 check(Menu.heads[1].right.text == "høyre" and Menu.heads[2].right.text == "venstre", "hvilken side de står på")
 check(Menu.heads[4].pm.text == "-", "Oppsett kan også felles sammen")
 
--- Kategorier (Daniel 5. okt): én «+»-rute per liste; det du slipper der, blir «Fint å ha»
-check(slot(false, 2) and slot(true, 2), "én «+»-rute i Meg og én i Party")
+-- Kategorier (Daniel 5. okt): dra rett inn i hele feltet (ingen «+»-rute i menyen); det du slipper, blir «Fint å ha»
+check(slot(false, 2) and slot(true, 2), "slippflate i Meg og i Party")
+local function visible(t) for _, c in ipairs(Menu.host.hints) do if c.shown and c.text == t then return true end end end
+check(visible("Dra en buff eller ting hit") and visible("Dra en buff eller scroll hit"), "tom liste: hjelpelinje i Meg og Party")
 T.counts[13510] = 3
 T.cursor = { "item", 13510, "[Flask of the Titans]" }
-slot(false, 2).scripts.OnReceiveDrag(slot(false, 2))
+Menu.frame.scripts.OnReceiveDrag(Menu.frame) -- musa er ikke over noe felt
+eq(#ControlCharDB.self, 0, "slipp utenfor feltene: ingenting skjer")
+dropOn(slot(false, 2))
+check(not visible("Dra en buff eller ting hit"), "lista har noe: hjelpelinja er borte")
 local flask = ControlCharDB.self[1]
 check(flask and flask.tier == 2 and flask.cat == "flasks" and Chat("Flask of the Titans lagt til (Fint å ha)."), "flask: Fint å ha, kategori Flasks")
 T.cursor = { "spell", 3, "spell", 5232 }
-slot(false, 2).scripts.OnReceiveDrag(slot(false, 2))
+dropOn(slot(false, 2))
 local motw = ControlCharDB.self[2]
 check(motw and motw.tier == 2 and motw.cat == "buffs", "MotW: kategori Buffer")
 eq(#Menu.host.buttons, 2, "to knapper i menyen")
@@ -101,7 +108,7 @@ eq(#Menu.host.buttons, 2, "foldet ut igjen")
 
 -- Party buffs: hvem den følges på (Q7)
 T.cursor = { "spell", 3, "spell", 1126 }
-slot(true, 2).scripts.OnReceiveDrag(slot(true, 2))
+dropOn(slot(true, 2))
 local g = ControlCharDB.party[1]
 check(g and g.type == "partyspell" and g.cat == "buffs", "gruppebuff under Buffer")
 T.party = { party1 = "Brakk", party2 = "Mira" }
