@@ -227,7 +227,7 @@ local function sideWord(isParty)
   return right and L.SIDE_RIGHT or L.SIDE_LEFT
 end
 
--- Rad I og rad II: tier-tallet, en fure, knappene (brytes etter PER_LINE) og en «+»-rute sist
+-- Rad I og rad II: tier-tallet, knappene (brytes etter PER_LINE) og en «+»-rute sist
 local function rows(list, isParty, st)
   local host = Menu.host
   for tier = 1, 2 do
@@ -239,15 +239,6 @@ local function rows(list, isParty, st)
     local label = text(tier == 1 and L.TIER_1 or L.TIER_2, C.gold, 14)
     label:ClearAllPoints()
     label:SetPoint("CENTER", frame, "TOPLEFT", PAD + TIERCOL / 2, -(y + BTN / 2))
-    local v = take("vline", function()
-      local t = frame:CreateTexture(nil, "ARTWORK")
-      local c = Style.hex("4A3920")
-      t:SetColorTexture(c[1], c[2], c[3], 1)
-      t:SetWidth(1)
-      return t
-    end)
-    place(v, PAD + TIERCOL + 2, y)
-    v:SetHeight(h)
     for i = 1, total do
       local col, line = (i - 1) % PER_LINE, math.floor((i - 1) / PER_LINE)
       local x, top = BX + col * (BTN + GAP), y + line * (BTN + GAP)
