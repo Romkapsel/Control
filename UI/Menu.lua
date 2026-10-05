@@ -196,7 +196,8 @@ local function header(key, title, right)
   return isOpen
 end
 
--- Tynn strek mellom delene: sentrert, med lik luft over og under (Daniel 5. okt)
+-- Tynn strek mellom ting inne i en bolk (f.eks. Bytt side og Størrelse): sentrert, lik luft over og under.
+-- Bolkene skilles av kategorilinja, ikke av streker (Daniel 5. okt).
 local function separator()
   local t = take("sep", function()
     local s = frame:CreateTexture(nil, "ARTWORK")
@@ -402,6 +403,14 @@ local function makeBox()
   return b
 end
 
+-- De lange knappene (Voktes, Bytt side) er like brede: teksten «Bytt side på gruppene» + luft, midtstilt
+local function wideWidth()
+  local probe = text(L.DIR_SWAP, C.text)
+  local w = textWidth(probe) + 28
+  probe:Hide()
+  return w
+end
+
 local function cityWatch()
   local cities = db.cityWatch.cities
   local zone = safeZone()
@@ -417,11 +426,12 @@ local function cityWatch()
   here:SetJustifyH("LEFT")
   place(here, PAD, y + 4)
   y = y + 22 + 8
+  local ww = wideWidth()
   local list = action(string.format(L.CITY_LIST, #cities), true, nil, function()
     citiesOpen = not citiesOpen
     if Menu.onChange then Menu.onChange() end
-  end, W - 2 * PAD - 80)
-  place(list, 40, y)
+  end, ww)
+  place(list, math.floor((W - ww) / 2), y)
   list.edge:SetAlpha(citiesOpen and 1 or 0.6)
   Menu.cityListButton = list
   y = y + 22 + 6
@@ -429,19 +439,21 @@ local function cityWatch()
   if citiesOpen then
     local box = take("box", makeBox)
     local rowsN = math.max(1, #cities)
-    box:SetSize(W - 2 * PAD - 80, rowsN * LINE + 6)
-    place(box, 40, y)
+    local bw = ww -- samme bredde som knappen over
+    local bx = math.floor((W - bw) / 2)
+    box:SetSize(bw, rowsN * LINE + 6)
+    place(box, bx, y)
     Menu.cityBox = box
     if #cities == 0 then
       local t = text(L.CITY_NONE, C.help)
-      place(t, 46, y + 3)
+      place(t, bx + 6, y + 3)
     end
     for i, c in ipairs(cities) do
       local r = take("cityrow", makeCityRow)
       r.city = c
       r.fs:SetText(c)
-      r:SetWidth(W - 2 * PAD - 80 - 2)
-      place(r, 41, y + 3 + (i - 1) * LINE)
+      r:SetWidth(bw - 2)
+      place(r, bx + 1, y + 3 + (i - 1) * LINE)
     end
     y = y + rowsN * LINE + 6 + 8
   end
@@ -511,10 +523,11 @@ end
 
 -- Bytt side: én lang knapp, midtstilt (Daniel 5. okt). Hvilken side som er hvor, står i kategorilinjene over.
 local function direction()
-  local a = action(L.DIR_SWAP, true, nil, function() if Menu.onSwap then Menu.onSwap() end end, W - 2 * PAD - 80)
-  place(a, 40, y)
+  local ww = wideWidth()
+  local a = action(L.DIR_SWAP, true, nil, function() if Menu.onSwap then Menu.onSwap() end end, ww)
+  place(a, math.floor((W - ww) / 2), y)
   Menu.swapButton = a
-  y = y + 22 + 10
+  y = y + 22 + 4
 end
 
 ------------------------------------------------------------------------
@@ -590,16 +603,14 @@ function Menu.Layout(model, members, sideOpen)
   Menu.heads = {}
   y = 8
   if header("self", L.LABEL_MY_BUFFS, sideWord(false)) then rows(model.self, false, model.st) end
-  separator()
   if header("party", L.LABEL_PARTY_BUFFS, sideWord(true)) then
     rows(model.party, true, model.st)
     picker(model.party, members or {})
   end
-  separator()
   if header("city", L.MENU_CITY) then cityWatch() end
-  separator()
   header(nil, L.MENU_DIR)
   direction()
+  separator()
   scaleRow()
   for _, p in pairs(pools) do
     for i = p.n + 1, #p.items do p.items[i]:Hide() end

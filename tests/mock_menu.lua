@@ -148,7 +148,10 @@ check(#cityRows() == 0, "klikk igjen: lista foldes inn")
 
 -- Bytt side: én lang knapp, midtstilt
 local sw = Menu.swapButton
-check(sw.text == "Bytt side på gruppene" and sw.points[1][4] == 40 and sw.width == 340 - 20 - 80, "lang knapp, midtstilt")
+check(sw.text == "Bytt side på gruppene", "Bytt side på gruppene")
+eq(sw.width, Menu.cityListButton.width, "Voktes og Bytt side er like brede")
+eq(sw.points[1][4], math.floor((340 - sw.width) / 2), "midtstilt")
+check(sw.width < 340 - 40, "bredden kommer fra teksten, ikke fra menyen")
 sw.scripts.OnClick(sw)
 eq(ControlCharDB.ui.partySide, "right", "byttet")
 check(Menu.heads[1].right.text == "venstre" and Menu.heads[2].right.text == "høyre", "kategorilinjene sier hvor de står")
