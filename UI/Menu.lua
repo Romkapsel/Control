@@ -298,9 +298,9 @@ local function picker(list, members)
     y = y + TEXTH + G
     return
   end
-  local names, classes = {}, {}
+  local names, classes, present = {}, {}, {}
   for _, m in ipairs(members) do
-    if m.name then names[#names + 1] = m.name classes[m.name] = m.class end
+    if m.name then names[#names + 1] = m.name classes[m.name] = m.class present[m.name] = true end
   end
   for _, e in ipairs(list) do
     local ic = take("icon", function()
@@ -314,7 +314,7 @@ local function picker(list, members)
     if icon then ic:SetTexture(icon) else ic:SetColorTexture(0.2, 0.2, 0.2, 1) end
     local all = {}
     for _, n in ipairs(names) do all[#all + 1] = n end
-    for n in pairs(e.onlyOn or {}) do if not classes[n] then all[#all + 1] = n end end -- valgt, men ikke i party nå
+    for n in pairs(e.onlyOn or {}) do if not present[n] then all[#all + 1] = n end end -- valgt, men ikke i party nå
     local x = PAD + 24
     for _, n in ipairs(all) do
       local on = e.onlyOn == nil or e.onlyOn[n] == true
@@ -655,7 +655,6 @@ function Menu.Create(parent, database, locale)
   Menu.closeDown = Style.CloseArrow(frame, "down", Menu.CLOSE, L.CLOSE, after)
   for _, b in ipairs({ Menu.closeUp, Menu.closeDown }) do
     b:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -8, 8)
-    SecureHandlerSetFrameRef(b, "menu", frame)
   end
   Menu.closeDown:Hide()
   frame:Hide()
@@ -663,6 +662,12 @@ function Menu.Create(parent, database, locale)
   Menu.host = { frame = frame, buttons = {}, ids = {}, slots = {} }
   Menu.heads = {}
   return frame
+end
+
+-- Lukke-pilene må kjenne menyen (bare utenfor kamp; Core kaller denne etter kampen ved /reload i kamp)
+function Menu.SetRefs()
+  if InCombatLockdown() or not frame then return end
+  for _, b in ipairs({ Menu.closeUp, Menu.closeDown }) do SecureHandlerSetFrameRef(b, "menu", frame) end
 end
 
 function Menu.IsOpen() return frame ~= nil and frame:IsShown() end
@@ -745,6 +750,10 @@ dimForCombat = function(combat)
     end
   end
   local s = Menu.slider
+  if s and combat and s.dragging then
+    s.dragging = false
+    if ns.Medallion.Preview then ns.Medallion.Preview(nil) end
+  end
   if s then
     s:SetAlpha(dim)
     s.label:SetAlpha(dim)

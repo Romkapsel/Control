@@ -59,17 +59,17 @@ function Scan.SelfCast(e)
   local key = e.spellId or e.name
   if key == nil then return false end
   if selfCastCache[key] ~= nil then return selfCastCache[key] end
-  local result = false
+  local result, known = false, false
   if C_Spell and C_Spell.GetSpellInfo then
     local ok, info = pcall(C_Spell.GetSpellInfo, key)
     if ok and type(info) == "table" and not isSecret(info.maxRange) and type(info.maxRange) == "number" then
-      result = info.maxRange == 0
+      result, known = info.maxRange == 0, true
     end
   elseif GetSpellInfo then
     local ok, _, _, _, _, _, maxRange = pcall(GetSpellInfo, key)
-    if ok and not isSecret(maxRange) and type(maxRange) == "number" then result = maxRange == 0 end
+    if ok and not isSecret(maxRange) and type(maxRange) == "number" then result, known = maxRange == 0, true end
   end
-  selfCastCache[key] = result
+  if known then selfCastCache[key] = result end -- ikke lest ennå (spell-info ikke lastet): prøv igjen neste gang
   return result
 end
 
@@ -119,7 +119,8 @@ function Scan.TooltipHas(id, text)
   if not ok or not data or not data.lines then return false end
   for _, line in ipairs(data.lines) do
     local t = line.leftText
-    if type(t) == "string" and not isSecret(t) and t:find(text, 1, true) then return true end
+    -- Uten hensyn til store/små bokstaver: classic-mat skriver «you will become well fed»
+    if type(t) == "string" and not isSecret(t) and t:lower():find(text:lower(), 1, true) then return true end
   end
   return false
 end

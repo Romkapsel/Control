@@ -51,8 +51,25 @@ function EB.Header()
   return header
 end
 
+local all = {}
+
+-- Etter kamp: bind alle knappene på nytt. Det sikre skriptet kan ha flyttet en gruppeknapp videre i køen (unit,
+-- ks-qi) for kast som ikke gikk gjennom; uten dette pekte den fortsatt på feil person etterpå.
+function EB.ResetBindings()
+  for _, b in ipairs(all) do b.sig = nil end
+end
+
+local function setIcon(b, e)
+  local icon
+  if e.spellId then icon = select(2, ns.Scan.SpellInfo(e.spellId)) end
+  if e.itemId then icon = ns.Scan.ItemIcon(e.itemId) end
+  if icon then b.icon:SetTexture(icon) else b.icon:SetColorTexture(0.2, 0.2, 0.2, 1) end
+  b.noIcon = icon == nil -- ikke lastet ennå: prøves igjen ved neste tegning
+end
+
 function EB.Create(parent)
   local b = CreateFrame("Button", nil, parent, "SecureActionButtonTemplate")
+  all[#all + 1] = b
   b:SetSize(SIZE, SIZE)
   b:RegisterForClicks(useKeyDown() and "AnyDown" or "AnyUp")
   b:SetAttribute("type2", "") -- høyreklikk skal aldri kaste (SPEC §12.1): det bytter tier
@@ -202,7 +219,10 @@ function EB.Bind(b, e, st)
   end
   local sig = e.id .. "|" .. e.type .. "|" .. tostring(cast and cast.spell) .. "|" .. tostring(cast and cast.target and cast.target.unit)
     .. "|" .. table.concat(queue, ",")
-  if b.entry == e and b.sig == sig then return end
+  if b.entry == e and b.sig == sig then
+    if b.noIcon then setIcon(b, e) end
+    return
+  end
   b.entry, b.sig, b.cast = e, sig, cast
   if #queue > 0 then
     for i, u in ipairs(queue) do b:SetAttribute("ks-q" .. i, u) end
@@ -242,10 +262,7 @@ function EB.Bind(b, e, st)
   else
     b:SetAttribute("type", nil) -- lagerting: vises bare
   end
-  local icon
-  if e.spellId then icon = select(2, ns.Scan.SpellInfo(e.spellId)) end
-  if e.itemId then icon = ns.Scan.ItemIcon(e.itemId) end
-  if icon then b.icon:SetTexture(icon) else b.icon:SetColorTexture(0.2, 0.2, 0.2, 1) end
+  setIcon(b, e)
 end
 
 -- Hvordan knappen ser ut nå. Ikke beskyttet: virker også i kamp.
@@ -337,6 +354,7 @@ function EB.Paint(b, e, st, L, frozen)
   local alpha = 1
   if b.faded then alpha = 0
   elseif party and InCombatLockdown() then alpha = 0.45 end -- vi ser ikke hvem som har den i kamp
+  if b.dragDim then alpha = 0.35 end -- Shift + dra: knappen du drar, står dempet til du slipper
   b:SetAlpha(alpha)
   if GameTooltip:IsOwned(b) then EB.ShowTooltip(b) end
 end

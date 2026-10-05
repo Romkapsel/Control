@@ -171,6 +171,7 @@ C_Texture = { GetAtlasInfo = function(a) if T.atlases[a] then return { width = 6
 function GetBuildInfo() return "1.60.1", "70205", "Oct 2 2026", 16001 end
 function GetRealZoneText() return S(T.zone or "Stormwind City") end
 function UnitFactionGroup() return "Alliance", "Alliance" end
+function UnitOnTaxi() return T.onTaxi or false end
 function UnitHealth() return S(T.hp or 800) end
 function UnitHealthMax() return S(1000) end
 function UnitPower(u, t) return S(T.mana or 500) end
@@ -213,7 +214,7 @@ T.itemNames = { [13510] = "Flask of the Titans", [14529] = "Runecloth Bandage", 
 T.itemSpells = { [13510] = { "Flask of the Titans", 17626 }, [21023] = { "Food", 433 }, [13446] = { "Healing Potion", 17534 },
                  [4540] = { "Food", 433 }, [14529] = { "First Aid", 18610 } }
 T.itemClass = { [13510] = { 0, 3 }, [14529] = { 0, 7 }, [21023] = { 0, 5 }, [13446] = { 0, 1 }, [4540] = { 0, 5 } }
-T.tooltips = { [21023] = { "Dirge's Kickin' Chimaerok Chops", "Use: ... you will become Well Fed and gain 25 Stamina." },
+T.tooltips = { [21023] = { "Dirge's Kickin' Chimaerok Chops", "Use: ... If you spend at least 10 seconds eating you will become well fed and gain 25 Stamina." },
                [4540] = { "Tough Hunk of Bread", "Use: Restores 61 health over 18 sec." } }
 C_TooltipInfo = { GetItemByID = function(id)
   local t = T.tooltips[id]

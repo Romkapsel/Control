@@ -199,6 +199,7 @@ function Actions.Move(e, targetId)
 end
 
 function ns.AddFromCursor()
+  if InCombatLockdown() then return end -- som å slippe på sidemenyene: ikke i kamp
   local kind, a, _, d = GetCursorInfo()
   local info
   if kind == "spell" then
@@ -397,14 +398,18 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onScale = Actions.SetScale
     ns.Medallion.isMenuOpen = ns.Menu.IsOpen
     -- Det sikre skriptet på medaljongen åpner/lukker disse i kamp (fase 7)
-    ns.Medallion.SetRefs({
-      sbleft = ns.SideBar.Get("left").frame, sbright = ns.SideBar.Get("right").frame,
-      trleft = ns.Tray.Get("left").frame, trright = ns.Tray.Get("right").frame,
-      menu = ns.Menu.frame,
-    })
+    -- (Referansene kan ikke settes i kamp; /reload midt i kamp: de settes når kampen er over.)
+    ns.RunAfterCombat(function()
+      ns.Medallion.SetRefs({
+        sbleft = ns.SideBar.Get("left").frame, sbright = ns.SideBar.Get("right").frame,
+        trleft = ns.Tray.Get("left").frame, trright = ns.Tray.Get("right").frame,
+        menu = ns.Menu.frame,
+      })
+      ns.SideBar.SetRefs("left", ns.Tray.Get("left").frame)
+      ns.SideBar.SetRefs("right", ns.Tray.Get("right").frame)
+      ns.Menu.SetRefs()
+    end)
     ns.Medallion.onSecureToggle = Core.Draw
-    ns.SideBar.SetRefs("left", ns.Tray.Get("left").frame)
-    ns.SideBar.SetRefs("right", ns.Tray.Get("right").frame)
     ns.SideBar.onClosed = function() Core.Draw() end
     if InCombatLockdown() then ns.Medallion.SetCombat(true, true) end
     ns.Medallion.onZoneClick = function(z)
@@ -428,13 +433,15 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     for e in pairs(CAST) do pcall(self.RegisterUnitEvent, self, e, "player") end
     for _, e in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
                          "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED",
-                         "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "TAXIMAP_OPENED", "GOSSIP_SHOW" }) do
+                         "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "TAXIMAP_OPENED", "GOSSIP_SHOW",
+                         "TAXIMAP_CLOSED", "GOSSIP_CLOSED" }) do
       pcall(self.RegisterEvent, self, e)
     end
     C_Timer.NewTicker(0.25, function()
       -- Byvakt: les stedet selv også. Ut av et hus (Anvilmar, et vertshus) gir ikke alltid ZONE_CHANGED_NEW_AREA
       -- (Daniel 5. okt: ingen advarsel ut av Anvilmar). CityWatch.Zone gjør ingenting når stedet er det samme.
       ns.CityWatch.Zone(ns.Menu.Zone())
+      ns.CityWatch.Check()
       Core.Draw()
     end) -- én felles klokke for nedtellingene
     ns.Refresh(true)
@@ -454,13 +461,24 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.CityWatch.Zone(ns.Menu.Zone())
     ns.Refresh(false) -- «Du er i …» i menyen
   elseif event == "TAXIMAP_OPENED" then
-    ns.CityWatch.Taxi()
+    Core.taxiOpen = true
+    ns.CityWatch.Taxi("map")
+  elseif event == "TAXIMAP_CLOSED" or event == "GOSSIP_CLOSED" then
+    -- Lukket uten å fly? Da skal varselet gjelde neste gang du drar (sjekkes litt etterpå: du er ikke i lufta,
+    -- og verken samtalen eller kartet er åpne)
+    if event == "TAXIMAP_CLOSED" then Core.taxiOpen = false else Core.gossipOpen = false end
+    C_Timer.After(1.5, function()
+      if Core.taxiOpen or Core.gossipOpen then return end
+      local ok, flying = pcall(UnitOnTaxi, "player")
+      if ok and not ns.Scan.isSecret(flying) and flying == false then ns.CityWatch.Rearm() end
+    end)
   elseif event == "GOSSIP_SHOW" then
+    Core.gossipOpen = true
     -- Flight master: si fra før du trykker «I need a ride» (Daniel 5. okt). Flykartet gir ikke et varsel til.
     local taxi, seen = ns.Scan.GossipHasTaxi()
     ns.db.debug = ns.db.debug or {}
     ns.db.debug.gossip = { at = date and date("%Y-%m-%d %H:%M:%S") or nil, zone = ns.Menu.Zone(), taxi = taxi, options = seen }
-    if taxi then ns.CityWatch.Taxi() end
+    if taxi then ns.CityWatch.Taxi("gossip") end
   elseif event == "PLAYER_ENTERING_WORLD" then
     -- Båt, portal og hearthstone gir lasteskjerm. Sonenavnet kan være tomt akkurat nå (V8): prøv igjen om litt.
     ns.CityWatch.Zone(ns.Menu.Zone())
@@ -468,6 +486,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Refresh(true)
   elseif event == "PLAYER_REGEN_ENABLED" then
     ns.Medallion.SetCombat(false)
+    ns.EntryButton.ResetBindings()
     local queue = afterCombat
     afterCombat = {}
     for _, fn in ipairs(queue) do pcall(fn) end

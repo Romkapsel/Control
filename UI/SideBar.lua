@@ -330,6 +330,7 @@ function SB.BeginDrag(b)
   local g = ensureGhost()
   dragging = { button = b, bar = b.dragHost or bars[b.side] } -- menyen har sin egen vert (UI/Menu.lua)
   g.icon:SetTexture(b.icon:GetTexture())
+  b.dragDim = true
   b:SetAlpha(0.35)
   g:SetScript("OnUpdate", function(self)
     local x, y = GetCursorPosition()
@@ -348,6 +349,7 @@ function SB.EndDrag(b)
   if not dragging or dragging.button ~= b then return end
   local bar = dragging.bar
   dragging = nil
+  b.dragDim = nil
   b:SetAlpha(1)
   if ghost then ghost:Hide() ghost:SetScript("OnUpdate", nil) end
   if marker then marker:Hide() end
