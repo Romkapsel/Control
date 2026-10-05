@@ -13,6 +13,8 @@ ns.L = {
   TIME_SECONDS = "%d:%02d",
   TIME_MINUTES = "%d min",
   TIME_HOURS = "%d t",
+  TIME_MINUTES_SHORT = "%dm", -- på knappen
+  TIME_HOURS_SHORT = "%dt",
 
   -- Tier (SPEC §7.7)
   TIER_1 = "I",

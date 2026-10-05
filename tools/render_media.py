@@ -121,12 +121,20 @@ def medal_base():
     edge.disc(0, 0, 28, BRONZE_LIGHT)
     c.over(edge, 0.30)
     c.disc(0, 0, 27, BLACK)
-    c.disc(0, 0, 24, CORE_LO)
-    c.disc(0, 0, 22, CORE)
-    hi = c.layer()
-    hi.disc(0, 4, 15, CORE_HI)
-    hi.img = hi.img.filter(ImageFilter.GaussianBlur(1.2 * c.s))
-    c.over(hi, 0.55)
+    # Kjernen: samme farge og overgang som bakgrunnen i menyene (Style.Frame: 130E0A nede, 201812 oppe),
+    # uten sirklene som skulle være lys (Daniel 5. okt)
+    core = c.layer()
+    grad = Image.new("RGBA", (c.n, c.n))
+    top, bot = hexc("201812"), hexc("130E0A")
+    for yy in range(c.n):
+        k = yy / (c.n - 1)
+        col = tuple(round(top[i] + (bot[i] - top[i]) * k) for i in range(3)) + (255,)
+        ImageDraw.Draw(grad).line([(0, yy), (c.n, yy)], fill=col)
+    mask = Image.new("L", (c.n, c.n), 0)
+    rr = 24 * c.s
+    ImageDraw.Draw(mask).ellipse([cx - rr, cy - rr, cx + rr, cy + rr], fill=255)
+    core.img = Image.composite(grad, core.img, mask)
+    c.over(core)
     c.save("medal_base")
 
 

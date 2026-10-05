@@ -116,15 +116,16 @@ end
 ------------------------------------------------------------------------
 
 -- Under 1 min: «0:SS». Under 100 min: «N min» (rundet opp). Fra 100 min: «N t» (rundet opp).
-function Rules.formatTime(secs, L)
+-- short = på knappen: «6m», «2t» (Daniel 5. okt: «6 min» på knappen så billig ut). Tooltipen bruker den lange.
+function Rules.formatTime(secs, L, short)
   if secs == nil or secs == math.huge then return nil end
   if secs < 0 then secs = 0 end
   if secs < 60 then
     return string.format(L.TIME_SECONDS, 0, math.floor(secs))
   end
   local minutes = math.ceil(secs / 60)
-  if minutes < 100 then return string.format(L.TIME_MINUTES, minutes) end
-  return string.format(L.TIME_HOURS, math.ceil(secs / 3600))
+  if minutes < 100 then return string.format(short and L.TIME_MINUTES_SHORT or L.TIME_MINUTES, minutes) end
+  return string.format(short and L.TIME_HOURS_SHORT or L.TIME_HOURS, math.ceil(secs / 3600))
 end
 
 -- Nok: bare tallet («3»). For lite: «har/vil ha» («3/4», «0/10»).

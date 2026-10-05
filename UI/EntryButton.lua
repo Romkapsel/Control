@@ -10,7 +10,8 @@ local EB = {}
 ns.EntryButton = EB
 
 local SIZE = 40
-local NUM_FONT = "Fonts\\ARIALN.TTF"
+-- Spillets skrift (som overskriftene og spillets egne buffer), med skygge i stedet for tykk kant
+-- (Daniel 5. okt: Arial med tykk kant så billig ut)
 local GLOW = Style.hex("FFE98A")
 
 local function useKeyDown()
@@ -18,8 +19,10 @@ local function useKeyDown()
   return ok and v == "1"
 end
 
-local function font(fs, size)
-  if not fs:SetFont(NUM_FONT, size, "OUTLINE") then fs:SetFontObject(NumberFontNormal) end
+local function font(fs, size, outline)
+  if not fs:SetFont(Style.FONT_HEAD, size, outline and "OUTLINE" or "") then fs:SetFontObject(GameFontNormalSmall) end
+  fs:SetShadowColor(0, 0, 0, 1)
+  fs:SetShadowOffset(1, -1)
 end
 
 local function edgeRects(parent, layer, sub, inset, thick, color, alpha)
@@ -82,19 +85,31 @@ function EB.Create(parent)
   b.band:SetHeight(13)
   b.bandText = b:CreateFontString(nil, "OVERLAY")
   font(b.bandText, 10)
+  b.bandText:SetTextColor(C.text[1], C.text[2], C.text[3])
   b.bandText:SetPoint("CENTER", b.band, "CENTER", 0, 0)
   b.bandText:SetWordWrap(false)
 
   b.time = b:CreateFontString(nil, "OVERLAY")
-  font(b.time, 12)
+  -- Svak mørk overgang nederst på ikonet, så tiden kan leses uten tykk kant
+  b.timeShade = b:CreateTexture(nil, "ARTWORK", nil, 4)
+  b.timeShade:SetPoint("BOTTOMLEFT", b.icon, "BOTTOMLEFT")
+  b.timeShade:SetPoint("BOTTOMRIGHT", b.icon, "BOTTOMRIGHT")
+  b.timeShade:SetHeight(16)
+  b.timeShade:SetColorTexture(1, 1, 1, 1)
+  if not (CreateColor and pcall(b.timeShade.SetGradient, b.timeShade, "VERTICAL", CreateColor(0, 0, 0, 0.85), CreateColor(0, 0, 0, 0))) then
+    b.timeShade:SetColorTexture(0, 0, 0, 0.5)
+  end
+  b.timeShade:Hide()
+  font(b.time, 10)
+  b.time:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
   b.time:SetPoint("BOTTOM", b, "BOTTOM", 0, 2)
   b.time:SetWordWrap(false)
   b.big = b:CreateFontString(nil, "OVERLAY")
-  font(b.big, 16)
+  font(b.big, 15, true)
   b.big:SetPoint("CENTER", b, "CENTER", 0, 0)
   b.big:SetWordWrap(false)
   b.stock = b:CreateFontString(nil, "OVERLAY")
-  font(b.stock, 12)
+  font(b.stock, 10)
   b.stock:SetPoint("TOPRIGHT", b, "TOPRIGHT", -2, -2)
 
   -- Mus over: tynn lys innerkant. Trykket: gyllent glimt.
@@ -263,12 +278,12 @@ function EB.Paint(b, e, st, L, frozen)
     drain = 1 - math.min(1, count / want)
   else
     if status == "on" then
-      b.time:SetText(R.formatTime(st.left, L) or "")
+      b.time:SetText(R.formatTime(st.left, L, true) or "")
       if st.left and st.left ~= math.huge and st.duration and st.duration > 0 then
         drain = 1 - math.max(0, math.min(1, st.left / st.duration))
       end
     elseif status == "expiring" then
-      b.big:SetText(R.formatTime(st.left, L) or "")
+      b.big:SetText(R.formatTime(st.left, L, true) or "")
       drain = 0.97
     else
       -- Ikke på / gått ut: ingen tekst, gløden er signalet (Daniel, 4. okt)
@@ -286,6 +301,7 @@ function EB.Paint(b, e, st, L, frozen)
     end
   end
 
+  b.timeShade:SetShown((b.time:GetText() or "") ~= "")
   b.drain:SetHeight(math.max(1, (SIZE - 2) * drain))
   b.drain:SetShown(drain > 0)
   b.drainEdge:SetShown(drain > 0 and drain < 1)
