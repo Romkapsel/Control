@@ -807,7 +807,8 @@ function Menu.Layout(model, members, sideOpen)
   for _, p in pairs(pools) do
     for i = p.n + 1, #p.items do p.items[i]:Hide() end
   end
-  frame:SetHeight(y + 4)
+  -- Henger menyen under medaljongen, får lukke-pila en egen stripe nederst (Daniel: den lå oppå «Oppsett»)
+  frame:SetHeight(y + 4 + (Menu.OpensUp() and 0 or 22))
   anchor(sideOpen)
   if Menu.combatDimmed then dimForCombat(false) end
   return true
