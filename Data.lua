@@ -31,6 +31,7 @@ local DEFAULTS = {
     scale = 1.0,
     locked = false,
     partySide = "left",
+    showCount = true,   -- tallet i midten av medaljongen (Oppsett i menyen)
     menuSections = { self = true, party = true, city = true },
   },
   durations = {},

@@ -350,7 +350,8 @@ function applyAll()
   parts.rim:SetAlpha(0.22 * grow)
 
   local num = v("num", 1)
-  parts.count:SetAlpha(view.allOk and 0 or num)
+  -- Tallet kan slås av under Oppsett (Daniel 5. okt); da er det ringen som forteller at noe mangler
+  parts.count:SetAlpha((view.allOk or db.ui.showCount == false) and 0 or num)
   if parts.count.SetTextScale then parts.count:SetTextScale(0.7 + 0.3 * num) end
 
   for _, z in ipairs({ "up", "right", "down", "left" }) do

@@ -37,7 +37,8 @@ Menu.onFollow = nil   -- (entry, name, names): slå av/på hvem en gruppebuff f�
 Menu.onAddCity = nil  -- (zone)
 Menu.onRemoveCity = nil -- (zone)
 Menu.onSwap = nil
-Menu.onScale = nil    -- (skala 0,70–1,50): settes når du slipper slideren
+Menu.onScale = nil
+Menu.onToggleCount = nil -- tallet i midten av medaljongen av/på    -- (skala 0,70–1,50): settes når du slipper slideren
 
 ------------------------------------------------------------------------
 -- Byggeklosser
@@ -525,6 +526,17 @@ local function scaleRow()
   y = y + 16 + G
 end
 
+-- Tall i midten: av/på (Daniel 5. okt). Tekst til venstre, liten knapp til høyre, som «Legg til» under Byvakt.
+local function countRow()
+  local on = db.ui.showCount ~= false
+  local a = action(on and L.ON or L.OFF, true, nil, function() if Menu.onToggleCount then Menu.onToggleCount() end end, 52)
+  place(a, W - PAD - 52, y)
+  Menu.countButton = a
+  local t = text(L.COUNT_LABEL, C.text)
+  place(t, PAD, y + 4)
+  y = y + 22 + G
+end
+
 -- Bytt side: én lang knapp, midtstilt (Daniel 5. okt). Hvilken side som er hvor, står i kategorilinjene over.
 local function direction()
   local ww = wideWidth()
@@ -648,6 +660,8 @@ function Menu.Layout(model, members, sideOpen)
   if header("city", L.MENU_CITY) then cityWatch() end
   header(nil, L.MENU_DIR)
   direction()
+  separator()
+  countRow()
   separator()
   scaleRow()
   if db.debug and db.debug.rangeButton then

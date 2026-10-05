@@ -309,6 +309,11 @@ function Actions.RemoveCity(zone)
 end
 
 -- Bytt sider: gruppa og mine buffer bytter plass. Sidemenyene lukkes, alt legges ut på nytt.
+function Actions.ToggleCount()
+  ns.db.ui.showCount = ns.db.ui.showCount == false
+  Core.Draw()
+end
+
 function Actions.SwapSides()
   if InCombatLockdown() then return end
   ns.db.ui.partySide = ns.db.ui.partySide == "right" and "left" or "right"
@@ -381,6 +386,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onAddCity = Actions.AddCity
     ns.Menu.onRemoveCity = Actions.RemoveCity
     ns.Menu.onSwap = Actions.SwapSides
+    ns.Menu.onToggleCount = Actions.ToggleCount
     ns.Menu.onScale = Actions.SetScale
     ns.Medallion.isMenuOpen = ns.Menu.IsOpen
     -- Det sikre skriptet på medaljongen åpner/lukker disse i kamp (fase 7)

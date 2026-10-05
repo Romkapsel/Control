@@ -62,6 +62,9 @@ ns.L = {
   CITY_REMOVED = "%s fjernet (/control angre).",
   DIR_SWAP = "Bytt side på gruppene",
   SCALE = "Størrelse",
+  COUNT_LABEL = "Tall i midten",
+  ON = "På",
+  OFF = "Av",
   SCALE_VALUE = "%d %%",
   SCALE_TIP = "Dra eller rull (70–150 %)",
   -- Avstandstest (/control avstand)

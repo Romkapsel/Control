@@ -159,6 +159,16 @@ check(Menu.heads[1].right.text == "venstre" and Menu.heads[2].right.text == "hø
 check(ns.Tray.Get("left").ids[1] == flask.id, "flasken står ute på venstre side")
 Menu.swapButton.scripts.OnClick(Menu.swapButton)
 
+-- Tall i midten: av og på under Oppsett
+local cnt = M.State().parts.count
+local cb = Menu.countButton
+check(cb and cb.text == "På" and cnt.alpha > 0, "tallet vises som standard")
+cb.scripts.OnClick(cb)
+check(ControlCharDB.ui.showCount == false and Menu.countButton.text == "Av" and cnt.alpha == 0, "Av: tallet er borte")
+check(ns.view.ring == 2 or ns.view.ring == 1, "ringen viser fortsatt at noe mangler")
+Menu.countButton.scripts.OnClick(Menu.countButton)
+check(ControlCharDB.ui.showCount == true and Menu.countButton.text == "På" and cnt.alpha > 0, "På igjen: tallet er tilbake")
+
 -- Størrelse: bare medaljongen vokser; knappene og menyen flytter seg utover
 local sl = Menu.slider
 eq(sl:GetValue(), 100, "slideren står på 100 %")
