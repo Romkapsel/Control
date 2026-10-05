@@ -34,6 +34,7 @@ local DEFAULTS = {
     showCount = true,   -- tallet i midten av medaljongen (Oppsett i menyen)
     openCore = false,   -- gjennomsiktig midte: verden synes gjennom kjernen (Oppsett i menyen)
     fadeOk = true,      -- medaljongen tones ned når alt er i orden (Oppsett i menyen)
+    fadeLevel = 0.2,    -- hvor langt ned: 0, 0.2 eller 0.5 (Oppsett i menyen)
     menuSections = { self = true, party = false, city = false, setup = false }, -- åpnes med bare Meg utfoldet
   },
   durations = {},

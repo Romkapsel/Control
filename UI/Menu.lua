@@ -44,6 +44,7 @@ Menu.onScale = nil
 Menu.onToggleCount = nil -- tallet i midten av medaljongen av/på
 Menu.onToggleOpenCore = nil -- gjennomsiktig midte av/på
 Menu.onToggleFade = nil -- nedtoning når alt er i orden av/på
+Menu.onFadeLevel = nil -- hvor langt ned (0 / 0.2 / 0.5)
 Menu.onUseSet, Menu.onNewSet, Menu.onEditSet = nil, nil, nil -- sett: bytt, nytt, nytt navn/slett
 Menu.onEquip, Menu.gearPlan = nil, nil -- «Ta på» ved Utstyr
 Menu.onToggleCityCheck = nil -- (key): reparasjon/bagplass i byvakta av/på    -- (skala 0,70–1,50): settes når du slipper slideren
@@ -660,9 +661,28 @@ local function openCoreRow()
     function() if Menu.onToggleOpenCore then Menu.onToggleOpenCore() end end, { L.COUNT_LABEL, L.OPEN_CORE_LABEL, L.FADE_LABEL }, true)
 end
 
+-- Nedtoning: Av/På, og når den er på, tre valg for hvor langt ned (Daniel 5. okt): 0 %, 20 %, 50 %. Valgt i gull.
 local function fadeRow()
   Menu.fadeText, Menu.fadeButton = toggleRow(L.FADE_LABEL, function() return db.ui.fadeOk ~= false end,
     function() if Menu.onToggleFade then Menu.onToggleFade() end end, { L.COUNT_LABEL, L.OPEN_CORE_LABEL, L.FADE_LABEL }, true)
+  Menu.fadeLevels = {}
+  if db.ui.fadeOk == false then return end
+  local levels = ns.Medallion.FADE_LEVELS
+  local cur = ns.Medallion.FadeAlpha()
+  local bw, gap = 52, 6
+  local x = math.floor((W - (#levels * bw + (#levels - 1) * gap)) / 2)
+  for _, lv in ipairs(levels) do
+    local chosen = math.abs(lv - cur) < 0.001
+    local b = action(string.format(L.PERCENT, math.floor(lv * 100 + 0.5)), true, L.FADE_LEVEL_TIP,
+      function() if Menu.onFadeLevel then Menu.onFadeLevel(lv) end end, bw)
+    setColor(b.fs, chosen and C.gold or C.help)
+    b.edge:SetAlpha(chosen and 1 or 0.35)
+    b.allowCombat, b.level, b.chosen = true, lv, chosen
+    place(b, x, y)
+    x = x + bw + gap
+    Menu.fadeLevels[#Menu.fadeLevels + 1] = b
+  end
+  y = y + 22 + G
 end
 
 -- Bytt side: én lang knapp, midtstilt (Daniel 5. okt). Hvilken side som er hvor, står i kategorilinjene over.

@@ -123,7 +123,7 @@ dra et sted ut av lista for å fjerne det.
 
 - **Meg** og **Party:** alle knappene dine, sortert i kategorier. Når menyen åpnes, er bare Meg utfoldet.
 - **Byvakt:** se over.
-- **Oppsett:** **Bytt side på gruppene**, **Tall i midten** (på/av – uten tallet er det ringen som sier fra), **Gjennomsiktig midt** (på/av – verden synes gjennom medaljongen), **Ton ned når alt er ok** (på/av – medaljongen blekner etter noen sekunder når alt er i orden, og kommer fram igjen med en gang noe mangler, du holder musa over, er i kamp eller har en meny åpen), og **Størrelse** (70–150 %).
+- **Oppsett:** **Bytt side på gruppene**, **Tall i midten** (på/av – uten tallet er det ringen som sier fra), **Gjennomsiktig midt** (på/av – verden synes gjennom medaljongen), **Nedtoning** (på/av – medaljongen blekner etter noen sekunder når alt er i orden, og kommer fram igjen med en gang noe mangler, du holder musa over, er i kamp eller har en meny åpen; når den er på, velger du hvor langt ned: 0 %, 20 % eller 50 %), og **Størrelse** (70–150 %).
 - Lukk med pila i hjørnet, eller klikk nederst på medaljongen.
 
 ## I kamp

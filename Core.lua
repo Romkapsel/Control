@@ -354,6 +354,11 @@ function Actions.ToggleFade()
   Core.Draw()
 end
 
+function Actions.SetFadeLevel(level)
+  ns.db.ui.fadeLevel = level
+  Core.Draw()
+end
+
 function Actions.ToggleCount()
   ns.db.ui.showCount = ns.db.ui.showCount == false
   Core.Draw()
@@ -586,6 +591,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onToggleCount = Actions.ToggleCount
     ns.Menu.onToggleOpenCore = Actions.ToggleOpenCore
     ns.Menu.onToggleFade = Actions.ToggleFade
+    ns.Menu.onFadeLevel = Actions.SetFadeLevel
     ns.Medallion.isBusy = function()
       return ns.Menu.IsOpen() or ns.SideBar.IsOpen("left") or ns.SideBar.IsOpen("right") or false
     end

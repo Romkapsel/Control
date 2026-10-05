@@ -208,7 +208,7 @@ Menu.swapButton.scripts.OnClick(Menu.swapButton)
 local cnt = M.State().parts.count
 local cb = Menu.countButton
 check(cb and cb.text == "På" and cnt.alpha > 0, "tallet vises som standard")
-local tx, bx = Menu.fadeText.points[1][4], cb.points[1][4] -- den lengste teksten bestemmer gruppen
+local tx, bx = Menu.coreText.points[1][4], cb.points[1][4] -- den lengste teksten bestemmer gruppen
 check(math.abs(tx - (Menu.frame.width - (bx + 52))) <= 1, "av/på-linjene står midt i menyen")
 cb.scripts.OnClick(cb)
 check(ControlCharDB.ui.showCount == false and Menu.countButton.text == "Av" and cnt.alpha == 0, "Av: tallet er borte")
