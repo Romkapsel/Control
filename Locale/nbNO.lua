@@ -25,22 +25,23 @@ ns.L = {
   -- Tomme ruter (SPEC §14)
   EMPTY_SELF = "Dra en spell eller en ting fra baggen hit",
   EMPTY_PARTY = "Dra en buff du kan gi, eller en scroll, hit",
-  LABEL_PARTY_BUFFS = "Party buffs",
-  LABEL_MY_BUFFS = "Mine buffs",
+  LABEL_PARTY_BUFFS = "Party",
+  LABEL_MY_BUFFS = "Meg",
   PARTY_SCROLLS_ONLY = "Bare scrolls kan brukes på andre. Eliksirer, flasks og mat hører til dine egne.",
   FREE_SLOT = "Ledig plass",
 
   -- Medaljongen: sonene og midten (SPEC §14)
   ZONE_LOCK = "Lås",
   ZONE_UNLOCK = "Lås opp",
-  ZONE_OPEN_PARTY = "Fold ut gruppa",
-  ZONE_CLOSE_PARTY = "Fold inn gruppa",
-  ZONE_OPEN_SELF = "Fold ut mine buffer",
-  ZONE_CLOSE_SELF = "Fold inn mine buffer",
-  ZONE_MENU_OPEN = "Åpne menyen, %d å gjøre",
-  ZONE_MENU_CLOSE = "Lukk menyen, %d å gjøre",
-  HUB_MOVE = "Flytt knappen: dra",
-  HUB_LOCKED = "Låst på plass. Lås opp fra toppen av ringen.",
+  -- Kort og presist rett på medaljongen (Daniel 5. okt)
+  ZONE_OPEN_PARTY = "Party",
+  ZONE_CLOSE_PARTY = "Party",
+  ZONE_OPEN_SELF = "Meg",
+  ZONE_CLOSE_SELF = "Meg",
+  ZONE_MENU_OPEN = "Åpne meny",
+  ZONE_MENU_CLOSE = "Lukke meny",
+  HUB_MOVE = "Dra",
+  HUB_LOCKED = "Låst",
 
   -- Menyen (fase 6, SPEC §7.6)
   MENU_CITY = "Byvakt",

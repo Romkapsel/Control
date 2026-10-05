@@ -17,10 +17,10 @@ check(mb.frame.points[1][4] == 32, "samme forankring som knappene: medaljongens 
 local function mouse(dx, dy) T.mouse = { T.center[1] + dx, T.center[2] + dy } end
 mouse(20, 0)
 st.hit.scripts.OnEnter(st.hit)
-eq(T.tooltip.text, "Fold ut mine buffer", "tooltip før")
+eq(T.tooltip.text, "Meg", "tooltip før")
 st.hit.scripts.OnMouseUp(st.hit, "LeftButton")
 check(mb.frame.shown, "høyre sone folder ut mine")
-eq(T.tooltip.text, "Fold inn mine buffer", "tooltip etter")
+eq(T.tooltip.text, "Meg", "tooltip etter")
 check(mb.slots[1].shown and mb.slots[1].plus.shown and mb.slots[1].hint == "Dra en spell eller en ting fra baggen hit",
   "tom side: én slipprute med «+» og hjelpetekst")
 check(not (mb.slots[2] and mb.slots[2].shown), "tom side: bare én rute")
@@ -41,8 +41,8 @@ eq(ns.view.ring, 1, "tier II som mangler: oransje")
 check(#mb.ids == 2 and mb.buttons[1].entry == motw and mb.buttons[2].entry == flask, "knappene i lista sin rekkefølge")
 eq(mb.frame.width, 40 + 3 * 46, "2 knapper + én «+»-rute: sida vokser én og én")
 check(not mb.vA.shown, "bare tier II: ingen fure")
-check(mb.status.text:find("Mine buffs", 1, true) and not mb.status.text:find("Mangler", 1, true),
-  "statuslinja: bare «Mine buffs», knappene forteller resten")
+check(mb.status.text:find("Meg", 1, true) and not mb.status.text:find("Mangler", 1, true),
+  "statuslinja: bare «Meg», knappene forteller resten")
 check(not ns.Tray.Get("right").frame.shown, "sidemenyen dekker knappene ved medaljongen")
 
 -- Høyreklikk MotW: tier I. Fure kommer, MotW blir rød.
@@ -114,7 +114,7 @@ T.cursor = { "spell", 3, "spell", 1126 }
 pb.frame.scripts.OnReceiveDrag(pb.frame)
 local g = ControlCharDB.party[1]
 check(g and g.type == "partyspell" and g.tier == 2 and g.groupSpell == "Gift of the Wild", "gruppebuff med gruppeversjon")
-check(pb.status.text:find("Party buffs", 1, true) and not pb.status.text:find("Alle", 1, true), "gruppesiden: bare «Party buffs»")
+check(pb.status.text:find("Party", 1, true) and not pb.status.text:find("Alle", 1, true), "gruppesiden: bare «Party»")
 T.cursor = { "item", 13510, "[Flask]" }
 pb.frame.scripts.OnReceiveDrag(pb.frame)
 eq(#ControlCharDB.party, 1, "item på gruppesiden avvises")

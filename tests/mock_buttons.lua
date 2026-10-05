@@ -49,7 +49,7 @@ check(#tray.ids == 2 and tray.buttons[2]:GetAttribute("type") == "item" and tray
   "flasken står ute og bruker itemet")
 eq(tray.buttons[2].stock.text, "3", "nok på lager: bare tallet")
 eq(tray.frame.width, 2 + 36 + 2 * 40 + 6 + 6 + 2, "rammen vokser utover")
-check(ns.view.status.self.detail == "Mangler  MotW · Flask" and ns.view.status.self.text == "Mine buffs", "statuslinja: bare «Mine buffs»")
+check(ns.view.status.self.detail == "Mangler  MotW · Flask" and ns.view.status.self.text == "Meg", "statuslinja: bare «Meg»")
 
 -- Klikk MotW: trykket registreres, kastet bekreftes, buffen kommer, knappen forsvinner
 b1.scripts.hookPreClick(b1, "LeftButton")

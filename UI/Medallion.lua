@@ -328,7 +328,7 @@ local function zoneText(z)
   if z == "up" then return db.ui.locked and L.ZONE_UNLOCK or L.ZONE_LOCK end
   if z == "down" then
     local open = M.isMenuOpen and M.isMenuOpen()
-    return string.format(open and L.ZONE_MENU_CLOSE or L.ZONE_MENU_OPEN, view.count or 0), InCombatLockdown() and L.NOT_IN_COMBAT or nil
+    return open and L.ZONE_MENU_CLOSE or L.ZONE_MENU_OPEN, InCombatLockdown() and L.NOT_IN_COMBAT or nil
   end
   if z == "hub" then return db.ui.locked and L.HUB_LOCKED or L.HUB_MOVE end
   local isParty = (z == "left") == partyLeft()

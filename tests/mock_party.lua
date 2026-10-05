@@ -137,7 +137,7 @@ eq(#s.members, 0, "alene: ingen ruter")
 check(ns.view.allOk, "alene: alt i orden")
 check(not tray.frame.shown or #tray.ids == 0, "alene: ingen knapp ute")
 toggleParty()
-check(pb.status.text:find("Party buffs", 1, true) and not pb.status.text:find("Alle", 1, true), "alene: bare «Party buffs», ingen påstand om gruppa")
+check(pb.status.text:find("Party", 1, true) and not pb.status.text:find("Alle", 1, true), "alene: bare «Party», ingen påstand om gruppa")
 check(not pb.buttons[1].glowing, "alene: ingenting lyser")
 
 -- Scroll på gruppesiden: brukes på den som mangler (Daniel 5. okt)
