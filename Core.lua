@@ -449,7 +449,9 @@ local function popupText(self)
   local eb = self.editBox or self.EditBox
   return eb and eb:GetText() or nil
 end
-StaticPopupDialogs = StaticPopupDialogs or {}
+-- Bare egne nøkler i spillets tabell. Aldri `StaticPopupDialogs = …`: å skrive selve det globale navnet (også med
+-- samme tabell) smitter det, og da kjører spillets egen kode «tainted by Control» – karaktervinduet krasjet på
+-- hemmelige helsetall (Daniel 5. okt).
 StaticPopupDialogs.CONTROL_SET_NEW = {
   text = "", button1 = "", button2 = "", hasEditBox = true, timeout = 0, whileDead = true, hideOnEscape = true,
   OnShow = function(self) local eb = self.editBox or self.EditBox if eb then eb:SetText("") end end,

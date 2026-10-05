@@ -279,10 +279,21 @@ def run_mock(test_file, prelude=""):
     lua.execute(MOCK)
     if prelude:
         lua.execute(prelude)
+    # Addonens filer kjører i et miljø som leser fra _G, men der hver skriving av et globalt navn går gjennom
+    # __newindex. Et navn som fantes før addonen ble lastet (spillets eget, f.eks. StaticPopupDialogs), skal aldri
+    # skrives – heller ikke med samme verdi: det smitter navnet, og spillets kode kjører «tainted by Control»
+    # (karaktervinduet krasjet på hemmelige helsetall 5. okt).
+    lua.execute("""
+      BLIZZARD_WRITES = {}
+      ADDON_ENV = setmetatable({}, { __index = _G, __newindex = function(_, k, v)
+        if GLOBALS_BEFORE[k] then BLIZZARD_WRITES[tostring(k)] = true end
+        rawset(_G, k, v)
+      end })
+    """)
     lua.execute("GLOBALS_BEFORE = {}; GLOBALS_BEFORE = GlobalSnapshot()")
     ns = lua.table()
     lua.globals().NS = ns
-    load = lua.eval('function(src, name, ns) local f = assert(loadstring(src, name)); f("Control", ns) end')
+    load = lua.eval('function(src, name, ns) local f = assert(loadstring(src, name)); setfenv(f, ADDON_ENV); f("Control", ns) end')
     for f in toc_files():
         load(src(f), f, ns)
     n, fails = collect(*lua.execute(open(os.path.join(TESTS, test_file), encoding="utf-8").read()))
@@ -295,6 +306,11 @@ def run_mock(test_file, prelude=""):
             fails.append("teksturfil utenfor Media/: " + p)
         elif not os.path.isfile(os.path.join(ROOT, "Media", p[len(prefix):] + ".tga")):
             fails.append("bildet finnes ikke: " + p)
+    writes = lua.eval('function() local t = {} for k in pairs(BLIZZARD_WRITES) do t[#t+1] = k end return t end')()
+    bw = [k for k in writes.values() if k not in ALLOWED_GLOBALS]
+    n += 1
+    if bw:
+        fails.append("skriver over spillets globale navn: " + ",".join(sorted(bw)))
     leaks = lua.eval('function() local t = {} for k in pairs(_G) do if not GLOBALS_BEFORE[k] then t[#t+1] = tostring(k) end end return t end')()
     extra = [k for k in leaks.values() if k not in ALLOWED_GLOBALS]
     n += 1
