@@ -212,3 +212,4 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | 2026-10-05 | **Utgave 0.9.7 på GitHub** (Daniel) | Daniel |
 | 2026-10-05 | **Feil funnet av Daniel: ingen advarsel ut av Anvilmar.** Inne i et hus kaller spillet stedet med husets navn, og når du går ut, kommer bare `ZONE_CHANGED`/`ZONE_CHANGED_INDOORS`, ikke `ZONE_CHANGED_NEW_AREA`. Byvakta lytter nå på alle tre, og sjekker i tillegg stedet selv på klokka (hvert kvarter sekund), så ingen avreise glipper | Daniel |
 | 2026-10-05 | For at det ikke skal gi falske varsler når du går inn på et vertshus i en vaktet by: før varselet spør byvakta kartet om du fortsatt er inne i stedet du kom fra (`Scan.InsideZone`, kartets foreldrekjede). Vertshus er fortsatt egne steder (Daniels valg står) | Claude |
+| 2026-10-05 | Byvakt ut av Anvilmar testet av Daniel: virker. **Utgave 0.9.8 på GitHub** | Daniel |
