@@ -177,6 +177,7 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
     local b = bar.buttons[i]
     if not b then
       b = ns.EntryButton.Create(bar.frame)
+      SecureHandlerWrapScript(b, "OnClick", ns.EntryButton.Header(), "", ns.Tray.RETARGET) -- gruppebuff i kamp
       b.canDrag = true
       bar.buttons[i] = b
     end

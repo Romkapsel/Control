@@ -42,6 +42,15 @@ end
 
 Tray.AFTER_CLICK = [[
   if button ~= "LeftButton" or SecureCmdOptionParse("[combat] k; u") ~= "k" then return end
+  local qn = self:GetAttribute("ks-qn")
+  if qn then
+    local i = (self:GetAttribute("ks-qi") or 1) + 1
+    if i <= qn then
+      self:SetAttribute("ks-qi", i)
+      self:SetAttribute("unit", self:GetAttribute("ks-q" .. i))
+      return
+    end
+  end
   self:Hide()
   local slots, last = newtable(), 0
   local kids = newtable(owner:GetChildren())
@@ -68,10 +77,24 @@ Tray.AFTER_CLICK = [[
     end
   end
   if n == 0 then
+    owner:SetAttribute("ks-want", false)
     owner:Hide()
   else
     owner:SetWidth(2 + air + n * 46 + 2)
   end
+]]
+
+-- Gruppebuff i kamp (fase 7): neste klikk kaster på neste som manglet før kampen (ks-q1, ks-q2 …),
+-- i stedet for på den samme igjen. Knappene ved medaljongen har dette i AFTER_CLICK (og skjules når køen er tom);
+-- knappene i sidemenyene og menyen får bare dette.
+Tray.RETARGET = [[
+  if button ~= "LeftButton" or SecureCmdOptionParse("[combat] k; u") ~= "k" then return end
+  local qn = self:GetAttribute("ks-qn")
+  if not qn then return end
+  local i = (self:GetAttribute("ks-qi") or 1) + 1
+  if i > qn then return end
+  self:SetAttribute("ks-qi", i)
+  self:SetAttribute("unit", self:GetAttribute("ks-q" .. i))
 ]]
 
 function Tray.Create(root, side)
@@ -110,12 +133,14 @@ local function button(t, i)
 end
 
 -- Hvilke knapper som står ute. entries = oppføringene i rekkefølge (innerst først). Bare utenfor kamp.
-function Tray.Layout(side, entries, st, L)
+-- covered = sidemenyen på denne siden er åpen: knappene legges ut, men rammen skjules (det sikre skriptet viser
+-- den igjen hvis sidemenyen lukkes i kamp; ks-want sier om det er noe å vise).
+function Tray.Layout(side, entries, st, L, covered)
   local t = trays[side]
   if not t or InCombatLockdown() then return false end
   -- Samme knapper som sist: bare nytt utseende (attributter settes ikke på nytt hvert kvarter sekund)
   -- (Et sikkert skript kan ha skjult knapper i kamp: da legges alt ut på nytt.)
-  local same = #entries == #t.ids and (#entries == 0 or t.frame:IsShown())
+  local same = #entries == #t.ids and (#entries == 0 or t.frame:IsShown() or covered) and t.covered == covered
   local a = air()
   if a ~= t.air then -- medaljongen har endret størrelse: legg alt ut på nytt
     t.air = a
@@ -125,6 +150,8 @@ function Tray.Layout(side, entries, st, L)
   for i, e in ipairs(entries) do
     if t.ids[i] ~= e.id or not t.buttons[i]:IsShown() then same = false break end
   end
+  t.covered = covered
+  t.frame:SetAttribute("ks-want", #entries > 0)
   if same then
     for i, e in ipairs(entries) do
       ns.EntryButton.Bind(t.buttons[i], e, st[e.id]) -- nytt mål for en gruppebuff setter nye attributter
@@ -147,7 +174,7 @@ function Tray.Layout(side, entries, st, L)
   local n = #entries
   if n > 0 then
     t.frame:SetWidth(2 + t.air + n * BTN + (n - 1) * GAP + 6 + 2)
-    t.frame:Show()
+    t.frame:SetShown(not covered)
   else
     t.frame:Hide()
   end

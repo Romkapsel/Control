@@ -83,10 +83,9 @@ function Core.Draw()
     ns.Menu.Paint(model)
   else
     -- Sidemenyen dekker knappene ved medaljongen på sin side mens den er åpen (SPEC §7.4)
-    local mbOut = ns.SideBar.IsOpen(mb) and {} or trayEntries(view.tray.self, map)
-    ns.Tray.Layout(mb, mbOut, model.st, ns.L)
-    local pbOut = ns.SideBar.IsOpen(pb) and {} or trayEntries(view.tray.party, pmap)
-    ns.Tray.Layout(pb, pbOut, model.st, ns.L)
+    -- (Knappene legges ut også når sidemenyen dekker dem, så de er klare hvis den lukkes i kamp.)
+    ns.Tray.Layout(mb, trayEntries(view.tray.self, map), model.st, ns.L, ns.SideBar.IsOpen(mb))
+    ns.Tray.Layout(pb, trayEntries(view.tray.party, pmap), model.st, ns.L, ns.SideBar.IsOpen(pb))
     ns.SideBar.Layout(mb, model.self, model.st, view, false, ns.L)
     ns.SideBar.Layout(pb, model.party, model.st, view, true, ns.L)
     ns.Menu.Layout(model, members, ns.SideBar.IsOpen(mb) or ns.SideBar.IsOpen(pb))
@@ -385,6 +384,14 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onSwap = Actions.SwapSides
     ns.Menu.onScale = Actions.SetScale
     ns.Medallion.isMenuOpen = ns.Menu.IsOpen
+    -- Det sikre skriptet på medaljongen åpner/lukker disse i kamp (fase 7)
+    ns.Medallion.SetRefs({
+      sbleft = ns.SideBar.Get("left").frame, sbright = ns.SideBar.Get("right").frame,
+      trleft = ns.Tray.Get("left").frame, trright = ns.Tray.Get("right").frame,
+      menu = ns.Menu.frame,
+    })
+    ns.Medallion.onSecureToggle = Core.Draw
+    if InCombatLockdown() then ns.Medallion.SetCombat(true, true) end
     ns.Medallion.onZoneClick = function(z)
       if InCombatLockdown() then return end
       if z == "left" or z == "right" then
@@ -440,6 +447,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     C_Timer.After(1, function() ns.CityWatch.Zone(ns.Menu.Zone()) end)
     ns.Refresh(true)
   elseif event == "PLAYER_REGEN_ENABLED" then
+    ns.Medallion.SetCombat(false)
     local queue = afterCombat
     afterCombat = {}
     for _, fn in ipairs(queue) do pcall(fn) end
@@ -447,6 +455,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
   elseif event == "UI_SCALE_CHANGED" or event == "DISPLAY_SIZE_CHANGED" then
     ns.Medallion.Resnap() -- nye skjermpiksler: strekene rundes på nytt
   elseif event == "PLAYER_REGEN_DISABLED" then
+    ns.Medallion.SetCombat(true)
     auraCache, partyAuraCache = nil, nil
     Core.Draw()
   else

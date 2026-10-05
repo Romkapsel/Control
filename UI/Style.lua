@@ -129,7 +129,7 @@ function Style.Frame(f)
   local bg = f:CreateTexture(nil, "BACKGROUND", nil, 0)
   bg:SetPoint("TOPLEFT", 4 * p, -4 * p)
   bg:SetPoint("BOTTOMRIGHT", -4 * p, 4 * p)
-  bg:SetColorTexture(1, 1, 1, 0.96)
+  bg:SetColorTexture(1, 1, 1, 1) -- helt tett: ingenting skal skinne gjennom
   Style.Gradient(bg, hex("130E0A"), hex("201812"), hex("1A140F"))
   local function ring(inset, thick, color, sub)
     inset, thick = inset * p, thick * p

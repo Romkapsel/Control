@@ -76,6 +76,8 @@ local function frame(name, kind)
   function f:SetSize(w, h) self.width, self.height = w, h end
   function f:SetThickness(t) self.thickness = t end
   function f:EnableMouse(v) self.mouseEnabled = v end
+  function f:GetMousePosition() if T.mousePos then return T.mousePos[1], T.mousePos[2] end end
+  function f:GetFrameRef(k) return self.refs and self.refs[k] end
   function f:SetMinMaxValues(a, b) self.minv, self.maxv = a, b end
   function f:SetValue(v)
     if self.minv then v = math.max(self.minv, math.min(self.maxv, v)) end
@@ -107,15 +109,25 @@ function CreateFrame(kind, name, parent, template)
 end
 -- Sikre skript (restricted Lua): lagres ved WrapScript og kjøres av SecureClick, som spillet gjør etter OnClick.
 function SecureHandlerWrapScript(f, script, header, pre, post) f.wrap = { header = header, post = post } end
+function SecureHandlerSetFrameRef(f, k, r) f.refs = f.refs or {} f.refs[k] = r end
+local function secureEnv(b, mouse, owner)
+  return { self = b, owner = owner, button = mouse,
+           SecureCmdOptionParse = function(s) if s:find("[combat]", 1, true) then return T.combat and "k" or "u" end end,
+           newtable = function(...) return { ... } end }
+end
 function SecureClick(b, mouse)
   if b.scripts.hookPreClick then b.scripts.hookPreClick(b, mouse) end
-  if b.wrap and b.wrap.post ~= "" then
-    local chunk = assert(loadstring(b.wrap.post))
-    setfenv(chunk, { self = b, owner = b.wrap.header, button = mouse,
-                     SecureCmdOptionParse = function(s) if s:find("[combat]", 1, true) then return T.combat and "k" or "u" end end,
-                     newtable = function(...) return { ... } end })
+  if b.attrs._onclick then -- SecureHandlerClickTemplate
+    local chunk = assert(loadstring(b.attrs._onclick))
+    setfenv(chunk, secureEnv(b, mouse))
     chunk()
   end
+  if b.wrap and b.wrap.post ~= "" then
+    local chunk = assert(loadstring(b.wrap.post))
+    setfenv(chunk, secureEnv(b, mouse, b.wrap.header))
+    chunk()
+  end
+  if b.scripts.hookPostClick then b.scripts.hookPostClick(b, mouse) end
 end
 UIParent = frame("UIParent")
 function UIParent:GetHeight() return 768 end

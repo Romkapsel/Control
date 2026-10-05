@@ -32,9 +32,9 @@ local rv = ns.view.side.self.width
 check(st.root.clamp[2] == math.max(138, 32 + rv - 64), "høyre grense regnet med MB-sidemenyen fullt utfoldet")
 
 -- Animasjonene går ferdig og stopper
-local function settle() local f = st.root.scripts.OnUpdate if f then f(st.root, 5) end end
+local function settle() local f = st.animFrame.scripts.OnUpdate if f then f(st.animFrame, 5) end end
 settle()
-check(st.root.scripts.OnUpdate == nil, "animasjonen stopper når alt står stille")
+check(st.animFrame.scripts.OnUpdate == nil, "animasjonen stopper når alt står stille")
 check(near(st.parts.ring.color[1], 1), "ringen er rød etter overgangen")
 
 -- Mus over øvre sone

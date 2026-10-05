@@ -33,6 +33,9 @@ end
 ------------------------------------------------------------------------
 
 local root, face, hit
+local animFrame, trackFrame -- frie rammer (ikke forankret til noe sikkert): OnUpdate kan slås av og på også i kamp
+local swordFrame, swords, swordFlash
+local buildSwords
 local anim = {}   -- key → { cur, from, to, t, dur }
 local applyAll
 
@@ -48,7 +51,7 @@ local function step(_, elapsed)
     end
   end
   applyAll()
-  if not busy then root:SetScript("OnUpdate", nil) end
+  if not busy then animFrame:SetScript("OnUpdate", nil) end
 end
 
 local function animate(key, to, dur, instant)
@@ -66,7 +69,7 @@ local function animate(key, to, dur, instant)
     a.cur, a.from, a.to, a.t = to, to, to, 1
   else
     a.from, a.to, a.t, a.dur = a.cur, to, 0, dur
-    root:SetScript("OnUpdate", step)
+    animFrame:SetScript("OnUpdate", step)
   end
 end
 
@@ -184,12 +187,161 @@ local view = { count = 0, ring = 0, allOk = true, empty = true }
 
 local function partyLeft() return db.ui.partySide ~= "right" end
 
+------------------------------------------------------------------------
+-- I kamp (sikkert skript): klikk på en sone åpner/lukker sidemenyen eller menyen. self = klikkflaten.
+-- Sonen regnes ut fra musa (GetMousePosition: 0–1 over flaten) i medaljongens egne enheter (64 px).
+-- Sidemenyen dekker knappene ved medaljongen på sin side; de kommer tilbake når den lukkes (ks-want).
+-- Restricted Lua: ingen funksjoner, ingen math-bibliotek.
+------------------------------------------------------------------------
+
+M.TOGGLE = [[
+  if button ~= "LeftButton" or SecureCmdOptionParse("[combat] k; u") ~= "k" then return end
+  if not self.GetMousePosition then return end -- finnes ikke i denne klienten: gjør ingenting heller enn å feile
+  local x, y = self:GetMousePosition()
+  if not x or not y then return end
+  local dx, dy = (x - 0.5) * 64, (y - 0.5) * 64
+  local d2 = dx * dx + dy * dy
+  if d2 < 121 or d2 > 1089 then return end
+  local ax, ay = dx, dy
+  if ax < 0 then ax = -ax end
+  if ay < 0 then ay = -ay end
+  local zone
+  if ax > ay then
+    if dx > 0 then zone = "right" else zone = "left" end
+  elseif dy < 0 then
+    zone = "down"
+  else
+    return
+  end
+  if zone == "down" then
+    local m = self:GetFrameRef("menu")
+    if m then
+      if m:IsShown() then m:Hide() else m:Show() end
+    end
+    return
+  end
+  local sb, tr = self:GetFrameRef("sb" .. zone), self:GetFrameRef("tr" .. zone)
+  if not sb then return end
+  if sb:IsShown() then
+    sb:Hide()
+    if tr and tr:GetAttribute("ks-want") then tr:Show() end
+  else
+    sb:Show()
+    if tr then tr:Hide() end
+  end
+]]
+
+------------------------------------------------------------------------
+-- Kampsymbol (Daniel 5. okt): to sverd skyter ned og låses i kryss bak medaljongen, «sword and board».
+-- Tegnet med streker og flater (ingen teksturer), med svart omriss. Bak medaljongen: egen ramme under ansiktet.
+------------------------------------------------------------------------
+
+local STEEL, STEEL_LIGHT, LEATHER = Style.hex("B8BFCB"), Style.hex("EEF1F6"), Style.hex("5C3A21")
+
+local function sword(parent, ux, uy)
+  local f = CreateFrame("Frame", nil, parent)
+  f:SetSize(SIZE, SIZE)
+  f:SetPoint("CENTER")
+  f.ux, f.uy = ux, uy
+  local px, py = -uy, ux
+  local function P(a, b) return a * ux + b * px, a * uy + b * py end -- a langs bladet, b på tvers
+  local function seg(a1, b1, a2, b2, t, c, sub)
+    local x1, y1 = P(a1, b1)
+    local x2, y2 = P(a2, b2)
+    return line(f, "ARTWORK", sub, x1, y1, x2, y2, t, c)
+  end
+  local hx, hy = P(-45, 0)
+  -- omriss
+  seg(-30, 0, 51, 0, 6, C.black, 0)
+  seg(48, 0, 56, 0, 4, C.black, 0)
+  seg(-31, -9.5, -31, 9.5, 5, C.black, 0)
+  seg(-31, 0, -42, 0, 5, C.black, 0)
+  Style.Disc(f, "ARTWORK", 0, 8, C.black, 1, hx, hy)
+  -- blad med lys rygg og spiss
+  seg(-30, 0, 50, 0, 4, STEEL, 1)
+  seg(-28, 0, 47, 0, 1, STEEL_LIGHT, 2)
+  seg(48, 0, 55, 0, 2, STEEL, 1)
+  -- parerstang, grep, knapp
+  seg(-31, -8.5, -31, 8.5, 3, C.gold, 1)
+  seg(-32, 0, -41, 0, 3, LEATHER, 1)
+  Style.Disc(f, "ARTWORK", 1, 6, C.gold, 1, hx, hy)
+  return f
+end
+
+buildSwords = function()
+  swordFrame = CreateFrame("Frame", nil, root)
+  swordFrame:SetSize(SIZE, SIZE)
+  swordFrame:SetPoint("CENTER")
+  swordFrame:SetFrameLevel(root:GetFrameLevel() + 1) -- under medaljongen, under sidemenyene
+  -- Glimt rundt kanten når sverdene låses
+  swordFlash = Style.Disc(swordFrame, "BACKGROUND", 0, 72, C.goldLight, 0)
+  local r = math.sqrt(0.5)
+  swords = { sword(swordFrame, -r, r), sword(swordFrame, r, r) } -- spissene opp til venstre og høyre
+  swordFrame:SetAlpha(0)
+  swordFrame:Hide()
+end
+
+local function swordOffset(off)
+  for _, s in ipairs(swords) do
+    s:ClearAllPoints()
+    s:SetPoint("CENTER", swordFrame, "CENTER", s.ux * off, s.uy * off)
+  end
+end
+
+-- on = kampen starter (inn) eller er over (ut). instant: uten animasjon (f.eks. /reload midt i kamp).
+function M.SetCombat(on, instant)
+  if not swordFrame then return end
+  M.combatShown = on
+  local t0 = GetTime()
+  if instant then
+    swordFrame:SetScript("OnUpdate", nil)
+    swordOffset(0)
+    swordFlash:SetAlpha(0)
+    swordFrame:SetAlpha(on and 1 or 0)
+    swordFrame:SetShown(on)
+    return
+  end
+  swordFrame:Show()
+  swordFrame:SetScript("OnUpdate", function(self)
+    local t = GetTime() - t0
+    if on then
+      -- skyter ned langs bladet (akselererer), smeller 3 px for langt, setter seg
+      local off, a
+      if t < 0.16 then
+        local k = t / 0.16
+        off, a = 40 - 43 * k * k, math.min(1, k * 2)
+      elseif t < 0.26 then
+        local k = (t - 0.16) / 0.10
+        off, a = -3 + 3 * (1 - (1 - k) * (1 - k)), 1
+      else
+        off, a = 0, 1
+      end
+      swordOffset(off)
+      self:SetAlpha(a)
+      swordFlash:SetAlpha(t >= 0.16 and math.max(0, 0.7 * (1 - (t - 0.16) / 0.35)) or 0)
+      if t >= 0.55 then self:SetScript("OnUpdate", nil) end
+    else
+      local k = math.min(1, t / 0.28)
+      swordOffset(30 * k * k)
+      self:SetAlpha(1 - k)
+      swordFlash:SetAlpha(0)
+      if k >= 1 then
+        self:SetScript("OnUpdate", nil)
+        self:Hide()
+      end
+    end
+  end)
+end
+
 local function build()
+  animFrame = CreateFrame("Frame")
+  trackFrame = CreateFrame("Frame")
   root = CreateFrame("Frame", nil, UIParent)
   root:SetSize(SIZE, SIZE)
   root:SetMovable(true)
   root:SetClampedToScreen(true)
-  root:SetFrameStrata("MEDIUM")
+  -- Over action bars og questlista (Daniel 5. okt: de skinte gjennom menyen). Alt annet arver laget herfra.
+  root:SetFrameStrata("HIGH")
 
   face = CreateFrame("Frame", nil, root)
   face:SetSize(SIZE, SIZE)
@@ -244,10 +396,16 @@ local function build()
   drawLock(parts.hubLock, 1.3, false)
   Style.Tint(parts.hubLock.parts, C.goldLight)
 
-  hit = CreateFrame("Button", nil, root)
+  -- Klikkflaten er en sikker knapp (Daniel 5. okt): i kamp åpner og lukker et sikkert skript sidemenyene og
+  -- menyen (vanlig kode får ikke vise/skjule rammer med sikre knapper i kamp). Utenfor kamp gjør Lua det som før.
+  hit = CreateFrame("Button", nil, root, "SecureHandlerClickTemplate")
   hit:SetAllPoints(root)
   hit:EnableMouse(true)
+  hit:RegisterForClicks("LeftButtonUp")
+  hit:SetAttribute("_onclick", M.TOGGLE)
   hit:SetFrameLevel(root:GetFrameLevel() + 20)
+
+  buildSwords()
 end
 
 ------------------------------------------------------------------------
@@ -344,15 +502,18 @@ local function zoneText(z)
   if z == "up" then return db.ui.locked and L.ZONE_UNLOCK or L.ZONE_LOCK end
   if z == "down" then
     local open = M.isMenuOpen and M.isMenuOpen()
-    return open and L.ZONE_MENU_CLOSE or L.ZONE_MENU_OPEN, InCombatLockdown() and L.NOT_IN_COMBAT or nil
+    return open and L.ZONE_MENU_CLOSE or L.ZONE_MENU_OPEN
   end
-  if z == "hub" then return db.ui.locked and L.HUB_LOCKED or L.HUB_MOVE end
+  if z == "hub" then
+    if db.ui.locked then return L.HUB_LOCKED end
+    return L.HUB_MOVE, InCombatLockdown() and L.NOT_IN_COMBAT or nil -- spillet sperrer flytting i kamp
+  end
   local isParty = (z == "left") == partyLeft()
   local open = M.isSideOpen and M.isSideOpen(z)
   local text
   if isParty then text = open and L.ZONE_CLOSE_PARTY or L.ZONE_OPEN_PARTY
   else text = open and L.ZONE_CLOSE_SELF or L.ZONE_OPEN_SELF end
-  return text, InCombatLockdown() and L.NOT_IN_COMBAT or nil
+  return text
 end
 
 local function showTip()
@@ -411,6 +572,7 @@ local function applySize()
   hit:ClearAllPoints()
   hit:SetPoint("CENTER", root, "CENTER")
   hit:SetSize(SIZE * s, SIZE * s)
+  if swordFrame then swordFrame:SetScale(s) end
 end
 
 function M.Size() return (db and db.ui.scale) or 1 end
@@ -502,8 +664,14 @@ function M.Create(database, locale)
   M.ApplyPosition()
   applySize()
   M.Resnap()
-  hit:SetScript("OnEnter", function() setHover(cursorZone()) hit:SetScript("OnUpdate", M.TrackMouse) end)
-  hit:SetScript("OnLeave", function() hit:SetScript("OnUpdate", nil) setHover(nil) GameTooltip:Hide() end)
+  hit:SetScript("OnEnter", function() setHover(cursorZone()) trackFrame:SetScript("OnUpdate", M.TrackMouse) end)
+  hit:SetScript("OnLeave", function() trackFrame:SetScript("OnUpdate", nil) setHover(nil) GameTooltip:Hide() end)
+  hit:HookScript("PostClick", function()
+    if InCombatLockdown() then
+      if M.onSecureToggle then M.onSecureToggle() end
+      if hover then showTip() end
+    end
+  end)
   hit:SetScript("OnMouseDown", onMouseDown)
   hit:SetScript("OnMouseUp", onMouseUp)
   hit:SetScript("OnReceiveDrag", function() if M.onDrop then M.onDrop() end end)
@@ -543,8 +711,15 @@ function M.Update(newView)
   if hover then showTip() end
 end
 
+-- Rammene det sikre skriptet åpner og lukker (sbleft/sbright, trleft/trright, menu). Bare utenfor kamp.
+function M.SetRefs(refs)
+  if inCombat() then return end
+  for k, f in pairs(refs) do SecureHandlerSetFrameRef(hit, k, f) end
+end
+
 -- For testene
 function M.State()
   return { hover = hover, locked = db.ui.locked, count = parts.count:GetText(), moving = moving,
-           anim = anim, parts = parts, sym = sym, root = root, face = face, hit = hit }
+           anim = anim, parts = parts, sym = sym, root = root, face = face, hit = hit,
+           swordFrame = swordFrame, swords = swords, swordFlash = swordFlash, trackFrame = trackFrame, animFrame = animFrame }
 end

@@ -40,6 +40,13 @@ local function edgeRects(parent, layer, sub, inset, thick, color, alpha)
   return out
 end
 
+-- Felles vert for sikre skript på knappene i sidemenyene og menyen (Tray.RETARGET)
+local header
+function EB.Header()
+  if not header then header = CreateFrame("Frame", nil, UIParent, "SecureHandlerBaseTemplate") end
+  return header
+end
+
 function EB.Create(parent)
   local b = CreateFrame("Button", nil, parent, "SecureActionButtonTemplate")
   b:SetSize(SIZE, SIZE)
@@ -118,7 +125,19 @@ function EB.Create(parent)
   b.glow:SetAlpha(0)
 
   b:HookScript("PreClick", function(self, mouse)
-    if mouse == "LeftButton" and self.entry then ns.Track.Pressed(self.entry, self.cast) end
+    if mouse == "LeftButton" and self.entry then
+      -- Gruppebuff i kamp: det sikre skriptet kan ha flyttet knappen til neste i køen (unit). Bekreft på den.
+      local cast = self.cast
+      if cast and cast.target and not cast.group then
+        local u = self:GetAttribute("unit")
+        if u and u ~= cast.target.unit then
+          local okN, nm = pcall(UnitName, u)
+          if not okN or ns.Scan.isSecret(nm) then nm = nil end
+          cast = { spell = cast.spell, group = false, target = { unit = u, name = nm } }
+        end
+      end
+      ns.Track.Pressed(self.entry, cast)
+    end
     self.flashAnim:Stop()
     self.flashAnim:Play()
   end)
@@ -152,11 +171,24 @@ end
 
 -- Hva knappen gjør når den klikkes. Bare utenfor kamp (beskyttet). Attributter settes bare når de endres.
 -- Gruppebuff: st.cast = { spell, group, target = { name, unit } } fra Rules.partyCast.
+-- Gruppebuff: hele køen av dem som mangler (ks-q1 …) settes også, så et klikk i kamp kan gå videre til neste.
 function EB.Bind(b, e, st)
   local cast = st and st.cast
+  local queue = {}
+  if cast and cast.target and not cast.group then
+    for _, m in ipairs(st.missingOn or {}) do queue[#queue + 1] = m.unit end
+  end
   local sig = e.id .. "|" .. e.type .. "|" .. tostring(cast and cast.spell) .. "|" .. tostring(cast and cast.target and cast.target.unit)
+    .. "|" .. table.concat(queue, ",")
   if b.entry == e and b.sig == sig then return end
   b.entry, b.sig, b.cast = e, sig, cast
+  if #queue > 0 then
+    for i, u in ipairs(queue) do b:SetAttribute("ks-q" .. i, u) end
+    b:SetAttribute("ks-qn", #queue)
+    b:SetAttribute("ks-qi", 1)
+  else
+    b:SetAttribute("ks-qn", nil)
+  end
   if e.type == "partyspell" then
     if cast and cast.target then
       b:SetAttribute("type", "spell")

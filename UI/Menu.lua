@@ -19,7 +19,7 @@ local BX = PAD + TIERCOL + 8 -- første knapp i en rad, etter tier-tallet og fur
 local PER_LINE = math.floor((W - PAD - BX + GAP) / (BTN + GAP))
 
 local db, L, root
-local frame, opened = nil, false
+local frame
 local pools = {}
 local y = 0
 
@@ -247,6 +247,7 @@ local function rows(list, isParty, st)
         local e = items[i]
         local b = take("btn", function()
           local nb = ns.EntryButton.Create(frame)
+          SecureHandlerWrapScript(nb, "OnClick", ns.EntryButton.Header(), "", ns.Tray.RETARGET) -- gruppebuff i kamp
           nb.canDrag, nb.inMenu, nb.dragHost = true, true, host
           return nb
         end)
@@ -583,12 +584,11 @@ function Menu.Create(parent, database, locale)
   return frame
 end
 
-function Menu.IsOpen() return opened end
+function Menu.IsOpen() return frame ~= nil and frame:IsShown() end
 
 function Menu.SetOpen(v)
   if InCombatLockdown() or not frame then return end
-  opened = v and true or false
-  if opened then
+  if v then
     frame:Show()
     frame.fadeIn:Play()
   else
@@ -597,8 +597,9 @@ function Menu.SetOpen(v)
 end
 
 -- Bygg menyen (bare utenfor kamp). model = Core.Model(), members = Scan.Party()
+-- Bygges også når den er lukket: i kamp kan den bare åpnes (av det sikre skriptet), ikke bygges.
 function Menu.Layout(model, members, sideOpen)
-  if not frame or not opened or InCombatLockdown() then return false end
+  if not frame or InCombatLockdown() then return false end
   for _, p in pairs(pools) do p.n = 0 end
   local host = Menu.host
   host.buttons, host.ids, host.slots = {}, {}, {}
@@ -624,7 +625,7 @@ end
 
 -- I kamp: bare utseendet på knappene (tider, lager, glød)
 function Menu.Paint(model)
-  if not frame or not opened then return end
+  if not frame or not frame:IsShown() then return end
   local byId = {}
   for _, e in ipairs(model.self) do byId[e.id] = e end
   for _, e in ipairs(model.party) do byId[e.id] = e end
