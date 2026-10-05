@@ -284,9 +284,7 @@ local function build()
   parts.count:SetPoint("CENTER", face, "CENTER", 0, 0)
   parts.count:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
 
-  parts.check = symbolFrame(face, 0, 0)
-  symbol(parts.check, "sym_check", 1, 3)
-  Style.Tint(parts.check.parts, C.goldDim)
+  -- Alt ok: tom kjerne, ingen hake (Daniel 5. okt: det som ikke lyser, er i orden)
 
   sym.up = symbolFrame(face, 0, SYM_OFFSET - 1) -- låsen er høyest: 1 enhet lenger inn, så bøylen ikke når ringen
   sym.up.open = symbolFrame(sym.up, 0, 0)
@@ -348,10 +346,8 @@ function applyAll()
   parts.rim:SetAlpha(0.22 * grow)
 
   local num = v("num", 1)
-  local showCheck = view.allOk
-  parts.count:SetAlpha(showCheck and 0 or num)
+  parts.count:SetAlpha(view.allOk and 0 or num)
   if parts.count.SetTextScale then parts.count:SetTextScale(0.7 + 0.3 * num) end
-  parts.check:SetAlpha(showCheck and 0.6 * num or 0)
 
   for _, z in ipairs({ "up", "right", "down", "left" }) do
     local f, a, s = sym[z], v("symA_" .. z, 0), v("symS_" .. z, 1)

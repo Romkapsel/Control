@@ -197,3 +197,4 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | 2026-10-05 | Låsen passet ikke inn (Daniel): bøylen nådde statusringen, særlig når symbolet vokser 25 % ved mus over. Låsen er tegnet 80 % og senket litt (samme strektykkelse), og står 1 enhet lenger inn (16 i stedet for 17) | Daniel |
 | 2026-10-05 | Tekst på knappene (Daniel: «ser litt billig ut»): spillets skrift (Friz Quadrata) med skygge i stedet for Arial med tykk kant, tiden i gull og kort («6m», «2t», «0:38»; tooltipen beholder «6 min»), med en svak mørk overgang nederst på ikonet bak tiden | Daniel |
 | 2026-10-05 | Kjernen i medaljongen: sirklene som skulle være lys er fjernet; kjernen har samme farge og overgang som bakgrunnen i menyene (Daniel) | Daniel |
+| 2026-10-05 | Haken når alt er ok er fjernet (Daniel): da er kjernen tom. Bildet `sym_check` ligger igjen i Media/ i tilfelle den skal tilbake | Daniel |
