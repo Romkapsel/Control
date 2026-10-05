@@ -110,7 +110,7 @@ function ns.Refresh(readAuras)
 end
 
 ------------------------------------------------------------------------
--- Legge til: slipp en spell eller en ting på medaljongen (snarvei til sidemenyene kommer i fase 4)
+-- Legge til: slipp en spell eller en ting på medaljongen (tier I), en sidemeny (tier II) eller en rad i menyen
 ------------------------------------------------------------------------
 
 local function wellFedName() return (ns.Scan.SpellInfo(19705)) or "Well Fed" end

@@ -1,7 +1,8 @@
 -- Control: 40 px-knappen for én oppføring (SPEC §7.5). En sikker knapp (SecureActionButtonTemplate):
 -- venstreklikk kaster spellen på deg selv eller bruker itemet. Attributter settes bare utenfor kamp.
 -- Prosessen vises med form, ikke bare farge: tømming ovenfra (brukt tid), stor nedtelling (snart ute),
--- bånd med «ikke på»/«gått ut» og pulserende gullglød (kan trykkes).
+-- pulserende gullglød (kan trykkes), rolig ramme i ringens farge (gjør medaljongen farget, men lyser ikke),
+-- og et bånd med lagertallet når en ting er tom.
 local addonName, ns = ...
 local Style = ns.Style
 local C = Style.C
@@ -77,7 +78,7 @@ function EB.Create(parent)
   b.drainEdge:SetPoint("TOPRIGHT", b.drain, "BOTTOMRIGHT")
   b.drainEdge:SetHeight(1)
 
-  -- Bånd nederst («ikke på», «gått ut», «0/10»)
+  -- Bånd nederst med lagertallet når en ting er tom («0/10»)
   b.band = b:CreateTexture(nil, "OVERLAY", nil, 0)
   b.band:SetColorTexture(0, 0, 0, 0.72)
   b.band:SetPoint("BOTTOMLEFT", b.icon, "BOTTOMLEFT")

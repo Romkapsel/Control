@@ -1,7 +1,8 @@
 -- Control: sidemenyene (SPEC §7.4). Folder ut fra medaljongen når du klikker venstre eller høyre sone.
--- Rad 1: tier I, fure, tier II, tomme ruter (minst 5 plasser, alltid minst én; den første er slippmål med «+»).
--- Rad 2: statuslinja (§6.6). Samme forankring som knappene ved medaljongen, og dekker dem på den siden.
--- Knappene er sikre (klikk kaster); rammen åpnes, lukkes og bygges om bare utenfor kamp.
+-- Rad 1: tier I, fure, tier II, og én «+»-rute til slutt (slippmål). Lagerting står bare når noe mangler.
+-- Rad 2: navnet på sida («Meg»/«Party») og lukke-pila. Samme forankring som knappene ved medaljongen, og dekker dem.
+-- Knappene er sikre (klikk kaster); rammen bygges om bare utenfor kamp. Åpne/lukke i kamp: sikre skript
+-- (medaljongen og lukke-pila).
 -- Dra: Shift + dra flytter eller fjerner (vanlig klikk kaster på «ned», så et vanlig dra ville kastet/brukt).
 local addonName, ns = ...
 local Style = ns.Style
