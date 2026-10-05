@@ -41,8 +41,8 @@ eq(ns.view.ring, 1, "tier II som mangler: oransje")
 check(#mb.ids == 2 and mb.buttons[1].entry == motw and mb.buttons[2].entry == flask, "knappene i lista sin rekkefølge")
 eq(mb.frame.width, 40 + 3 * 46, "2 knapper + én «+»-rute: sida vokser én og én")
 check(not mb.vA.shown, "bare tier II: ingen fure")
-check(mb.status.text:find("Mangler", 1, true) and mb.status.text:find("MotW", 1, true) and mb.status.text:find("Flask", 1, true),
-  "statuslinja: Mangler MotW · Flask")
+check(mb.status.text:find("Mine buffs", 1, true) and not mb.status.text:find("Mangler", 1, true),
+  "statuslinja: bare «Mine buffs», knappene forteller resten")
 check(not ns.Tray.Get("right").frame.shown, "sidemenyen dekker knappene ved medaljongen")
 
 -- Høyreklikk MotW: tier I. Fure kommer, MotW blir rød.

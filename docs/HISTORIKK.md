@@ -161,3 +161,4 @@ Når noe avgjøres under byggingen, skriv det her med dato, og oppdater SPEC.
 | 2026-10-05 | Etter første titt i spillet (Daniel): gruppesidens statuslinje er bare **«Party buffs»** – «Alle har det de skal» sto der selv uten gruppe. Prinsipp: det som ikke lyser eller blinker, er i orden; knappene forteller, ikke teksten | Daniel |
 | 2026-10-05 | Sidemenyene har bare **én** tom rute («+») etter knappene (var: fylt opp til 5 plasser). Sida vokser én og én. Gjelder begge sider | Daniel |
 | 2026-10-05 | **Scrolls på gruppesiden** (`partyitem`): brukes på den som mangler (`type=item`, `unit=partyN`), viser antall, grå når tom. Andre ting avvises med forklaring. 382/382 tester | Daniel + Claude |
+| 2026-10-05 | Min side: statuslinja er bare **«Mine buffs»** (var «Mangler MotW · Flask» / «Status Alt med»). Begge sider har nå bare navnet sitt; glød, ruter og tall på knappene forteller resten | Daniel |

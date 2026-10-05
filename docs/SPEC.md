@@ -295,6 +295,9 @@ ring  = verste severity over alt (PB følger tier som resten)
 
 ### 6.6 Statuslinja i sidemenyen
 
+**Gjeldende (Daniel 5. okt):** linja er bare navnet på sida – «Mine buffs» og «Party buffs», i gull. Resten av dette avsnittet beskriver den gamle, lange linja, som nå bare finnes som `detail` i regelmotoren.
+
+
 Under knappe-raden i hver sidemeny står én linje:
 
 - **MB-side:** etikett «Mangler» (eller «Status» når alt er ok). Deretter oppføringene med severity > 0, verste først (**stabil** sortering: like alvorlige beholder listerekkefølgen; Luas `table.sort` er ikke stabil, så sorter på `(−severity, indeks)`), maks 4, så «+N». Hver: kortnavn farget etter buff-delen (rød/oransje/lys), og lagertall «har/vil ha» farget etter lager-delen hvis lageret er under. Alt ok: grønt «Alt med».

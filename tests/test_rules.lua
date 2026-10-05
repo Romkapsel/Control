@@ -134,8 +134,9 @@ local v = R.render(model, L)
 eq(v.count, 7, "start: tallet")
 eq(v.ring, 2, "start: rød ring")
 eq(ids(v.tray.party) .. " | " .. ids(v.tray.self), "p1 | motw,flask", "start: ved knappen")
-eq(v.status.self.text, "Mangler  MotW · Flask · Mongoose 3/4 · Defense 4/5 · +1", "start: statuslinje MB")
+eq(v.status.self.detail, "Mangler  MotW · Flask · Mongoose 3/4 · Defense 4/5 · +1", "start: statuslinje MB")
 eq(v.status.party.text, "Party buffs", "start: statuslinje PB er bare navnet")
+eq(v.status.self.text, "Mine buffs", "start: statuslinje MB er bare navnet")
 check(not v.status.party.ok and #v.status.party.parts == 2, "start: to gruppebuffer mangler noen")
 eq(v.status.self.parts[1].nameSev, 2, "MotW (tier I, ikke på): rød")
 eq(v.status.self.parts[4].nameSev, 1, "Defense (tier II, ikke på): oransje")
@@ -165,7 +166,7 @@ v = R.render(model, L)
 eq(v.count, 4, "klikk MotW-gruppe (Vesla): tallet")
 eq(v.ring, 1, "alt som gjenstår er tier II: oransje ring")
 eq(#v.tray.party + #v.tray.self, 0, "knappen står alene")
-eq(v.status.self.text, "Mangler  Mongoose 3/4 · Defense 4/5 · Bandage 0/10", "slutt: statuslinje MB")
+eq(v.status.self.detail, "Mangler  Mongoose 3/4 · Defense 4/5 · Bandage 0/10", "slutt: statuslinje MB")
 eq(v.status.party.text, "Party buffs", "slutt: statuslinje PB")
 
 -- Høyreklikk Defense til tier I: dukker opp ved knappen med en gang
@@ -193,7 +194,7 @@ eq(v.side.party.width, 40 + 3 * 46 + 12, "bredde PB med fure")
 local okModel = { self = { { id = "a", type = "spell", tier = 1, short = "MotW" } }, party = {}, st = { a = { status = "on" } } }
 v = R.render(okModel, L)
 check(v.count == 0 and v.ring == 0 and v.allOk and not v.empty, "alt ok: hake, ingen farge")
-eq(v.status.self.text, "Status  Alt med", "alt ok: statuslinje MB")
+eq(v.status.self.detail, "Status  Alt med", "alt ok: statuslinje MB")
 eq(v.status.party.text, "Party buffs", "alt ok: statuslinje PB")
 check(v.status.party.ok, "alt ok: PB ok")
 v = R.render({ self = {}, party = {}, st = {} }, L)
@@ -214,7 +215,7 @@ local warnModel = {
 }
 v = R.render(warnModel, L)
 eq(v.ring, 1, "bare oransje: oransje ring")
-eq(v.status.self.text, "Mangler  A 1/6 · B · C 3/4", "like alvorlige beholder lista sin rekkefølge")
+eq(v.status.self.detail, "Mangler  A 1/6 · B · C 3/4", "like alvorlige beholder lista sin rekkefølge")
 eq(ids(v.tray.self), "y", "spell snart ute står ute")
 
 ------------------------------------------------------------------------

@@ -141,27 +141,12 @@ local function place(bar, frame, x)
   end
 end
 
--- Rich text for statuslinja: gull etikett, navn i buff-fargen, lagertall i lager-fargen
-local SEVC = { [0] = C.text, [1] = C.orange, [2] = C.red }
+-- Statuslinja: bare navnet på sida, i gull. Det som lyser eller blinker på knappene, forteller resten.
 local function hexOf(c) return string.format("%02x%02x%02x", c[1] * 255, c[2] * 255, c[3] * 255) end
 local function colored(text, c) return "|cff" .. hexOf(c) .. text .. "|r" end
 
 function SB.StatusText(status, isParty, L)
-  if isParty then return colored(status.label, C.gold) end -- «Party buffs», ikke mer
-  local out = colored(status.label, C.gold) .. L.LABEL_GAP
-  if status.ok then return out .. colored(isParty and L.PARTY_ALL_OK or L.ALL_OK, C.green) end
-  local parts = {}
-  for _, p in ipairs(status.parts) do
-    if isParty then
-      parts[#parts + 1] = colored(p.name .. ": ", C.help) .. colored(p.members, C.text)
-    else
-      local t = colored(p.name, SEVC[p.nameSev] or C.text)
-      if p.stock then t = t .. " " .. colored(p.stock, SEVC[p.stockSev] or C.text) end
-      parts[#parts + 1] = t
-    end
-  end
-  if status.more and status.more > 0 then parts[#parts + 1] = colored("+" .. status.more, C.help) end
-  return out .. table.concat(parts, colored(L.SEP, C.help))
+  return colored(status.label, C.gold) -- «Mine buffs» / «Party buffs», ikke mer (Daniel 5. okt)
 end
 
 -- Bygg sidemenyen fra Rules.render (side = view.side.self/party, status = view.status.self/party). Bare utenfor kamp.

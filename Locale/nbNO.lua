@@ -26,6 +26,7 @@ ns.L = {
   EMPTY_SELF = "Dra en spell eller en ting fra baggen hit",
   EMPTY_PARTY = "Dra en buff du kan gi, eller en scroll, hit",
   LABEL_PARTY_BUFFS = "Party buffs",
+  LABEL_MY_BUFFS = "Mine buffs",
   PARTY_SCROLLS_ONLY = "Bare scrolls kan brukes på andre. Eliksirer, flasks og mat hører til dine egne.",
   FREE_SLOT = "Ledig plass",
 

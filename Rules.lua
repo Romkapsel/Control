@@ -194,7 +194,8 @@ local function selfStatus(entries, st, L)
     if s > 0 then problems[#problems + 1] = { e = e, sev = s, i = i } end
   end
   if #problems == 0 then
-    return { label = L.LABEL_STATUS, ok = true, parts = {}, text = L.LABEL_STATUS .. L.LABEL_GAP .. L.ALL_OK }
+    return { label = L.LABEL_MY_BUFFS, ok = true, parts = {}, text = L.LABEL_MY_BUFFS,
+             detail = L.LABEL_STATUS .. L.LABEL_GAP .. L.ALL_OK }
   end
   local sorted = worstFirst(problems)
   local parts, texts = {}, {}
@@ -208,8 +209,9 @@ local function selfStatus(entries, st, L)
   end
   local more = #sorted - Rules.STATUS_MAX
   if more > 0 then texts[#texts + 1] = "+" .. more end
-  return { label = L.LABEL_MISSING, ok = false, parts = parts, more = more > 0 and more or 0,
-           text = L.LABEL_MISSING .. L.LABEL_GAP .. table.concat(texts, L.SEP) }
+  -- Linja under knappene er bare navnet på sida (Daniel 5. okt); detail er den lange forklaringen (tester, senere tooltip)
+  return { label = L.LABEL_MY_BUFFS, ok = false, parts = parts, more = more > 0 and more or 0, text = L.LABEL_MY_BUFFS,
+           detail = L.LABEL_MISSING .. L.LABEL_GAP .. table.concat(texts, L.SEP) }
 end
 
 local function partyStatus(entries, st, L)
