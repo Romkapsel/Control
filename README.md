@@ -16,7 +16,7 @@ Ny versjon: slett den gamle `Control`-mappa, pakk ut den nye, og start spillet p
 ## Medaljongen
 
 - **Tallet** i midten er hvor mange ting som mangler. Tom midte = alt er i orden.
-- **Ringen** er rød når noe du *må* ha mangler (tier I), oransje når noe er *fint å ha* (tier II), snart går ut,
+- **Ringen** er rød når noe du *må ha* mangler, oransje når noe *fint å ha* mangler, snart går ut,
   eller er under antallet du vil ha.
 - Hold musa over ringen, så kommer fire soner fram:
   - **Topp – Lås:** låser medaljongen fast.
@@ -27,10 +27,14 @@ Ny versjon: slett den gamle `Control`-mappa, pakk ut den nye, og start spillet p
 ## Legge til buffer og ting
 
 - **Dra en spell fra spellboken** eller **en ting fra baggen** og slipp den:
-  - på medaljongen → havner i **tier I**
-  - på en sidemeny eller i menyen → havner i **tier II** (eller raden du slipper den i)
-- **Tier I:** knappen dukker opp ved medaljongen når noe mangler – klikk, så er det fikset.
-- **Tier II:** står bare i sidemenyen.
+  - på medaljongen → **Må ha**
+  - på en sidemeny eller «+» i menyen → **Fint å ha**
+- **Må ha** (gullmerke i hjørnet): knappen dukker opp ved medaljongen når noe mangler – klikk, så er det fikset.
+  Mangler noe du må ha, er ringen rød.
+- **Fint å ha:** står bare i sidemenyen; ringen blir oransje.
+- Høyreklikk en knapp for å bytte mellom «Må ha» og «Fint å ha».
+- I menyen står alt sortert i **kategorier**: Buffer, Flasks og eliksirer, Mat og drikke, Potions, Våpen, Scrolls,
+  Bandasjer, Utstyr og Annet.
 - **Ting du bare skal ha med** (utstyr, bandasjer, potions, reagenser) står i sidemenyen bare når de mangler eller er
   under antallet – med rød eller oransje ramme. Er alt med, er de borte derfra. Menyen viser alltid alt.
 
@@ -47,7 +51,7 @@ Det som kan legges til:
 | Du gjør | Det skjer |
 |---|---|
 | Klikk | Kaster spellen / bruker tingen |
-| Høyreklikk | Bytter mellom tier I og II |
+| Høyreklikk | Bytter mellom «Må ha» og «Fint å ha» |
 | Musehjul | Hvor mange du vil ha (Shift = 5 om gangen) |
 | Shift + dra | Flytt den (gullstreken viser hvor), eller dra den ut for å fjerne |
 | `/ctrl angre` | Får tilbake det du nettopp fjernet |
@@ -89,7 +93,7 @@ dra et sted ut av lista for å fjerne det.
 
 ## Menyen
 
-- **Meg** og **Party:** alle knappene dine i rad I og II.
+- **Meg** og **Party:** alle knappene dine, sortert i kategorier. Når menyen åpnes, er bare Meg utfoldet.
 - **Byvakt:** se over.
 - **Oppsett:** **Bytt side på gruppene**, **Tall i midten** (på/av – uten tallet er det ringen som sier fra), **Gjennomsiktig midt** (på/av – verden synes gjennom medaljongen), og **Størrelse** (70–150 %).
 - Lukk med pila i hjørnet, eller klikk nederst på medaljongen.

@@ -192,6 +192,7 @@ local function button(t, i)
   local b = t.buttons[i]
   if not b then
     b = ns.EntryButton.Create(t.frame)
+    b.inTray = true
     SecureHandlerWrapScript(b, "OnClick", t.frame, Tray.PRE, Tray.AFTER_CLICK)
     -- I kamp skjuler det sikre skriptet knappen ved klikk: la en kopi krympe der den stod
     b:HookScript("PreClick", function(self) self.preX, self.preY, self.preW = screenRect(self) end)

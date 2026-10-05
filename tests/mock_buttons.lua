@@ -16,7 +16,7 @@ local hit = ns.Medallion.State().hit
 -- Slipp Mark of the Wild (rank 2, 5232) på medaljongen
 T.cursor = { "spell", 3, "spell", 5232 }
 hit.scripts.OnReceiveDrag(hit)
-check(T.cursor == nil and Chat("Mark of the Wild lagt til i tier I"), "spell sluppet på medaljongen er lagt til")
+check(T.cursor == nil and Chat("Mark of the Wild lagt til (Må ha)"), "spell sluppet på medaljongen er lagt til")
 local motw = ControlCharDB.self[1]
 check(motw and motw.type == "spell" and motw.tier == 1 and motw.short == "MotW", "MotW: spell, tier I, kortnavn")
 check(motw.auraNames[1] == "Mark of the Wild" and motw.auraNames[2] == "Gift of the Wild", "Gift of the Wild teller som på (Q9)")

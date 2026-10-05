@@ -48,36 +48,42 @@ check(Menu.heads[1].title.text == "Meg" and Menu.heads[2].title.text == "Party"
 check(Menu.heads[1].right.text == "høyre" and Menu.heads[2].right.text == "venstre", "hvilken side de står på")
 check(Menu.heads[4].pm.text == "-", "Oppsett kan også felles sammen")
 
--- Slipp inn i rad I og rad II
-check(slot(false, 1) and slot(false, 2) and slot(true, 1) and slot(true, 2), "tomme rader: én «+»-rute hver")
+-- Kategorier (Daniel 5. okt): én «+»-rute per liste; det du slipper der, blir «Fint å ha»
+check(slot(false, 2) and slot(true, 2), "én «+»-rute i Meg og én i Party")
 T.counts[13510] = 3
 T.cursor = { "item", 13510, "[Flask of the Titans]" }
-slot(false, 1).scripts.OnReceiveDrag(slot(false, 1))
+slot(false, 2).scripts.OnReceiveDrag(slot(false, 2))
 local flask = ControlCharDB.self[1]
-check(flask and flask.tier == 1 and Chat("Flask of the Titans lagt til i tier I."), "slipp i rad I: tier I")
+check(flask and flask.tier == 2 and flask.cat == "flasks" and Chat("Flask of the Titans lagt til (Fint å ha)."), "flask: Fint å ha, kategori Flasks")
 T.cursor = { "spell", 3, "spell", 5232 }
 slot(false, 2).scripts.OnReceiveDrag(slot(false, 2))
 local motw = ControlCharDB.self[2]
-check(motw and motw.tier == 2 and Chat("Mark of the Wild lagt til i tier II."), "slipp i rad II: tier II")
+check(motw and motw.tier == 2 and motw.cat == "buffs", "MotW: kategori Buffer")
 eq(#Menu.host.buttons, 2, "to knapper i menyen")
-local bm = Menu.host.buttons[2]
-check(bm.entry == motw and bm:GetAttribute("spell") == "Mark of the Wild", "knappen i menyen kaster som overalt ellers")
+-- Buffer står før Flasks og eliksirer, under hver sin overskrift
+local bm, bf = Menu.host.buttons[1], Menu.host.buttons[2]
+check(bm.entry == motw and bf.entry == flask, "Buffer først, så Flasks og eliksirer")
+check(bf.points[1][5] < bm.points[1][5], "Flasks står under Buffer")
+check(bm:GetAttribute("spell") == "Mark of the Wild", "knappen i menyen kaster som overalt ellers")
+check(not bm.mark.shown, "Fint å ha: ingen merke")
 bm.scripts.hookOnEnter(bm)
-local hasHint = false
-for _, l in ipairs(T.tooltip.lines) do if l == "Tier II: bare i sidemenyen" then hasHint = true end end
-check(hasHint, "tooltip i menyen forklarer tieren")
+local hasHint, hasRClick = false, false
+for _, l in ipairs(T.tooltip.lines) do
+  if l == "Fint å ha: bare i sidemenyen" then hasHint = true end
+  if l == "Høyreklikk: gjør til «Må ha»" then hasRClick = true end
+end
+check(hasHint and hasRClick, "tooltip forklarer «Fint å ha» og høyreklikket")
 
--- Shift + dra MotW til «+» i rad I: bytter tier
+-- Høyreklikk: «Må ha» – gullmerke på knappen
+bm.scripts.hookPostClick(bm, "RightButton")
+eq(motw.tier, 1, "høyreklikk: Må ha")
+bm = Menu.host.buttons[1]
+check(bm.entry == motw and bm.mark.shown, "Må ha: gullmerke i hjørnet")
+check(not ns.Tray.Get("right").buttons[1].mark.shown, "ved medaljongen: ikke merke (der er alt Må ha)")
 T.shift = true
-bm.scripts.OnDragStart(bm)
-Menu.frame.mouse = true
-slot(false, 1).mouse = true
-bm.scripts.OnDragStop(bm)
-slot(false, 1).mouse = false
-eq(motw.tier, 1, "dra til rad I: tier I")
 -- Shift + dra ut av menyen: fjernet, og /ctrl angre gir den tilbake
-bm = Menu.host.buttons[2]
-check(bm.entry == motw, "MotW står sist i rad I")
+bm = Menu.host.buttons[1]
+check(bm.entry == motw, "MotW står først (Buffer)")
 bm.scripts.OnDragStart(bm)
 Menu.frame.mouse = false
 bm.scripts.OnDragStop(bm)
@@ -95,9 +101,9 @@ eq(#Menu.host.buttons, 2, "foldet ut igjen")
 
 -- Party buffs: hvem den følges på (Q7)
 T.cursor = { "spell", 3, "spell", 1126 }
-slot(true, 1).scripts.OnReceiveDrag(slot(true, 1))
+slot(true, 2).scripts.OnReceiveDrag(slot(true, 2))
 local g = ControlCharDB.party[1]
-check(g and g.type == "partyspell" and g.tier == 1, "gruppebuff i rad I")
+check(g and g.type == "partyspell" and g.cat == "buffs", "gruppebuff under Buffer")
 T.party = { party1 = "Brakk", party2 = "Mira" }
 T.partyClass = { party1 = "WARRIOR", party2 = "MAGE" }
 T.pa = { party1 = {}, party2 = {} }
@@ -172,7 +178,7 @@ check(sw.width < 300, "bredden kommer fra teksten, ikke fra menyen")
 sw.scripts.OnClick(sw)
 eq(ControlCharDB.ui.partySide, "right", "byttet")
 check(Menu.heads[1].right.text == "venstre" and Menu.heads[2].right.text == "høyre", "kategorilinjene sier hvor de står")
-check(ns.Tray.Get("left").ids[1] == flask.id, "flasken står ute på venstre side")
+check(ns.Tray.Get("left").ids[1] == motw.id, "MotW (Må ha) står ute på venstre side")
 Menu.swapButton.scripts.OnClick(Menu.swapButton)
 
 -- Tall i midten: av og på under Oppsett

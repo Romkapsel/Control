@@ -51,6 +51,27 @@ function Data.SeedCities(db, faction)
   db.cityWatch.seeded = true
 end
 
+-- Kategorier i menyen (Daniel 5. okt: lett å se hva som hører sammen). Rekkefølgen her er rekkefølgen i menyen.
+Data.CATEGORIES = { "buffs", "flasks", "food", "potions", "weapon", "scrolls", "bandages", "gear", "other" }
+
+-- Kategorien for en oppføring, fra typen og itemklassen (0 forbruk: 1 potion, 2 eliksir, 3 flask, 4 scroll,
+-- 5 mat/drikke, 6 våpenforsterkning, 7 bandasje; 2 våpen og 4 rustning = utstyr)
+function Data.CategoryOf(e, classID, subClassID)
+  if e.type == "spell" or e.type == "partyspell" then return "buffs" end
+  if e.type == "partyitem" then return "scrolls" end
+  if e.weaponSlot then return "weapon" end
+  if classID == 2 or classID == 4 then return "gear" end
+  if classID == 0 then
+    if subClassID == 1 then return "potions" end
+    if subClassID == 2 or subClassID == 3 then return "flasks" end
+    if subClassID == 4 then return "scrolls" end
+    if subClassID == 5 then return "food" end
+    if subClassID == 6 then return "weapon" end
+    if subClassID == 7 then return "bandages" end
+  end
+  return "other"
+end
+
 -- Gjør lagringen komplett uten å røre det som alt står der (fase 0 la data under .debug).
 function Data.Init(db)
   if type(db) ~= "table" then db = {} end
@@ -125,6 +146,7 @@ function Data.MakeEntry(db, info, tier)
     e.want = math.max(1, info.want or 1) -- standard 1: varsler bare når du er tom (Daniel 4. okt)
   end
   e.short = e.short or Data.ShortName(e.name)
+  e.cat = Data.CategoryOf(e, info.classID, info.subClassID)
   return e
 end
 
@@ -147,6 +169,13 @@ function Data.Reclassify(db, resolve)
       end
     end
   end
+  -- Kategori på det som ble lagt inn før kategoriene fantes (og på alt som har fått ny type)
+  for _, list in ipairs({ db.self or {}, db.party or {} }) do
+    for _, e in ipairs(list) do
+      local info = e.itemId and resolve("item", e.itemId)
+      if not e.itemId or info then e.cat = Data.CategoryOf(e, info and info.classID, info and info.subClassID) end
+    end
+  end
 end
 
 -- Gruppeversjonen av en buff (SPEC §9.5): kastes når flere enn 2 i partyet mangler (Daniel 3. okt)
@@ -163,10 +192,12 @@ function Data.MakePartyEntry(db, info)
   db.nextId = (db.nextId or 0) + 1
   if info.kind == "item" then -- scroll: brukes på den som mangler (Daniel 5. okt)
     return { id = "p" .. db.nextId, type = "partyitem", tier = 2, itemId = info.itemId, name = info.itemName,
-             castName = info.itemSpell, auraNames = { info.itemSpell }, short = Data.ShortName(info.itemName) }
+             castName = info.itemSpell, auraNames = { info.itemSpell }, short = Data.ShortName(info.itemName),
+             cat = "scrolls" }
   end
   return { id = "p" .. db.nextId, type = "partyspell", tier = 2, spellId = info.spellId, name = info.name,
-           auraNames = Data.AuraNames(info.name), short = Data.ShortName(info.name), groupSpell = Data.GROUP[info.name] }
+           auraNames = Data.AuraNames(info.name), short = Data.ShortName(info.name), groupSpell = Data.GROUP[info.name],
+           cat = "buffs" }
 end
 
 function Data.FindDuplicate(list, info)

@@ -31,7 +31,7 @@ eq(mb.status.text, "", "tom side: ingen statuslinje (får ikke plass)")
 T.cursor = { "spell", 3, "spell", 5232 }
 mb.frame.scripts.OnReceiveDrag(mb.frame)
 local motw = ControlCharDB.self[1]
-check(motw and motw.tier == 2 and Chat("Mark of the Wild lagt til i tier II."), "spell sluppet på sidemenyen havner i tier II")
+check(motw and motw.tier == 2 and Chat("Mark of the Wild lagt til (Fint å ha)."), "spell sluppet på sidemenyen havner i tier II")
 T.counts[13510] = 3
 T.cursor = { "item", 13510, "[Flask]" }
 mb.slots[1].scripts.OnReceiveDrag(mb.slots[1])
@@ -57,7 +57,7 @@ local p2 = mb.buttons[2].points[#mb.buttons[2].points]
 eq(p2[4], 2 + 33 + 46 + 12, "tier II starter etter fura")
 b1.scripts.hookOnEnter(b1)
 local found = false
-for _, l in ipairs(T.tooltip.lines) do if l == "Høyreklikk: tier (nå I)" then found = true end end
+for _, l in ipairs(T.tooltip.lines) do if l == "Høyreklikk: gjør til «Fint å ha»" then found = true end end
 check(found, "tooltip: høyreklikk-hjelp med tier")
 
 -- Musehjul på flasken: ønsket antall

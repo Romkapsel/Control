@@ -17,10 +17,20 @@ ns.L = {
   TIME_HOURS_SHORT = "%dt",
 
   -- Tier (SPEC §7.7)
-  TIER_1 = "I",
-  TIER_2 = "II",
-  TIER_1_HINT = "Tier I: vises ved medaljongen",
-  TIER_2_HINT = "Tier II: bare i sidemenyen",
+  TIER_1 = "Må ha",
+  TIER_2 = "Fint å ha",
+  TIER_1_HINT = "Må ha: vises ved medaljongen når den mangler",
+  TIER_2_HINT = "Fint å ha: bare i sidemenyen",
+  -- Kategorier i menyen
+  CAT_BUFFS = "Buffer",
+  CAT_FLASKS = "Flasks og eliksirer",
+  CAT_FOOD = "Mat og drikke",
+  CAT_POTIONS = "Potions",
+  CAT_WEAPON = "Våpen",
+  CAT_SCROLLS = "Scrolls",
+  CAT_BANDAGES = "Bandasjer",
+  CAT_GEAR = "Utstyr",
+  CAT_OTHER = "Annet",
 
   -- Tomme ruter (SPEC §14)
   EMPTY_SELF = "Dra en buff eller ting hit",
@@ -117,20 +127,20 @@ ns.L = {
   TIP_NONE_IN_BAG = "Tom",
 
   -- Legge til (fase 3: slipp på medaljongen)
-  ADDED = "%s lagt til i tier I.",
+  ADDED = "%s lagt til (Må ha).",
   DUPLICATE = "%s er allerede med.",
   NOT_ADDABLE = "Bare spells og ting fra baggen.",
   NOT_KNOWN = "Ikke klar, prøv igjen.",
   LIST_CLEARED = "Lista er tømt.",
 
   -- Sidemenyene (fase 4)
-  ADDED_SIDE = "%s lagt til i tier II.",
+  ADDED_SIDE = "%s lagt til (Fint å ha).",
   DRAG_REMOVE = "Slipp for å fjerne",
   REMOVED = "%s fjernet (/ctrl angre).",
   UNDO_NONE = "Ingenting å angre.",
   UNDONE = "%s er tilbake.",
   TIP_WHEEL = "Hjul: antall (Shift = 5)",
-  TIP_RCLICK = "Høyreklikk: tier (nå %s)",
+  TIP_RCLICK = "Høyreklikk: gjør til «%s»",
   TIP_DRAG = "Shift + dra: flytt eller fjern",
 
   -- Gruppebuffer (fase 5, SPEC §7.7)

@@ -237,47 +237,61 @@ local function sideWord(isParty)
   return right and L.SIDE_RIGHT or L.SIDE_LEFT
 end
 
--- Rad I og rad II: tier-tallet, knappene (brytes etter PER_LINE) og en «+»-rute sist
+-- Knappene gruppert i kategorier (Daniel 5. okt): en liten overskrift per kategori som har noe, knappene under
+-- (brytes etter PER_LINE), og én «+»-rute til slutt – det du slipper der, blir «Fint å ha». «Må ha» er et merke
+-- på knappen (høyreklikk bytter).
 local function rows(list, isParty, st)
   local host = Menu.host
-  for tier = 1, 2 do
-    local items = {}
-    for _, e in ipairs(list) do if e.tier == tier then items[#items + 1] = e end end
-    local total = #items + 1
-    local lines = math.ceil(total / PER_LINE)
-    local h = lines * (BTN + GAP) - GAP
-    local label = text(tier == 1 and L.TIER_1 or L.TIER_2, C.gold, 14)
-    label:ClearAllPoints()
-    label:SetPoint("CENTER", frame, "TOPLEFT", PAD + TIERCOL / 2, -(y + BTN / 2))
-    for i = 1, total do
-      local col, line = (i - 1) % PER_LINE, math.floor((i - 1) / PER_LINE)
-      local x, top = BX + col * (BTN + GAP), y + line * (BTN + GAP)
-      if i <= #items then
-        local e = items[i]
-        local b = take("btn", function()
-          local nb = ns.EntryButton.Create(frame)
-          SecureHandlerWrapScript(nb, "OnClick", ns.EntryButton.Header(), ns.Tray.PRE, ns.Tray.RETARGET) -- gruppebuff i kamp
-          nb.canDrag, nb.inMenu, nb.dragHost = true, true, host
-          return nb
-        end)
-        place(b, x, top)
-        b.isParty = isParty
-        host.buttons[#host.buttons + 1] = b
-        b.index = #host.buttons
-        host.ids[b.index] = e.id
-        ns.EntryButton.Bind(b, e, st[e.id])
-        ns.EntryButton.Paint(b, e, st[e.id], L)
-      else
-        local s = take("slot", makeSlot)
-        place(s, x, top)
-        s.drop = { party = isParty, tier = tier }
-        s.hint = isParty and L.EMPTY_PARTY or L.EMPTY_SELF
-        s.sub = tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT
-        host.slots[#host.slots + 1] = s
-      end
-    end
-    y = y + h + G
+  local per = math.floor((W - 2 * PAD + GAP) / (BTN + GAP))
+  local byCat = {}
+  for _, e in ipairs(list) do
+    local c = e.cat or "other"
+    byCat[c] = byCat[c] or {}
+    table.insert(byCat[c], e)
   end
+  local function button(e, x, top)
+    local b = take("btn", function()
+      local nb = ns.EntryButton.Create(frame)
+      SecureHandlerWrapScript(nb, "OnClick", ns.EntryButton.Header(), ns.Tray.PRE, ns.Tray.RETARGET) -- gruppebuff i kamp
+      nb.canDrag, nb.inMenu, nb.dragHost = true, true, host
+      return nb
+    end)
+    place(b, x, top)
+    b.isParty = isParty
+    host.buttons[#host.buttons + 1] = b
+    b.index = #host.buttons
+    host.ids[b.index] = e.id
+    ns.EntryButton.Bind(b, e, st[e.id])
+    ns.EntryButton.Paint(b, e, st[e.id], L)
+  end
+  local lastX, lastTop, lastCount = nil, nil, 0
+  for _, cat in ipairs(ns.Data.CATEGORIES) do
+    local items = byCat[cat]
+    if items then
+      local label = text(L["CAT_" .. cat:upper()], C.help, 11)
+      place(label, PAD, y)
+      y = y + TEXTH
+      for i, e in ipairs(items) do
+        local col, line = (i - 1) % per, math.floor((i - 1) / per)
+        button(e, PAD + col * (BTN + GAP), y + line * (BTN + GAP))
+      end
+      lastCount, lastTop = #items, y
+      y = y + math.ceil(#items / per) * (BTN + GAP) - GAP + G
+    end
+  end
+  -- «+» sist: etter den siste knappen hvis det er plass på linja, ellers på egen linje
+  local s = take("slot", makeSlot)
+  if lastTop and lastCount % per ~= 0 then
+    local col, line = lastCount % per, math.floor(lastCount / per)
+    place(s, PAD + col * (BTN + GAP), lastTop + line * (BTN + GAP))
+  else
+    place(s, PAD, y)
+    y = y + BTN + G
+  end
+  s.drop = { party = isParty, tier = 2 }
+  s.hint = isParty and L.EMPTY_PARTY or L.EMPTY_SELF
+  s.sub = L.TIER_2_HINT
+  host.slots[#host.slots + 1] = s
 end
 
 local function classColor(class)

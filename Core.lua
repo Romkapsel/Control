@@ -133,7 +133,7 @@ function Core.Resolve(kind, id)
   local isWeapon = spell ~= nil and classID ~= 2 and classID ~= 4 and ns.Scan.TooltipHas(id, "weapon")
   local givesBuff = spell and (isWeapon or (classID == 0 and (ns.Data.BUFF_SUBCLASS[subClassID] or isFood)))
   return { kind = "item", itemId = id, itemName = name, itemSpell = givesBuff and spell or nil, isFood = isFood,
-           isWeapon = isWeapon,
+           isWeapon = isWeapon, classID = classID, subClassID = subClassID,
            isScroll = givesBuff and subClassID == 4 or false,
            wellFed = wellFedName(), count = ns.Scan.ItemCount(id) }
 end

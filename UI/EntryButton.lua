@@ -126,10 +126,15 @@ function EB.Create(parent)
   font(b.big, 15, true)
   b.big:SetPoint("CENTER", b, "CENTER", 0, 0)
   b.big:SetWordWrap(false)
-  -- MH/OH øverst til venstre på gift og olje: hvilken hånd knappen gjelder
+  -- «Må ha» (tier I): lite gullmerke øverst til venstre (Daniel 5. okt: tier er et merke, ikke en rad)
+  b.markEdge = Style.Image(b, "disc", 9, 9, "OVERLAY", 6, -14, 14)
+  b.markEdge:SetVertexColor(0, 0, 0)
+  b.mark = Style.Image(b, "disc", 6, 6, "OVERLAY", 7, -14, 14)
+  b.mark:SetVertexColor(C.gold[1], C.gold[2], C.gold[3])
+  -- MH/OH øverst til venstre på gift og olje (etter merket): hvilken hånd knappen gjelder
   b.hand = b:CreateFontString(nil, "OVERLAY")
   font(b.hand, 9)
-  b.hand:SetPoint("TOPLEFT", b, "TOPLEFT", 3, -3)
+  b.hand:SetPoint("TOPLEFT", b, "TOPLEFT", 11, -3)
   b.hand:SetTextColor(C.text[1], C.text[2], C.text[3])
   b.stock = b:CreateFontString(nil, "OVERLAY")
   font(b.stock, 10)
@@ -294,6 +299,9 @@ function EB.Paint(b, e, st, L, frozen)
   local party = R.isParty(e)
   EB.Squares(b, party and st.members or nil)
   b.hand:SetText(e.weaponSlot == 16 and L.HAND_MAIN or e.weaponSlot == 17 and L.HAND_OFF or "")
+  local marked = e.tier == 1 and not b.inTray -- ved medaljongen er alt «Må ha»
+  b.mark:SetShown(marked)
+  b.markEdge:SetShown(marked)
 
   if party then
     glow = R.canPress(e, st) -- gløder når noen mangler (SPEC §7.5) og det er noe å gi dem
@@ -466,7 +474,7 @@ function EB.ShowTooltip(b)
   if ns.Rules.isParty(e) then
     partyTooltip(b, e, st, L)
     local h = C.help
-    GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_1 or L.TIER_2), h[1], h[2], h[3])
+    GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2 or L.TIER_1), h[1], h[2], h[3])
     if b.inMenu then GameTooltip:AddLine(e.tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT, h[1], h[2], h[3]) end
     if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
     GameTooltip:Show()
@@ -495,7 +503,7 @@ function EB.ShowTooltip(b)
   if action ~= "" then GameTooltip:AddLine(action, actColor[1], actColor[2], actColor[3]) end
   local h = C.help
   if e.type == "buffitem" or e.type == "item" then GameTooltip:AddLine(L.TIP_WHEEL, h[1], h[2], h[3]) end
-  GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_1 or L.TIER_2), h[1], h[2], h[3])
+  GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2 or L.TIER_1), h[1], h[2], h[3])
   if b.inMenu then GameTooltip:AddLine(e.tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT, h[1], h[2], h[3]) end
   if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
   GameTooltip:Show()
