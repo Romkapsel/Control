@@ -37,6 +37,7 @@ ns.L = {
   ZONE_CLOSE_SELF = "Meg",
   ZONE_MENU_OPEN = "Åpne meny",
   ZONE_MENU_CLOSE = "Lukke meny",
+  CLOSE = "Lukke",
   HUB_MOVE = "Dra",
   HUB_LOCKED = "Låst",
 

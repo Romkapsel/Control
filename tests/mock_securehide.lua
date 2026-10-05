@@ -33,8 +33,8 @@ check(b1.shown, "høyreklikk: ingenting skjer")
 SecureClick(b1, "LeftButton")
 check(not b1.shown, "venstreklikk i kamp: MotW-knappen er borte")
 local p = b2.points[#b2.points]
-check(p[1] == "TOPLEFT" and p[4] == 2 + 36, "flasken har flyttet inn på første plass")
-eq(tray.frame.width, 2 + 36 + 46 + 2, "rammen er krympet til én knapp")
+check(p[1] == "TOPLEFT" and p[4] == 2 + 33, "flasken har flyttet inn på første plass")
+eq(tray.frame.width, 2 + 33 + 46 + 2, "rammen er krympet til én knapp")
 Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "c1", 5232)
 eq(ns.view.count, 1, "MotW bekreftet: tallet går ned")
 
@@ -49,9 +49,9 @@ T.combat, T.secret = false, false
 T.auras = { { "Mark of the Wild", 5232, T.now + 3600, 3600 } }
 Fire("PLAYER_REGEN_ENABLED")
 check(tray.frame.shown and #tray.ids == 1 and tray.ids[1] == flask.id and tray.buttons[1].shown, "etter kampen: flasken er tilbake")
-eq(tray.frame.width, 2 + 36 + 46 + 2, "rammen er én knapp bred")
+eq(tray.frame.width, 2 + 33 + 46 + 2, "rammen er én knapp bred")
 p = tray.buttons[1].points[#tray.buttons[1].points]
-check(p[4] == 2 + 36, "på første plass")
+check(p[4] == 2 + 33, "på første plass")
 
 -- Venstre side: speilvendt
 ControlCharDB.ui.partySide = "right"

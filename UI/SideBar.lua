@@ -12,6 +12,9 @@ ns.SideBar = SB
 
 local BTN, GAP, MED = 40, 6, 64
 local START, AIR = MED / 2, 36
+-- Sidemenyene starter 3 px fra midten, så det er 6 px fuge mellom dem under medaljongen – samme luft som ned
+-- til menyen (Daniel 5. okt). Knappene står der de stod: lufta inne i rammen er 3 px mindre.
+local SEAM = 3
 -- Rad 1 som knappene ved medaljongen: 4 px kant + 4 px luft + 40 px knapp + 4 px luft (knappene står likt)
 local ROW1, GROOVE, ROW2 = 52, 2, 30
 local HEIGHT = ROW1 + GROOVE + ROW2 + 4 -- 4 px kant nederst (svart, bronse, svart)
@@ -19,8 +22,16 @@ local TIER_GAP = 12 -- fura mellom tier I og II: 2 px streker + marg
 
 local bars = {}
 
+-- Lukke-pila (sikkert skript, også i kamp): skjul sidemenyen, vis knappene ved medaljongen igjen hvis det er noen
+SB.CLOSE = [[
+  local bar, tr = self:GetFrameRef("bar"), self:GetFrameRef("tray")
+  if bar then bar:Hide() end
+  if tr and tr:GetAttribute("ks-want") then tr:Show() end
+]]
+SB.onClosed = nil
+
 -- Luft på medaljongsiden: vokser med medaljongen (størrelse i menyen), så sirkelen ikke dekker knappene
-local function airNow() return AIR + ((ns.Medallion.Extra and ns.Medallion.Extra()) or 0) end
+local function airNow() return AIR - SEAM + ((ns.Medallion.Extra and ns.Medallion.Extra()) or 0) end
 
 -- Fura under rad 1 og statuslinja starter etter lufta; flyttes når medaljongen endrer størrelse
 local function anchorInner(bar)
@@ -31,10 +42,10 @@ local function anchorInner(bar)
   bar.status:ClearAllPoints()
   if side == "right" then
     bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 2 + a + 2, 4)
-    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -12, 4)
+    bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -30, 4) -- plass til lukke-pila
   else
     bar.status:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -(2 + a + 2), 4)
-    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 12, 4)
+    bar.status:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 30, 4)
   end
 end
 
@@ -95,20 +106,21 @@ end
 ------------------------------------------------------------------------
 
 function SB.Create(root, side)
-  local f = CreateFrame("Frame", nil, root)
+  -- Eksplisitt beskyttet ramme: det sikre skriptet på medaljongen og lukke-pila kan vise/skjule den i kamp
+  local f = CreateFrame("Frame", nil, root, "SecureHandlerBaseTemplate")
   f:SetFrameLevel(root:GetFrameLevel() + 2)
   f:SetHeight(HEIGHT)
   if side == "right" then
-    f:SetPoint("TOPLEFT", root, "TOPLEFT", START, -4)
+    f:SetPoint("TOPLEFT", root, "TOPLEFT", START + SEAM, -4)
   else
-    f:SetPoint("TOPRIGHT", root, "TOPRIGHT", -START, -4)
+    f:SetPoint("TOPRIGHT", root, "TOPRIGHT", -(START + SEAM), -4)
   end
   chrome(f)
   f:EnableMouse(true)
   f:SetScript("OnReceiveDrag", function() SB.DropOn(side) end)
   f:SetScript("OnMouseUp", function() if GetCursorInfo() then SB.DropOn(side) end end)
 
-  local bar = { frame = f, side = side, buttons = {}, slots = {}, ids = {}, air = AIR }
+  local bar = { frame = f, side = side, buttons = {}, slots = {}, ids = {}, air = AIR - SEAM }
   bar.hA, bar.hB = groove(f, true)
   bar.hB:SetPoint("TOPLEFT", bar.hA, "BOTTOMLEFT")
   bar.hB:SetPoint("TOPRIGHT", bar.hA, "BOTTOMRIGHT")
@@ -124,6 +136,12 @@ function SB.Create(root, side)
   bar.status:SetJustifyH(side == "right" and "LEFT" or "RIGHT")
   bar.status:SetHeight(ROW2)
   anchorInner(bar)
+
+  -- Lukke-pil nederst i ytterste hjørne, pekende mot medaljongen. Virker også i kamp.
+  bar.close = Style.CloseArrow(f, side == "right" and "left" or "right", SB.CLOSE, ns.L.CLOSE,
+    function() if SB.onClosed then SB.onClosed(side) end end)
+  bar.close:SetPoint(side == "right" and "BOTTOMRIGHT" or "BOTTOMLEFT", f, side == "right" and "BOTTOMRIGHT" or "BOTTOMLEFT",
+    side == "right" and -8 or 8, 9)
 
   f.fadeIn = f:CreateAnimationGroup()
   local a = f.fadeIn:CreateAnimation("Alpha")
@@ -205,7 +223,7 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
     place(bar, bar.vA, x)
     place(bar, bar.vB, x + 1)
   end
-  bar.frame:SetWidth(sideView.width + (a - AIR))
+  bar.frame:SetWidth(sideView.width + (a - AIR))  -- a = AIR - SEAM + extra
   -- Tom side: ingen statuslinje (den får ikke plass, og «+»-ruta sier hva du kan gjøre)
   bar.status:SetText(#bar.ids == 0 and "" or SB.StatusText(isParty and view.status.party or view.status.self, isParty, L))
   return true
@@ -244,6 +262,14 @@ function SB.SetOpen(sideKey, open)
 end
 
 function SB.Get(sideKey) return bars[sideKey] end
+
+-- Pila må kjenne rammene sine (bare utenfor kamp)
+function SB.SetRefs(sideKey, trayFrame)
+  local bar = bars[sideKey]
+  if not bar or InCombatLockdown() then return end
+  SecureHandlerSetFrameRef(bar.close, "bar", bar.frame)
+  SecureHandlerSetFrameRef(bar.close, "tray", trayFrame)
+end
 
 ------------------------------------------------------------------------
 -- Dra: Shift + dra en knapp. Slipp utenfor sidemenyen = fjern; på en annen knapp = flytt dit.

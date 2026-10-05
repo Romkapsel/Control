@@ -10,13 +10,14 @@ ns.Tray = Tray
 
 local BTN, GAP, MED = 40, 6, 64
 local START = MED / 2   -- rammen starter i medaljongens midtpunkt
-local AIR = 36          -- luft innenfor kanten på medaljongsiden: første knapp 6 px utenfor medaljongen
+local AIR = 36          -- fra midten til første knapp minus 2: første knapp 6 px utenfor medaljongen
+local SEAM = 3          -- rammen starter 3 px fra midten (som sidemenyene); lufta inne i rammen er 3 px mindre
 local HEIGHT = 56 -- 4 kant + 4 luft + 40 knapp + 4 luft + 4 kant
 
 local trays = {}
 
 -- Luft på medaljongsiden: vokser med medaljongen (størrelse i menyen), så sirkelen ikke dekker knappene
-local function air() return AIR + ((ns.Medallion.Extra and ns.Medallion.Extra()) or 0) end
+local function air() return AIR - SEAM + ((ns.Medallion.Extra and ns.Medallion.Extra()) or 0) end
 
 -- Bakgrunn og bronsekant som sidemenyen (SPEC §13.2)
 local function chrome(f) Style.Frame(f) end -- lik kant hele veien rundt (UI/Style.lua)
@@ -100,17 +101,17 @@ Tray.RETARGET = [[
 function Tray.Create(root, side)
   local f = CreateFrame("Frame", nil, root, "SecureHandlerBaseTemplate")
   f:SetAttribute("ks-side", side)
-  f:SetAttribute("ks-air", AIR)
+  f:SetAttribute("ks-air", AIR - SEAM)
   f:SetFrameLevel(math.max(0, root:GetFrameLevel() - 1))
   f:SetHeight(HEIGHT)
   if side == "right" then
-    f:SetPoint("TOPLEFT", root, "TOPLEFT", START, -4)
+    f:SetPoint("TOPLEFT", root, "TOPLEFT", START + SEAM, -4)
   else
-    f:SetPoint("TOPRIGHT", root, "TOPRIGHT", -START, -4)
+    f:SetPoint("TOPRIGHT", root, "TOPRIGHT", -(START + SEAM), -4)
   end
   chrome(f)
   f:Hide()
-  trays[side] = { frame = f, side = side, buttons = {}, ids = {}, air = AIR }
+  trays[side] = { frame = f, side = side, buttons = {}, ids = {}, air = AIR - SEAM }
   return trays[side]
 end
 

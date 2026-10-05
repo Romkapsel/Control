@@ -35,7 +35,7 @@ zoneClick(0, -20)
 zoneClick(0, -20)
 check(Menu.IsOpen() and Menu.frame.shown, "nedre sone åpner menyen")
 local p = Menu.frame.points[1]
-check(p[1] == "TOP" and p[3] == "TOP" and p[5] == -72, "under medaljongen: toppen 72 px under medaljongens topp")
+check(p[1] == "TOP" and p[3] == "TOP" and p[5] == -70, "under medaljongen: 6 px luft (toppen 70 px under medaljongens topp)")
 eq(Menu.frame.width, 340, "340 px bred")
 eq(#Menu.heads, 4, "fire deler")
 check(Menu.heads[1].title.text == "Meg" and Menu.heads[2].title.text == "Party"
@@ -179,13 +179,13 @@ for _, it in ipairs(M.Lines()) do
 end
 check(whole, "150 %: alle strekene i symbolene er hele skjermpiksler")
 local tray = ns.Tray.Get("right")
-eq(tray.buttons[1].points[1][4], 2 + 36 + 16, "knappen ved medaljongen flyttet 16 px ut")
-eq(Menu.frame.points[1][5], -88, "menyen 16 px lenger ned")
+eq(tray.buttons[1].points[1][4], 2 + 33 + 16, "knappen ved medaljongen flyttet 16 px ut")
+eq(Menu.frame.points[1][5], -86, "menyen 16 px lenger ned")
 zoneClick(30, 0) -- høyre sone, 30 px ut: innenfor den større sirkelen
 local mb = ns.SideBar.Get("right")
 check(mb.frame.shown, "sonene følger den større sirkelen")
-eq(mb.buttons[1].points[1][4], 2 + 36 + 16, "sidemenyens første knapp flyttet 16 px ut")
-eq(Menu.frame.points[1][5], -100, "menyen under sidemenyen")
+eq(mb.buttons[1].points[1][4], 2 + 33 + 16, "sidemenyens første knapp flyttet 16 px ut")
+eq(Menu.frame.points[1][5], -98, "menyen 6 px under sidemenyen")
 zoneClick(30, 0)
 sl.scripts.OnMouseWheel(sl, -1)
 eq(ControlCharDB.ui.scale, 1.45, "musehjul: 5 % ned")
@@ -208,7 +208,7 @@ eq(M.Extra(), 0, "nullstill: ingen ekstra luft")
 T.center = { 500, 200 }
 ns.Refresh(false)
 p = Menu.frame.points[1]
-check(p[1] == "BOTTOM" and p[3] == "TOP" and p[5] == 8, "nedre halvdel: menyen åpner oppover")
+check(p[1] == "BOTTOM" and p[3] == "TOP" and p[5] == 6, "nedre halvdel: menyen åpner oppover")
 T.center = { 500, 400 }
 zoneClick(0, -20)
 check(not Menu.IsOpen(), "klikk igjen: lukket")

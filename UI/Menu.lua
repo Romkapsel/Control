@@ -547,18 +547,31 @@ function Menu.OpensUp()
   return cy * rs / us < h / 2
 end
 
--- Rammen (root) er 64 px; en større medaljong stikker extra px ut over og under den
+-- Rammen (root) er 64 px; en større medaljong stikker extra px ut over og under den.
+-- 6 px luft til medaljongen eller sidemenyene – samme fuge som mellom sidemenyene (Daniel 5. okt).
+local AIRGAP = 6
 local function anchor(sideOpen)
   frame:ClearAllPoints()
   local extra = ns.Medallion.Extra and ns.Medallion.Extra() or 0
-  if Menu.OpensUp() then
-    frame:SetPoint("BOTTOM", root, "TOP", 0, 8 + extra)
+  local up = Menu.OpensUp()
+  if up then
+    frame:SetPoint("BOTTOM", root, "TOP", 0, AIRGAP + extra)
   else
-    local top = 72 + extra -- 8 px under medaljongen
-    if sideOpen then top = math.max(top, 100) end -- under statuslinja når en sidemeny er åpen
+    local top = 64 + AIRGAP + extra
+    if sideOpen then top = math.max(top, 4 + 88 + AIRGAP) end -- sidemenyene: 4 px ned + 88 px høye
     frame:SetPoint("TOP", root, "TOP", 0, -top)
   end
+  -- Pila peker mot medaljongen: opp når menyen henger under, ned når den står over
+  if Menu.closeUp and Menu.closeDown then
+    Menu.closeUp:SetShown(not up)
+    Menu.closeDown:SetShown(up)
+  end
 end
+
+Menu.CLOSE = [[
+  local m = self:GetFrameRef("menu")
+  if m then m:Hide() end
+]]
 
 ------------------------------------------------------------------------
 -- Offentlig
@@ -566,7 +579,8 @@ end
 
 function Menu.Create(parent, database, locale)
   root, db, L = parent, database, locale
-  frame = CreateFrame("Frame", nil, parent)
+  -- Eksplisitt beskyttet ramme: det sikre skriptet på medaljongen og lukke-pila kan vise/skjule den i kamp
+  frame = CreateFrame("Frame", nil, parent, "SecureHandlerBaseTemplate")
   frame:SetFrameLevel(parent:GetFrameLevel() + 2)
   frame:SetWidth(W)
   frame:SetHeight(100)
@@ -577,6 +591,15 @@ function Menu.Create(parent, database, locale)
   a:SetFromAlpha(0)
   a:SetToAlpha(1)
   a:SetDuration(0.2)
+  -- Lukke-piler nederst til høyre (én av dem vises, etter hvilken vei menyen åpner)
+  local function after() if Menu.onChange then Menu.onChange() end end
+  Menu.closeUp = Style.CloseArrow(frame, "up", Menu.CLOSE, L.CLOSE, after)
+  Menu.closeDown = Style.CloseArrow(frame, "down", Menu.CLOSE, L.CLOSE, after)
+  for _, b in ipairs({ Menu.closeUp, Menu.closeDown }) do
+    b:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -8, 8)
+    SecureHandlerSetFrameRef(b, "menu", frame)
+  end
+  Menu.closeDown:Hide()
   frame:Hide()
   Menu.frame = frame
   Menu.host = { frame = frame, buttons = {}, ids = {}, slots = {} }

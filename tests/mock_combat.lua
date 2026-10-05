@@ -116,4 +116,29 @@ check(st.swordFrame.shown and st.swordFrame.alpha == 1, "rett inn i kamp: sverde
 T.combat = false
 M.SetCombat(false, true)
 
+-- Lukke-piler (Daniel 5. okt): i hjørnet av sidemenyene og menyen, virker også i kamp
+check(sbR.frame.template == "SecureHandlerBaseTemplate" and ns.Menu.frame.template == "SecureHandlerBaseTemplate",
+  "sidemenyene og menyen er beskyttede rammer (kan vises/skjules av sikre skript)")
+local arrowR = sbR.close
+check(arrowR and arrowR.template == "SecureHandlerClickTemplate" and arrowR.refs.bar == sbR.frame and arrowR.refs.tray == trR.frame,
+  "høyre sidemeny har lukke-pil som kjenner rammene")
+eq(arrowR.points[1][1], "BOTTOMRIGHT", "pila står nederst i ytterste hjørne")
+ns.SideBar.SetOpen("right", true)
+ns.Refresh(false)
+check(sbR.frame.shown and not trR.frame.shown, "utenfor kamp: åpen, knappene dekket")
+SecureClick(arrowR, "LeftButton")
+check(not sbR.frame.shown and trR.frame.shown, "pil utenfor kamp: lukket, knappene tilbake")
+T.combat = true
+T.mousePos = { 0.95, 0.5 }
+SecureClick(hit, "LeftButton")
+check(sbR.frame.shown, "i kamp: åpnet fra medaljongen")
+SecureClick(arrowR, "LeftButton")
+check(not sbR.frame.shown and trR.frame.shown, "pil i kamp: lukket")
+T.combat = false
+ns.Menu.SetOpen(true)
+ns.Refresh(false)
+check(ns.Menu.closeUp.shown and not ns.Menu.closeDown.shown, "menyen under medaljongen: pila peker opp")
+SecureClick(ns.Menu.closeUp, "LeftButton")
+check(not ns.Menu.IsOpen(), "pil: menyen lukket")
+
 return n, fails

@@ -11,7 +11,7 @@ local M = ns.Medallion
 local st = M.State()
 local mb, pb = ns.SideBar.Get("right"), ns.SideBar.Get("left") -- mine til høyre, gruppa til venstre
 check(mb and pb and not mb.frame.shown and not pb.frame.shown, "sidemenyene er lukket fra start")
-check(mb.frame.points[1][4] == 32, "samme forankring som knappene: medaljongens midtpunkt")
+check(mb.frame.points[1][4] == 35, "3 px fra midten: 6 px fuge mellom sidemenyene")
 
 -- Klikk høyre sone: fold ut mine
 local function mouse(dx, dy) T.mouse = { T.center[1] + dx, T.center[2] + dy } end
@@ -24,7 +24,7 @@ eq(T.tooltip.text, "Meg", "tooltip etter")
 check(mb.slots[1].shown and mb.slots[1].plus.shown and mb.slots[1].hint == "Dra en buff eller ting hit",
   "tom side: én slipprute med «+» og hjelpetekst")
 check(not (mb.slots[2] and mb.slots[2].shown), "tom side: bare én rute")
-eq(mb.frame.width, 40 + 46, "tom side: bredde")
+eq(mb.frame.width, 37 + 46, "tom side: bredde")
 eq(mb.status.text, "", "tom side: ingen statuslinje (får ikke plass)")
 
 -- Slipp på sidemenyen: sist i tier II
@@ -39,7 +39,7 @@ local flask = ControlCharDB.self[2]
 check(flask and flask.tier == 2 and flask.type == "buffitem", "item sluppet på den tomme ruta: tier II")
 eq(ns.view.ring, 1, "tier II som mangler: oransje")
 check(#mb.ids == 2 and mb.buttons[1].entry == motw and mb.buttons[2].entry == flask, "knappene i lista sin rekkefølge")
-eq(mb.frame.width, 40 + 3 * 46, "2 knapper + én «+»-rute: sida vokser én og én")
+eq(mb.frame.width, 37 + 3 * 46, "2 knapper + én «+»-rute: sida vokser én og én")
 check(not mb.vA.shown, "bare tier II: ingen fure")
 check(mb.status.text:find("Meg", 1, true) and not mb.status.text:find("Mangler", 1, true),
   "statuslinja: bare «Meg», knappene forteller resten")
@@ -51,9 +51,9 @@ b1.scripts.hookPostClick(b1, "RightButton")
 eq(motw.tier, 1, "høyreklikk: tier I")
 eq(ns.view.ring, 2, "tier I som mangler: rød")
 check(mb.vA.shown, "tier I og II: fure mellom")
-eq(mb.frame.width, 40 + 3 * 46 + 12, "bredde med fure")
+eq(mb.frame.width, 37 + 3 * 46 + 12, "bredde med fure")
 local p2 = mb.buttons[2].points[#mb.buttons[2].points]
-eq(p2[4], 2 + 36 + 46 + 12, "tier II starter etter fura")
+eq(p2[4], 2 + 33 + 46 + 12, "tier II starter etter fura")
 b1.scripts.hookOnEnter(b1)
 local found = false
 for _, l in ipairs(T.tooltip.lines) do if l == "Høyreklikk: tier (nå I)" then found = true end end

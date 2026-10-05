@@ -124,6 +124,37 @@ function Style.OnePixel(f)
   return 1
 end
 
+-- Liten lukke-pil i hjørnet (Daniel 5. okt): en sikker knapp, så den virker også i kamp. dir = retningen pila
+-- peker (mot medaljongen): "left", "right", "up", "down". snippet = det sikre skriptet (_onclick).
+-- onAfter() kalles etter klikket (Lua: tegn på nytt).
+function Style.CloseArrow(parent, dir, snippet, tip, onAfter)
+  local b = CreateFrame("Button", nil, parent, "SecureHandlerClickTemplate")
+  b:SetSize(18, 18)
+  b:RegisterForClicks("LeftButtonUp")
+  b:SetAttribute("_onclick", snippet)
+  b:SetFrameLevel(parent:GetFrameLevel() + 5)
+  local pts = ({
+    left = { { 2, -4 }, { -2, 0 }, { 2, 4 } },
+    right = { { -2, -4 }, { 2, 0 }, { -2, 4 } },
+    up = { { -4, -2 }, { 0, 2 }, { 4, -2 } },
+    down = { { -4, 2 }, { 0, -2 }, { 4, 2 } },
+  })[dir]
+  b.parts = {
+    Style.Line(b, "OVERLAY", 1, pts[1][1], pts[1][2], pts[2][1], pts[2][2], 2, Style.C.goldDim),
+    Style.Line(b, "OVERLAY", 1, pts[2][1], pts[2][2], pts[3][1], pts[3][2], 2, Style.C.goldDim),
+    Style.Disc(b, "OVERLAY", 2, 2, Style.C.goldDim, 1, pts[2][1], pts[2][2]), -- rund spiss
+  }
+  b:SetScript("OnEnter", function(self)
+    Style.Tint(self.parts, Style.C.goldLight)
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetText(tip or "", 1, 1, 1)
+    GameTooltip:Show()
+  end)
+  b:SetScript("OnLeave", function(self) Style.Tint(self.parts, Style.C.goldDim) GameTooltip:Hide() end)
+  b:HookScript("PostClick", function() GameTooltip:Hide() if onAfter then onAfter() end end)
+  return b
+end
+
 function Style.Frame(f)
   local p = Style.OnePixel(f)
   local bg = f:CreateTexture(nil, "BACKGROUND", nil, 0)
