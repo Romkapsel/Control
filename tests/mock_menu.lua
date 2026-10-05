@@ -96,12 +96,16 @@ bm.scripts.hookOnEnter(bm)
 local dragTip = false
 for _, l in ipairs(T.tooltip.lines) do if l == "Dra ut av menyen: fjern · til en annen knapp: flytt" then dragTip = true end end
 check(dragTip, "tooltip: dra ut av menyen")
--- Slipp inne i menyen (ikke på en annen knapp): den går rett inn igjen
+-- Slipp inne i menyen (ikke på en annen knapp): den går rett inn igjen – som «Må ha», og uten gullstrek i kanten
+check(motw.tier == 1, "MotW er Må ha før draget")
 bm.scripts.OnDragStart(bm)
 Menu.frame.mouse = true
+slot(false, 2).mouse = true -- musa over Meg-feltet, ikke over en knapp
 bm.scripts.OnDragStop(bm)
+slot(false, 2).mouse = false
 Menu.frame.mouse = false
 eq(#ControlCharDB.self, 2, "slipp inne i menyen: ingenting fjernet")
+eq(motw.tier, 1, "slipp inne i menyen: fortsatt Må ha")
 -- Dra helt ut av menyen: fjernet, og /ctrl angre gir den tilbake
 bm = Menu.host.buttons[1]
 bm.scripts.OnDragStart(bm)

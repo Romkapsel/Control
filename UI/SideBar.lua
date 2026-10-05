@@ -297,7 +297,7 @@ local function hoveredButton(bar)
 end
 
 -- Gullstrek som viser hvor knappen havner (SPEC §8): på kanten av knappen du står over, på siden den skal inn,
--- eller foran «+» i den andre raden (menyen). Egen ramme over alt, ikke sikker: kan vises fritt.
+-- bare over en annen knapp. Egen ramme over alt, ikke sikker: kan vises fritt.
 local marker
 local function ensureMarker()
   if marker then return marker end
@@ -315,9 +315,6 @@ end
 local function dropTarget(bar, b)
   local to = hoveredButton(bar)
   if to and to ~= b.index then return bar.buttons[to], (to > b.index) and "RIGHT" or "LEFT" end
-  for _, s in ipairs(bar.slots or {}) do
-    if s.drop and s:IsShown() and s:IsMouseOver() and s.drop.party == (b.isParty and true or false) then return s, "LEFT" end
-  end
 end
 
 local function showMarker(bar, b)
@@ -365,14 +362,8 @@ function SB.EndDrag(b)
     local to = hoveredButton(bar)
     if to and to ~= b.index and SB.onMove then
       SB.onMove(b.entry, bar.ids[to], b.isParty)
-      return
     end
-    for _, s in ipairs(bar.slots or {}) do
-      if s.drop and s:IsShown() and s:IsMouseOver() and s.drop.party == (b.isParty and true or false) and SB.onTier then
-        SB.onTier(b.entry, s.drop.tier) -- menyen: slipp på «+» i den andre raden
-        return
-      end
-    end
+    -- ellers: slippet inne i menyen/sidemenyen – knappen går rett inn igjen der den var
   end
 end
 

@@ -552,7 +552,6 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.SideBar.onDrop = Actions.DropOnSide
     ns.SideBar.onRemove = Actions.Remove
     ns.SideBar.onMove = Actions.Move
-    ns.SideBar.onTier = Actions.SetTier
     ns.Medallion.isSideOpen = ns.SideBar.IsOpen
     local okF, faction = pcall(UnitFactionGroup, "player")
     if okF and not ns.Scan.isSecret(faction) then ns.Data.SeedCities(ns.db, faction) end
