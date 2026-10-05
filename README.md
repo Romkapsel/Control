@@ -31,8 +31,10 @@ Ny versjon: slett den gamle `Control`-mappa, pakk ut den nye, og start spillet p
   - på en sidemeny eller i menyen → havner i **tier II** (eller raden du slipper den i)
 - **Tier I:** knappen dukker opp ved medaljongen når noe mangler – klikk, så er det fikset.
 - **Tier II:** står bare i sidemenyen.
+- **Klikk på navnet** («Meg» eller «Party») nederst i en sidemeny, så viser den alt – rad I over rad II, med en
+  «+»-rute i hver rad. Der legger du til, flytter (Shift + dra), bytter tier og fjerner. Klikk igjen for det korte.
 - **Ting du bare skal ha med** (utstyr, bandasjer, potions, reagenser) står i sidemenyen bare når de mangler eller er
-  under antallet – med rød eller oransje ramme. Er alt med, er de borte derfra. Menyen viser alltid alt.
+  under antallet – med rød eller oransje ramme. Er alt med, er de borte derfra (vis alt: klikk på navnet).
 
 Det som kan legges til:
 - spells du kaster på deg selv (Mark of the Wild, Arcane Intellect …)
@@ -70,7 +72,7 @@ knappen ved medaljongen (dine egne buffer først, så gruppas) – også i kamp,
 - Klikk: kaster på den første som mangler. Mangler **flere enn 2** og du kan kaste gruppeversjonen
   (Gift of the Wild, Prayer of Fortitude …), brukes den.
 - **Shouts** og andre buffer uten rekkevidde kastes på deg selv og regnes som gitt til hele gruppa.
-- I menyen kan du klikke navn for å velge **hvem** en buff skal følges på (grå = følges ikke).
+- Under **Party** i menyen kan du klikke navn for å velge **hvem** en buff skal følges på (grå = følges ikke).
 
 ## Byvakt
 
@@ -89,7 +91,9 @@ dra et sted ut av lista for å fjerne det.
 
 ## Menyen
 
-- **Meg** og **Party:** alle knappene dine i rad I og II.
+Menyen har bare innstillingene. Lista over buffer og ting ordner du i sidemenyene (klikk på navnet for å vise alt).
+
+- **Party** (når du har party-buffer): klikk navnene for å velge hvem hver buff følges på.
 - **Byvakt:** se over.
 - **Oppsett:** **Bytt side på gruppene**, **Tall i midten** (på/av – uten tallet er det ringen som sier fra), **Gjennomsiktig midt** (på/av – verden synes gjennom medaljongen), og **Størrelse** (70–150 %).
 - Lukk med pila i hjørnet, eller klikk nederst på medaljongen.

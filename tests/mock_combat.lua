@@ -64,7 +64,7 @@ check(not sbR.frame.shown and trR.frame.shown, "i kamp: lukkes, knappene er tilb
 -- Menyen i kamp: nedre sone
 T.mousePos = { 0.5, 0.05 }
 SecureClick(hit, "LeftButton")
-check(ns.Menu.IsOpen() and #ns.Menu.host.buttons == 2, "i kamp: menyen åpnes, ferdig bygget (flask og MotW)")
+check(ns.Menu.IsOpen() and #ns.Menu.heads >= 2, "i kamp: menyen åpnes, ferdig bygget")
 SecureClick(hit, "LeftButton")
 check(not ns.Menu.IsOpen(), "i kamp: menyen lukkes")
 -- Midten og toppen: ingenting

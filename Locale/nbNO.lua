@@ -40,6 +40,8 @@ ns.L = {
   ZONE_MENU_OPEN = "Åpne meny",
   ZONE_MENU_CLOSE = "Lukke meny",
   CLOSE = "Lukke",
+  EXPAND_TIP = "Klikk: vis alt og ordne lista",
+  COLLAPSE_TIP = "Klikk: vis bare det som trenger deg",
   HUB_MOVE = "Dra",
   HUB_LOCKED = "Låst",
 

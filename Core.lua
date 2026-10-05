@@ -63,7 +63,7 @@ function Core.Draw()
   if not ns.Medallion.frame then return end
   local model = Core.Model()
   local inCombat = InCombatLockdown()
-  local view = ns.Rules.render(model, ns.L, { inCombat = inCombat, prevTray = prevTray })
+  local view = ns.Rules.render(model, ns.L, { inCombat = inCombat, prevTray = prevTray, expanded = ns.db.ui.expanded })
   ns.view, ns.model = view, model
   ns.Medallion.Update(view)
   if Core.sample then
@@ -88,7 +88,7 @@ function Core.Draw()
     ns.SideBar.Layout(mb, model.self, model.st, view, false, ns.L)
     ns.SideBar.Layout(pb, model.party, model.st, view, true, ns.L)
     ns.Tray.UpdateNext(mb, pb) -- tasten «neste buff»: den første knappen ved medaljongen
-    ns.Menu.Layout(model, members, ns.SideBar.IsOpen(mb) or ns.SideBar.IsOpen(pb))
+    ns.Menu.Layout(model, members, ns.SideBar.OpenBottom())
     prevTray = view.tray
   end
 end
@@ -344,6 +344,14 @@ function Actions.ToggleCityCheck(key)
   Core.Draw()
 end
 
+-- Utvid/krymp en sidemeny (klikk på navnet): vis alt og ordne lista der (Daniel 5. okt)
+function Actions.ToggleExpand(sideKey)
+  if InCombatLockdown() then return end
+  local key = (sideKey == pbSide()) and "party" or "self"
+  ns.db.ui.expanded[key] = not ns.db.ui.expanded[key]
+  Core.Draw()
+end
+
 function Actions.ToggleOpenCore()
   ns.db.ui.openCore = not ns.db.ui.openCore
   ns.Medallion.ApplyCore()
@@ -415,6 +423,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.SideBar.onRemove = Actions.Remove
     ns.SideBar.onMove = Actions.Move
     ns.SideBar.onTier = Actions.SetTier
+    ns.SideBar.onDropTier = Actions.DropOn
+    ns.SideBar.onToggleExpand = Actions.ToggleExpand
     ns.Medallion.isSideOpen = ns.SideBar.IsOpen
     local okF, faction = pcall(UnitFactionGroup, "player")
     if okF and not ns.Scan.isSecret(faction) then ns.Data.SeedCities(ns.db, faction) end

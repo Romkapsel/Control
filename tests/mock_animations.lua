@@ -122,10 +122,8 @@ check(near(bandBtn.warn.vertex[1], 1) and near(bandBtn.warn.vertex[2], 0x20 / 25
 T.counts[14529] = 5
 ns.Refresh(false)
 check(find(14529) == nil, "nok på lager igjen: borte fra sidemenyen")
-local inMenu = false
-ns.Menu.SetOpen(true)
-ns.Refresh(false)
-for i, id in ipairs(ns.Menu.host.ids) do if id == band.id and ns.Menu.host.buttons[i].shown then inMenu = true end end
-check(inMenu, "... men står fortsatt i menyen")
+mb.nameBtn.scripts.OnClick(mb.nameBtn) -- vis alt
+check(find(14529) ~= nil, "... men vises når sidemenyen er utvidet (klikk på navnet)")
+mb.nameBtn.scripts.OnClick(mb.nameBtn)
 
 return n, fails

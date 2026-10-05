@@ -18,12 +18,9 @@ function Menu.Width()
   return 2 * (3 + 37 + 3 * 46 + extra)
 end
 local BTN, GAP = 40, 6
-local TIERCOL = 22
 local LINE = 18
 local G = 10 -- lik luft mellom alt i menyen (Daniel 5. okt): elementer, rader, streker og kategorilinjer
 local TEXTH = 14 -- høyden på en tekstlinje (12 px skrift)
-local BX = PAD + TIERCOL + 8 -- første knapp i en rad, etter tier-tallet og fura
-local PER_LINE = 6 -- regnes ut i Layout
 
 local db, L, root
 local frame
@@ -119,21 +116,6 @@ local function makeHeader()
   return h
 end
 
-local function makeSlot()
-  local s = CreateFrame("Button", nil, frame)
-  s:SetSize(BTN, BTN)
-  Style.Rect(s, "BACKGROUND", 0, BTN, BTN, C.black, 1)
-  Style.Rect(s, "BACKGROUND", 1, BTN - 2, BTN - 2, Style.hex("0B0907"), 1)
-  s.plus = newText(s, 20, Style.hex("5E5446"))
-  s.plus:SetPoint("CENTER")
-  s.plus:SetText("+")
-  local function drop(self) if self.drop and Menu.onDrop then Menu.onDrop(self.drop.party, self.drop.tier) end end
-  s:SetScript("OnReceiveDrag", drop)
-  s:SetScript("OnMouseUp", function(self) if GetCursorInfo() then drop(self) end end)
-  s:SetScript("OnEnter", function(self) tooltip(self, self.hint, self.sub) end)
-  s:SetScript("OnLeave", function() GameTooltip:Hide() end)
-  return s
-end
 
 local function makeLink()
   local b = CreateFrame("Button", nil, frame)
@@ -235,49 +217,6 @@ local function sideWord(isParty)
   local partyRight = db.ui.partySide == "right"
   local right = (isParty and partyRight) or (not isParty and not partyRight)
   return right and L.SIDE_RIGHT or L.SIDE_LEFT
-end
-
--- Rad I og rad II: tier-tallet, knappene (brytes etter PER_LINE) og en «+»-rute sist
-local function rows(list, isParty, st)
-  local host = Menu.host
-  for tier = 1, 2 do
-    local items = {}
-    for _, e in ipairs(list) do if e.tier == tier then items[#items + 1] = e end end
-    local total = #items + 1
-    local lines = math.ceil(total / PER_LINE)
-    local h = lines * (BTN + GAP) - GAP
-    local label = text(tier == 1 and L.TIER_1 or L.TIER_2, C.gold, 14)
-    label:ClearAllPoints()
-    label:SetPoint("CENTER", frame, "TOPLEFT", PAD + TIERCOL / 2, -(y + BTN / 2))
-    for i = 1, total do
-      local col, line = (i - 1) % PER_LINE, math.floor((i - 1) / PER_LINE)
-      local x, top = BX + col * (BTN + GAP), y + line * (BTN + GAP)
-      if i <= #items then
-        local e = items[i]
-        local b = take("btn", function()
-          local nb = ns.EntryButton.Create(frame)
-          SecureHandlerWrapScript(nb, "OnClick", ns.EntryButton.Header(), ns.Tray.PRE, ns.Tray.RETARGET) -- gruppebuff i kamp
-          nb.canDrag, nb.inMenu, nb.dragHost = true, true, host
-          return nb
-        end)
-        place(b, x, top)
-        b.isParty = isParty
-        host.buttons[#host.buttons + 1] = b
-        b.index = #host.buttons
-        host.ids[b.index] = e.id
-        ns.EntryButton.Bind(b, e, st[e.id])
-        ns.EntryButton.Paint(b, e, st[e.id], L)
-      else
-        local s = take("slot", makeSlot)
-        place(s, x, top)
-        s.drop = { party = isParty, tier = tier }
-        s.hint = isParty and L.EMPTY_PARTY or L.EMPTY_SELF
-        s.sub = tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT
-        host.slots[#host.slots + 1] = s
-      end
-    end
-    y = y + h + G
-  end
 end
 
 local function classColor(class)
@@ -620,7 +559,8 @@ end
 -- Rammen (root) er 64 px; en større medaljong stikker extra px ut over og under den.
 -- 6 px luft til medaljongen eller sidemenyene – samme fuge som mellom sidemenyene (Daniel 5. okt).
 local AIRGAP = 6
-local function anchor(sideOpen)
+-- sideBottom = hvor langt ned åpne sidemenyer går (fra medaljongens topp), eller nil
+local function anchor(sideBottom)
   frame:ClearAllPoints()
   local extra = ns.Medallion.Extra and ns.Medallion.Extra() or 0
   local up = Menu.OpensUp()
@@ -629,7 +569,7 @@ local function anchor(sideOpen)
   else
     local top = 64 + AIRGAP + extra
     -- Under sidemenyene (4 px ned + 88 px høye): et hakk tettere, så luften ser lik ut som fugen mellom dem
-    if sideOpen then top = math.max(top, 4 + 88 + 4) end
+    if sideBottom then top = math.max(top, sideBottom + 4) end
     frame:SetPoint("TOP", root, "TOP", 0, -top)
   end
   -- Pila peker mot medaljongen: opp når menyen henger under, ned når den står over
@@ -696,21 +636,18 @@ end
 
 -- Bygg menyen (bare utenfor kamp). model = Core.Model(), members = Scan.Party()
 -- Bygges også når den er lukket: i kamp kan den bare åpnes (av det sikre skriptet), ikke bygges.
-function Menu.Layout(model, members, sideOpen)
+function Menu.Layout(model, members, sideBottom)
   if not frame or InCombatLockdown() then return false end
   W = Menu.Width()
-  PER_LINE = math.floor((W - PAD - BX + GAP) / (BTN + GAP))
   frame:SetWidth(W)
   for _, p in pairs(pools) do p.n = 0 end
   local host = Menu.host
   host.buttons, host.ids, host.slots = {}, {}, {}
   Menu.heads = {}
   y = 8
-  if header("self", L.LABEL_MY_BUFFS, sideWord(false)) then rows(model.self, false, model.st) end
-  if header("party", L.LABEL_PARTY_BUFFS, sideWord(true)) then
-    rows(model.party, true, model.st)
-    picker(model.party, members or {})
-  end
+  -- Lista ordnes i sidemenyene (klikk på navnet for å vise alt); her står bare innstillingene (Daniel 5. okt).
+  -- Hvem en party-buff følges på, er en innstilling: egen del når du har party-buffer.
+  if #model.party > 0 and header("party", L.LABEL_PARTY_BUFFS, sideWord(true)) then picker(model.party, members or {}) end
   if header("city", L.MENU_CITY) then cityWatch() end
   header(nil, L.MENU_DIR)
   direction()
@@ -736,7 +673,7 @@ function Menu.Layout(model, members, sideOpen)
     for i = p.n + 1, #p.items do p.items[i]:Hide() end
   end
   frame:SetHeight(y + 4)
-  anchor(sideOpen)
+  anchor(sideBottom)
   if Menu.combatDimmed then dimForCombat(false) end
   return true
 end
