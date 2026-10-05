@@ -1,8 +1,8 @@
 -- Control: varsel midt på skjermen (SPEC §11, nivå 3 – øyeblikk du ikke kan angre, som byvakt).
 -- Én linje: rød + én lyd når noe er tomt (eller mangler i tier I), oransje uten lyd når noe er under ønsket,
 -- kort grønn «Alt med» som tones ut. Over linja, i grått og mindre: hvor du drar fra.
--- Ingen mus: varselet stjeler aldri et klikk. Står i samme bronseramme som menyen, med en tynn stripe i
--- varselets farge øverst, så det ikke drukner i alt rundt (Daniel 5. okt). Ramma følger teksten i bredden.
+-- Ingen mus: varselet stjeler aldri et klikk. Står i samme bronseramme som menyen, så det ikke drukner i alt
+-- rundt (Daniel 5. okt); fargen ligger i teksten. Ramma følger teksten i bredden.
 local addonName, ns = ...
 local Style = ns.Style
 local C = Style.C
@@ -35,11 +35,6 @@ local function build()
   f:SetFrameStrata("HIGH")
   f:EnableMouse(false)
   Style.Frame(f)
-  -- Stripe i varselets farge, rett innenfor kanten øverst
-  f.stripe = f:CreateTexture(nil, "ARTWORK")
-  f.stripe:SetPoint("TOPLEFT", f, "TOPLEFT", 4, -4)
-  f.stripe:SetPoint("TOPRIGHT", f, "TOPRIGHT", -4, -4)
-  f.stripe:SetHeight(2)
   title = f:CreateFontString(nil, "OVERLAY")
   if not title:SetFont(Style.FONT_HEAD, 13, "") then title:SetFontObject(GameFontNormal) end
   title:SetPoint("TOP", f, "TOP", 0, -16)
@@ -84,8 +79,6 @@ function Alert.Show(where, d)
     text = table.concat(parts, colored(ns.L.SEP, C.help))
   end
   main:SetText(text)
-  local c = SEVC[d.sev] or C.text
-  f.stripe:SetColorTexture(c[1], c[2], c[3], 1)
   f:SetWidth(math.max(MINW, math.ceil(math.max(width(title), width(main))) + 2 * PADX))
   Alert.sev = d.sev
   shownAt, hold = GetTime(), HOLD[d.sev] or 4
