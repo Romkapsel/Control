@@ -158,6 +158,7 @@ end
 
 function Actions.Wheel(e, delta, step)
   if InCombatLockdown() or not (e.type == "buffitem" or e.type == "item") then return end
+  if e.cat == "gear" then return end -- utstyr: du har det eller ikke; antallet er alltid 1 (Daniel 5. okt)
   e.want = math.max(1, math.min(999, (e.want or 1) + (delta > 0 and step or -step)))
   ns.Refresh(false)
 end

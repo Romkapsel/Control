@@ -317,7 +317,7 @@ function EB.Paint(b, e, st, L, frozen)
       b.band:Show()
       b.bandText:SetText(R.stockText(count, want))
       grey = true
-    else
+    elseif e.cat ~= "gear" then -- utstyr du har: ingen «1» (det er bare med eller ikke)
       b.time:SetText(R.stockText(count, want))
     end
     drain = 1 - math.min(1, count / want)
@@ -502,7 +502,7 @@ function EB.ShowTooltip(b)
   GameTooltip:AddLine(line, 1, 1, 1)
   if action ~= "" then GameTooltip:AddLine(action, actColor[1], actColor[2], actColor[3]) end
   local h = C.help
-  if e.type == "buffitem" or e.type == "item" then GameTooltip:AddLine(L.TIP_WHEEL, h[1], h[2], h[3]) end
+  if (e.type == "buffitem" or e.type == "item") and e.cat ~= "gear" then GameTooltip:AddLine(L.TIP_WHEEL, h[1], h[2], h[3]) end
   GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_2 or L.TIER_1), h[1], h[2], h[3])
   if b.inMenu then GameTooltip:AddLine(e.tier == 1 and L.TIER_1_HINT or L.TIER_2_HINT, h[1], h[2], h[3]) end
   if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end

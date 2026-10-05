@@ -31,4 +31,20 @@ local order = {}
 for _, b in ipairs(ns.Menu.host.buttons) do order[#order + 1] = b.entry.cat end
 eq(table.concat(order, ","), "buffs,flasks,food,potions,bandages,gear", "menyen: Buffer, Flasks, Mat, Potions, Bandasjer, Utstyr")
 
+-- Utstyr: musehjulet gjør ingenting, og «1» står ikke på knappen
+T.counts[2000] = 1
+ns.Refresh(false)
+local robe
+for _, b in ipairs(ns.Menu.host.buttons) do if b.entry.cat == "gear" then robe = b end end
+robe.scripts.OnMouseWheel(robe, 1)
+eq(robe.entry.want or 1, 1, "hjul på utstyr: fortsatt 1")
+eq(robe.time.text, "", "utstyr du har: ingen «1»")
+robe.scripts.hookOnEnter(robe)
+local wheel = false
+for _, l in ipairs(T.tooltip.lines) do if l:find("Hjul", 1, true) then wheel = true end end
+check(not wheel, "tooltip sier ikke noe om hjulet")
+T.counts[2000] = 0
+ns.Refresh(false)
+check(robe.bandText.text == "0/1", "utstyr som mangler: 0/1")
+
 return n, fails
