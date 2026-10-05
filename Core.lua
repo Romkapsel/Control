@@ -127,8 +127,11 @@ function Core.Resolve(kind, id)
   -- Buffting bare for eliksir, flask, scroll og mat som gir «Well Fed». Potions, bandasjer og healthstones har
   -- også en bruk-effekt, men gir ingen buff å vente på: de er lagerting (Daniel 4. okt, en potion som ble rød).
   local isFood = classID == 0 and subClassID == 5 and ns.Scan.TooltipHas(id, wellFedName())
-  local givesBuff = spell and classID == 0 and (ns.Data.BUFF_SUBCLASS[subClassID] or isFood)
+  -- Gift, olje, slipestein (Daniel 5. okt): har en bruk-effekt og nevner våpenet i tooltipen, og er ikke selv utstyr
+  local isWeapon = spell ~= nil and classID ~= 2 and classID ~= 4 and ns.Scan.TooltipHas(id, "weapon")
+  local givesBuff = spell and (isWeapon or (classID == 0 and (ns.Data.BUFF_SUBCLASS[subClassID] or isFood)))
   return { kind = "item", itemId = id, itemName = name, itemSpell = givesBuff and spell or nil, isFood = isFood,
+           isWeapon = isWeapon,
            isScroll = givesBuff and subClassID == 4 or false,
            wellFed = wellFedName(), count = ns.Scan.ItemCount(id) }
 end
@@ -198,6 +201,25 @@ function Actions.Move(e, targetId)
   ns.Refresh(false)
 end
 
+-- Gift/olje på våpnet: første gang hovedhånda; samme ting en gang til, med et våpen i annen hånd: annen hånd.
+-- Gir tilbake den eksisterende oppføringen når begge er tatt (eller annen hånd ikke har noe våpen).
+local function weaponSlot(list, info)
+  local has = {}
+  for _, e in ipairs(list) do if e.itemId == info.itemId and e.weaponSlot then has[e.weaponSlot] = e end end
+  if not has[16] then return 16 end
+  if not has[17] and ns.Scan.OffHandWeapon() then return 17 end
+  return nil, has[17] or has[16]
+end
+
+local function findDuplicate(list, info)
+  if info.isWeapon then
+    local slot, dup = weaponSlot(list, info)
+    info.weaponSlot = slot
+    return dup
+  end
+  return ns.Data.FindDuplicate(list, info)
+end
+
 function ns.AddFromCursor()
   if InCombatLockdown() then return end -- som å slippe på sidemenyene: ikke i kamp
   local kind, a, _, d = GetCursorInfo()
@@ -212,7 +234,7 @@ function ns.AddFromCursor()
   end
   ClearCursor()
   if not info then return Say(ns.L.NOT_KNOWN) end
-  local dup = ns.Data.FindDuplicate(ns.db.self, info)
+  local dup = findDuplicate(ns.db.self, info)
   if dup then return Say(string.format(ns.L.DUPLICATE, dup.name)) end
   local e = ns.Data.MakeEntry(ns.db, info, 1)
   table.insert(ns.db.self, e)
@@ -243,7 +265,7 @@ function Actions.DropOn(party, tier)
   ClearCursor()
   if not info then return Say(ns.L.NOT_KNOWN) end
   local list = party and ns.db.party or ns.db.self
-  local dup = ns.Data.FindDuplicate(list, info)
+  local dup = party and ns.Data.FindDuplicate(list, info) or findDuplicate(list, info)
   if dup then return Say(string.format(ns.L.DUPLICATE, dup.name)) end
   local e = party and ns.Data.MakePartyEntry(ns.db, info) or ns.Data.MakeEntry(ns.db, info, tier or 2)
   e.tier = tier or 2

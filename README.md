@@ -37,6 +37,9 @@ Ny versjon: slett den gamle `Control`-mappa, pakk ut den nye, og start spillet p
 Det som kan legges til:
 - spells du kaster på deg selv (Mark of the Wild, Arcane Intellect …)
 - eliksirer, flasks, scrolls og mat som gir «Well Fed» – addonen ser om buffen er på og hvor mange du har
+- **gift, våpenoljer og slipesteiner** – knappen legger dem rett på våpenet (MH = hovedhånda). Dra den samme en gang
+  til med et våpen i annen hånd, så får du en knapp for den også (OH). Har våpenet noe på seg fra før, spør spillet
+  om du vil bytte
 - andre ting du vil ha med deg (bandasjer, potions, reagenser) – addonen passer på antallet
 
 ## Knappene

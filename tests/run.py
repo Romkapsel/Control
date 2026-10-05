@@ -172,6 +172,11 @@ function GetBuildInfo() return "1.60.1", "70205", "Oct 2 2026", 16001 end
 function GetRealZoneText() return S(T.zone or "Stormwind City") end
 function UnitFactionGroup() return "Alliance", "Alliance" end
 function UnitOnTaxi() return T.onTaxi or false end
+function GetWeaponEnchantInfo()
+  local w = T.wench or {}
+  return S(w.mh ~= nil), S(w.mh), S(w.mhCharges or 0), S(0), S(w.oh ~= nil), S(w.oh), S(0), S(0)
+end
+function GetInventoryItemID(unit, slot) return T.equip and T.equip[slot] end
 function GetInventoryItemDurability(slot) local d = T.dura and T.dura[slot] if d then return d[1], d[2] end end
 function UnitHealth() return S(T.hp or 800) end
 function UnitHealthMax() return S(1000) end

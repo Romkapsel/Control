@@ -159,9 +159,12 @@ Scan.confirmed = {}  -- id → { at, expires, waiting } fra Track.lua: et trykk 
 local function hasBuff(e) return e.type == "spell" or e.type == "buffitem" end
 
 -- Et bekreftet trykk (Track.lua): buffen regnes som på fra nå, med full varighet hvis vi kjenner den.
+local function weaponKey(e) return "weapon:" .. tostring(e.castName or e.name) end
+
 function Scan.Confirm(e, durations)
   local d
   for _, n in ipairs(e.auraNames or {}) do d = d or durations[n] end
+  if e.weaponSlot then d = durations[weaponKey(e)] or 1800 end
   local t = now()
   seen[e.id] = true
   expires[e.id] = d and (t + d) or math.huge
@@ -173,17 +176,30 @@ end
 function Scan.State(db, auras)
   local st, t = {}, now()
   local durations = db.durations
+  local weapons = Scan.WeaponEnchants()
   for _, e in ipairs(db.self or {}) do
     local s = {}
     if e.itemId then s.count = Scan.ItemCount(e.itemId) or (lastStatus[e.id] and lastStatus[e.id].count) or 0 end
     if hasBuff(e) then
       local conf = Scan.confirmed[e.id]
-      if auras then
+      -- Gift/olje/slipestein: «buffen» er forsterkningen på våpenet, ikke en aura
+      local readable = auras ~= nil
+      if e.weaponSlot then readable = weapons ~= nil end
+      if readable then
         local best
-        for _, n in ipairs(e.auraNames or { e.name }) do
-          local a = auras[n]
-          if a and (not best or a.expires > best.expires) then best = a end
-          if a and a.duration and a.duration > 0 then durations[n] = a.duration end
+        if e.weaponSlot then
+          local w = weapons[e.weaponSlot]
+          if w then
+            local key = weaponKey(e)
+            durations[key] = math.max(durations[key] or 0, w.left) -- varigheten: det lengste vi har sett
+            best = { expires = w.expires, duration = durations[key] }
+          end
+        else
+          for _, n in ipairs(e.auraNames or { e.name }) do
+            local a = auras[n]
+            if a and (not best or a.expires > best.expires) then best = a end
+            if a and a.duration and a.duration > 0 then durations[n] = a.duration end
+          end
         end
         if best then
           seen[e.id] = true
@@ -201,7 +217,7 @@ function Scan.State(db, auras)
       local left
       if exp then left = (exp == math.huge) and math.huge or (exp - t) end
       if left and left <= 0 then left = nil end
-      if not auras and not exp and lastStatus[e.id] and lastStatus[e.id].status then
+      if not readable and not exp and lastStatus[e.id] and lastStatus[e.id].status then
         s.status = lastStatus[e.id].status -- hemmelig og ingenting å telle fra: som sist
       else
         s.status = ns.Rules.auraStatus(left, seen[e.id])
@@ -209,6 +225,7 @@ function Scan.State(db, auras)
       s.left = left
       if not s.duration then
         for _, n in ipairs(e.auraNames or {}) do s.duration = s.duration or durations[n] end
+        if e.weaponSlot then s.duration = durations[weaponKey(e)] end
       end
     end
     lastStatus[e.id] = s
@@ -373,6 +390,34 @@ function Scan.GossipHasTaxi()
     end
   end
   return found, seen
+end
+
+-- Midlertidige forsterkninger på våpnene (gift, olje, slipestein – Daniel 5. okt). Spillet sier om hovedhånda (16)
+-- og annen hånd (17) har en, og hvor mange millisekunder den varer. nil = kan ikke leses nå (hemmelig i kamp?).
+function Scan.WeaponEnchants()
+  if not GetWeaponEnchantInfo then return nil end
+  local r = { pcall(GetWeaponEnchantInfo) }
+  if not r[1] then return nil end
+  local hasMH, mhMs, hasOH, ohMs = r[2], r[3], r[6], r[7]
+  if isSecret(hasMH) or isSecret(mhMs) or isSecret(hasOH) or isSecret(ohMs) then return nil end
+  local t = now()
+  local function one(has, ms)
+    if not has then return false end
+    local left = (type(ms) == "number" and ms or 0) / 1000
+    return { expires = t + left, left = left }
+  end
+  return { [16] = one(hasMH, mhMs), [17] = one(hasOH, ohMs) }
+end
+
+-- Har du et våpen i annen hånd (ikke skjold eller noe du holder)? Da kan en gift/olje ha en egen knapp for den.
+function Scan.OffHandWeapon()
+  local ok, id = pcall(GetInventoryItemID, "player", 17)
+  if not ok or isSecret(id) or type(id) ~= "number" then return false end
+  local okI, _, _, _, _, _, classID = pcall(function()
+    if C_Item and C_Item.GetItemInfoInstant then return C_Item.GetItemInfoInstant(id) end
+    return GetItemInfoInstant(id)
+  end)
+  return okI and classID == 2
 end
 
 -- Dårligste utstyr i prosent (0 = ødelagt). nil = ingenting med holdbarhet, eller kan ikke leses.

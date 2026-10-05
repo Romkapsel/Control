@@ -305,6 +305,14 @@ local function scanVitals()
     end)
     r.barAcceptsHealth = okS
   end
+  -- Våpenet: gift/olje/slipestein (GetWeaponEnchantInfo) – hemmelig i kamp?
+  if GetWeaponEnchantInfo then
+    local w = { pcall(GetWeaponEnchantInfo) }
+    r.weapon = w[1] and { hasMH = safe(w[2]), mhMs = safe(w[3]), mhCharges = safe(w[4]), hasOH = safe(w[6]), ohMs = safe(w[7]) }
+      or "<feil>"
+  else
+    r.weapon = "<finnes ikke>"
+  end
   -- Potions: antall og cooldown
   r.potions = {}
   local getCD = (C_Container and C_Container.GetItemCooldown) or GetItemCooldown

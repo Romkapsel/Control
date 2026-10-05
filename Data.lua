@@ -115,8 +115,9 @@ function Data.MakeEntry(db, info, tier)
   elseif info.itemSpell then
     e.type, e.itemId, e.name = "buffitem", info.itemId, info.itemName
     e.castName = info.itemSpell
+    e.weaponSlot = info.weaponSlot -- gift/olje/slipestein: 16 hovedhånda, 17 annen hånd
     local aura = info.isFood and (info.wellFed or "Well Fed") or info.itemSpell
-    e.auraNames = { aura }
+    e.auraNames = info.weaponSlot and {} or { aura } -- våpenting leses fra våpenet, ikke fra auraene
     e.want = math.max(1, info.want or 1) -- standard 1: varsler bare når du er tom (Daniel 4. okt)
     e.short = info.isFood and Data.ShortName(aura) or nil
   else
@@ -133,7 +134,7 @@ Data.BUFF_SUBCLASS = { [2] = true, [3] = true, [4] = true }
 -- Rett opp type på ting som ligger på lista (buffting ↔ lagerting), f.eks. en potion som ble lagt inn som buffting.
 function Data.Reclassify(db, resolve)
   for _, e in ipairs(db.self or {}) do
-    if e.itemId and (e.type == "buffitem" or e.type == "item") then
+    if e.itemId and not e.weaponSlot and (e.type == "buffitem" or e.type == "item") then
       local info = resolve("item", e.itemId)
       if info then
         if info.itemSpell and e.type == "item" then

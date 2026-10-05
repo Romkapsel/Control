@@ -109,6 +109,11 @@ ns.L = {
   TIP_HAVE = "%d av %d",
   TIP_CAST_SELF = "Klikk: kast",
   TIP_USE = "Klikk: bruk",
+  TIP_USE_WEAPON = "Klikk: på %s",
+  HAND_MAIN = "MH",
+  HAND_OFF = "OH",
+  HAND_MAIN_NAME = "hovedhånda",
+  HAND_OFF_NAME = "annen hånd",
   TIP_NONE_IN_BAG = "Tom",
 
   -- Legge til (fase 3: slipp på medaljongen)

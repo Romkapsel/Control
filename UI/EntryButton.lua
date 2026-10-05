@@ -126,6 +126,11 @@ function EB.Create(parent)
   font(b.big, 15, true)
   b.big:SetPoint("CENTER", b, "CENTER", 0, 0)
   b.big:SetWordWrap(false)
+  -- MH/OH øverst til venstre på gift og olje: hvilken hånd knappen gjelder
+  b.hand = b:CreateFontString(nil, "OVERLAY")
+  font(b.hand, 9)
+  b.hand:SetPoint("TOPLEFT", b, "TOPLEFT", 3, -3)
+  b.hand:SetTextColor(C.text[1], C.text[2], C.text[3])
   b.stock = b:CreateFontString(nil, "OVERLAY")
   font(b.stock, 10)
   b.stock:SetPoint("TOPRIGHT", b, "TOPRIGHT", -2, -2)
@@ -254,6 +259,13 @@ function EB.Bind(b, e, st)
     b:SetAttribute("spell", e.name) -- etter navn: kaster høyeste rank (fase 0, V5)
     b:SetAttribute("unit", "player")
     b:SetAttribute("item", nil)
+  elseif e.type == "buffitem" and e.weaponSlot then
+    -- Gift/olje/slipestein: bruk tingen, og bruk så våpenet (som spillernes egen makro)
+    b:SetAttribute("type", "macro")
+    b:SetAttribute("macrotext", "/use item:" .. e.itemId .. "\n/use " .. e.weaponSlot)
+    b:SetAttribute("item", nil)
+    b:SetAttribute("spell", nil)
+    b:SetAttribute("unit", nil)
   elseif e.type == "buffitem" then
     b:SetAttribute("type", "item")
     b:SetAttribute("item", "item:" .. e.itemId)
@@ -281,6 +293,7 @@ function EB.Paint(b, e, st, L, frozen)
   local drain, grey, glow = 0, false, false
   local party = R.isParty(e)
   EB.Squares(b, party and st.members or nil)
+  b.hand:SetText(e.weaponSlot == 16 and L.HAND_MAIN or e.weaponSlot == 17 and L.HAND_OFF or "")
 
   if party then
     glow = R.canPress(e, st) -- gløder når noen mangler (SPEC §7.5) og det er noe å gi dem
@@ -469,7 +482,8 @@ function EB.ShowTooltip(b)
     if e.type == "buffitem" then
       line = line .. string.format(L.TIP_IN_BAG, st.count or 0, e.want or 1)
       if (st.count or 0) > 0 then
-        action = L.TIP_USE
+        action = e.weaponSlot and string.format(L.TIP_USE_WEAPON, e.weaponSlot == 17 and L.HAND_OFF_NAME or L.HAND_MAIN_NAME)
+          or L.TIP_USE
       else
         action, actColor = L.TIP_NONE_IN_BAG, C.help
       end
