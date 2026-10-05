@@ -171,6 +171,25 @@ check(ns.view.ring == 2 or ns.view.ring == 1, "ringen viser fortsatt at noe mang
 Menu.countButton.scripts.OnClick(Menu.countButton)
 check(ControlCharDB.ui.showCount == true and Menu.countButton.text == "På" and cnt.alpha > 0, "På igjen: tallet er tilbake")
 
+-- I kamp: Tall i midten virker, resten er synlig grått med «Ikke i kamp.»
+T.combat = true
+Fire("PLAYER_REGEN_DISABLED")
+check(Menu.swapButton.alpha == 0.4 and Menu.cityButton.alpha == 0.4, "i kamp: Bytt side og Legg til er grå")
+check(Menu.countButton.alpha == 1, "i kamp: Tall i midten er ikke grå")
+check(Menu.slider.alpha == 0.4 and Menu.slider.mouseEnabled == false, "i kamp: Størrelse er grå og tar ikke musa")
+Menu.swapButton.scripts.OnEnter(Menu.swapButton)
+eq(T.tooltip.text, "Ikke i kamp.", "tooltip på en grå knapp")
+local side = ControlCharDB.ui.partySide
+Menu.swapButton.scripts.OnClick(Menu.swapButton)
+eq(ControlCharDB.ui.partySide, side, "Bytt side gjør ingenting i kamp")
+Menu.countButton.scripts.OnClick(Menu.countButton)
+check(ControlCharDB.ui.showCount == false and Menu.countButton.text == "Av" and cnt.alpha == 0, "i kamp: Tall i midten slås av med en gang")
+Menu.countButton.scripts.OnClick(Menu.countButton)
+check(ControlCharDB.ui.showCount == true and Menu.countButton.text == "På", "... og på igjen")
+T.combat = false
+Fire("PLAYER_REGEN_ENABLED")
+check(Menu.swapButton.alpha == 1 and Menu.slider.alpha == 1 and Menu.slider.mouseEnabled == true, "etter kampen: alt er tilbake")
+
 -- Størrelse: bare medaljongen vokser; knappene og menyen flytter seg utover
 local sl = Menu.slider
 eq(sl:GetValue(), 100, "slideren står på 100 %")

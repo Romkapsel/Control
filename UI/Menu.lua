@@ -28,6 +28,7 @@ local PER_LINE = 6 -- regnes ut i Layout
 local db, L, root
 local frame
 local pools = {}
+local dimForCombat -- defineres lenger ned (før Menu.Paint), brukes også i Layout
 local y = 0
 
 -- Kallbakker fra Core (handlingene ligger der)
@@ -159,7 +160,10 @@ local function makeAction()
   b:SetScript("OnClick", function(self)
     if self.enabled and self.onClick and (self.allowCombat or not InCombatLockdown()) then self.onClick() end
   end)
-  b:SetScript("OnEnter", function(self) if self.tip then tooltip(self, self.tip) end end)
+  b:SetScript("OnEnter", function(self)
+    if InCombatLockdown() and not self.allowCombat then return tooltip(self, L.NOT_IN_COMBAT) end
+    if self.tip then tooltip(self, self.tip) end
+  end)
   b:SetScript("OnLeave", function() GameTooltip:Hide() end)
   return b
 end
@@ -538,7 +542,14 @@ local function countRow()
   local x0 = math.floor((W - (tw + 14 + 52)) / 2) -- tekst og knapp som én midtstilt gruppe
   place(t, x0, y + 4)
   Menu.countText = t
-  local a = action(on and L.ON or L.OFF, true, nil, function() if Menu.onToggleCount then Menu.onToggleCount() end end, 52)
+  local a
+  a = action(on and L.ON or L.OFF, true, nil, function()
+    if Menu.onToggleCount then Menu.onToggleCount() end
+    local now = db.ui.showCount ~= false and L.ON or L.OFF
+    a.fs:SetText(now)
+    a.text = now
+  end, 52)
+  a.allowCombat = true -- endrer bare tallet i medaljongen
   place(a, x0 + tw + 14, y)
   Menu.countButton = a
   y = y + 22 + G
@@ -688,12 +699,41 @@ function Menu.Layout(model, members, sideOpen)
   end
   frame:SetHeight(y + 4)
   anchor(sideOpen)
+  if Menu.combatDimmed then dimForCombat(false) end
   return true
 end
 
 -- I kamp: bare utseendet på knappene (tider, lager, glød)
+-- Det som ikke virker i kamp (Bytt side, Størrelse, Byvakt, navnene, å folde delene), blir grått så lenge kampen
+-- varer (Daniel 5. okt: «man kan ikke endre på menyen under combat» – det så bare ut som om ingenting skjedde).
+-- Tall i midten og Avstandstest virker. Utenfor kamp setter Layout alt tilbake.
+dimForCombat = function(combat)
+  local dim = combat and 0.4 or 1
+  for kind, p in pairs(pools) do
+    for i = 1, p.n do
+      local it = p.items[i]
+      if kind == "action" then
+        if combat and not it.allowCombat then it:SetAlpha(0.4) elseif not combat then it:SetAlpha(it.enabled and 1 or 0.5) end
+      elseif kind == "link" or kind == "cityrow" then
+        it:SetAlpha(dim)
+      elseif kind == "head" then
+        it.pm:SetAlpha(dim)
+      end
+    end
+  end
+  local s = Menu.slider
+  if s then
+    s:SetAlpha(dim)
+    s.label:SetAlpha(dim)
+    s:EnableMouse(not combat)
+  end
+  Menu.combatDimmed = combat
+end
+
 function Menu.Paint(model)
   if not frame or not frame:IsShown() then return end
+  local combat = InCombatLockdown() and true or false
+  if combat ~= (Menu.combatDimmed or false) then dimForCombat(combat) end
   local byId = {}
   for _, e in ipairs(model.self) do byId[e.id] = e end
   for _, e in ipairs(model.party) do byId[e.id] = e end

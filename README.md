@@ -86,7 +86,7 @@ dra et sted ut av lista for å fjerne det.
 ## I kamp
 
 - Knappene virker. Klikker du en knapp ved medaljongen, forsvinner den med en gang.
-- Sidemenyene og menyen kan åpnes og lukkes.
+- Sidemenyene og menyen kan åpnes og lukkes. I menyen virker **Tall i midten**; det andre er grått til kampen er over.
 - To sverd låses bak medaljongen så lenge kampen varer.
 - Spillet lar deg ikke flytte medaljongen eller legge til/fjerne ting i kamp.
 
