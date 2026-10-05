@@ -66,7 +66,7 @@ function Data.CategoryOf(e, classID, subClassID)
     if subClassID == 2 or subClassID == 3 then return "flasks" end
     if subClassID == 4 then return "scrolls" end
     if subClassID == 5 then return "food" end
-    if subClassID == 6 then return "weapon" end
+    if subClassID == 6 then return "weapon" end -- Utbedring (Item Enhancements), også armor kits
     if subClassID == 7 then return "bandages" end
   end
   return "other"

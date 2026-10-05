@@ -33,7 +33,7 @@ Ny versjon: slett den gamle `Control`-mappa, pakk ut den nye, og start spillet p
   Mangler noe du må ha, er ringen rød.
 - **Fint å ha:** står bare i sidemenyen; ringen blir oransje.
 - Høyreklikk en knapp for å bytte mellom «Må ha» og «Fint å ha». «Må ha» varsles tydelig, «Fint å ha» diskret.
-- I menyen står alt sortert i **kategorier**: Buffer, Flasks og eliksirer, Mat og drikke, Potions, Våpen, Scrolls,
+- I menyen står alt sortert i **kategorier**: Buffer, Flasks og eliksirer, Mat og drikke, Potions, Utbedring, Scrolls,
   Bandasjer, Utstyr og Annet.
 - **Ting du bare skal ha med** (utstyr, bandasjer, potions, reagenser) står i sidemenyen bare når de mangler eller er
   under antallet – med rød eller oransje ramme. Er alt med, er de borte derfra. Menyen viser alltid alt.
