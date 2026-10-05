@@ -123,4 +123,12 @@ check(p[1] == "CENTER" and p[5] == 200 and Chat("Tilbakestilt."), "/control null
 SlashCmdList.CONTROL("")
 check(Chat("/control test"), "hjelpetekst")
 
+-- Optisk midt: «1» flyttes litt til venstre, andre tall står i midten
+local cnt = M.State().parts.count
+M.Update({ count = 1, ring = 2, allOk = false })
+check(cnt.text == "1" and cnt.points[1][4] == -1.5 and cnt.points[1][5] == 0, "«1»: 1,5 px til venstre")
+M.Update({ count = 7, ring = 2, allOk = false })
+check(cnt.points[1][4] == 0, "«7»: i midten")
+M.Update({ count = 12, ring = 2, allOk = false })
+eq(cnt.points[1][4], -1, "«12»: 1 px til venstre")
 return n, fails

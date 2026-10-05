@@ -518,7 +518,17 @@ end
 -- view fra Rules.render
 function M.Update(newView)
   view = newView
-  parts.count:SetText(newView.allOk and "" or tostring(newView.count))
+  local txt = newView.allOk and "" or tostring(newView.count)
+  parts.count:SetText(txt)
+  -- Optisk midt (Daniel 5. okt): «1» i Friz Quadrata har flagg til venstre og bred fot, så streken – det øyet
+  -- leser som tallet – står ca. 2 px til høyre for midten. Flytt den inn. (I medaljongens egne enheter: følger størrelsen.)
+  local dx = 0
+  if txt == "1" then dx = -1.5 elseif txt:sub(1, 1) == "1" then dx = -1 end
+  if dx ~= parts.count.dx then
+    parts.count.dx = dx
+    parts.count:ClearAllPoints()
+    parts.count:SetPoint("CENTER", face, "CENTER", dx, 0)
+  end
   local c = Style.RING[newView.ring] or Style.RING[0]
   animate("ringR", c[1], 0.3)
   animate("ringG", c[2], 0.3)
