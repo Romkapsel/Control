@@ -158,6 +158,16 @@ ns.L = {
   SET_CREATED = "Nytt sett: %s.",
   SET_DELETED = "%s er slettet.",
   SET_BAD_NAME = "Settet trenger et navn som ikke er brukt.",
+  SET_STATUS = "Sett: %s",
+  -- Utstyret i settet
+  GEAR_ON_LABEL = "Utstyr på",
+  EQUIP_BUTTON = "Ta på",
+  EQUIP_TIP = "Ta på utstyret i settet (%d ting).",
+  EQUIP_TIP_ON = "Alt utstyret i settet er på.",
+  EQUIP_TIP_MISSING = "Det som mangler, er ikke i baggen.",
+  EQUIP_DONE = "Tar på: %s.",
+  EQUIP_ALL_ON = "Utstyret i %s er på.",
+  EQUIP_MISSING = "Ikke i baggen: %s.",
   TIP_DRAG = "Shift + dra: flytt eller fjern",
 
   -- Gruppebuffer (fase 5, SPEC §7.7)

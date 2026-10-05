@@ -112,6 +112,34 @@ function Scan.ItemInfo(id)
   return name, spell, classID, subClassID
 end
 
+-- Utstyret du har på: [plass] = itemId (plass 1–19)
+function Scan.Equipped()
+  local out = {}
+  if not GetInventoryItemID then return out end
+  for slot = 1, 19 do
+    local ok, id = pcall(GetInventoryItemID, "player", slot)
+    if ok and not isSecret(id) and type(id) == "number" then out[slot] = id end
+  end
+  return out
+end
+
+-- Hvor tingen sitter (INVTYPE_FINGER, INVTYPE_TRINKET, INVTYPE_WEAPON …)
+function Scan.EquipLoc(id)
+  local ok, _, _, _, loc = pcall(function()
+    if C_Item and C_Item.GetItemInfoInstant then return C_Item.GetItemInfoInstant(id) end
+    return GetItemInfoInstant(id)
+  end)
+  if ok and not isSecret(loc) and type(loc) == "string" then return loc end
+  return nil
+end
+
+-- Ta på en ting (bare utenfor kamp); slot = hvilken av to plasser for ringer, trinkets og enhånds våpen
+function Scan.Equip(id, slot)
+  local f = (C_Item and C_Item.EquipItemByName) or EquipItemByName
+  if not f then return false end
+  return (pcall(f, id, slot))
+end
+
 -- Står «Well Fed» i itemets tooltip? (Ikke all mat gir buffen; vanlig brød og vann gjør det ikke.)
 function Scan.TooltipHas(id, text)
   if not (C_TooltipInfo and C_TooltipInfo.GetItemByID) or not text then return false end

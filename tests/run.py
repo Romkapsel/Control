@@ -180,6 +180,12 @@ function GetWeaponEnchantInfo()
   return S(w.mh ~= nil), S(w.mh), S(w.mhCharges or 0), S(0), S(w.oh ~= nil), S(w.oh), S(0), S(0)
 end
 function GetInventoryItemID(unit, slot) return T.equip and T.equip[slot] end
+function EquipItemByName(id, slot)
+  T.equipCalls = T.equipCalls or {}
+  table.insert(T.equipCalls, { id = id, slot = slot })
+  T.equip = T.equip or {}
+  T.equip[slot or (T.slotOf and T.slotOf[id]) or 5] = id
+end
 function GetInventoryItemDurability(slot) local d = T.dura and T.dura[slot] if d then return d[1], d[2] end end
 function UnitHealth() return S(T.hp or 800) end
 function UnitHealthMax() return S(1000) end
@@ -237,7 +243,7 @@ end }
 C_Item = { GetItemCount = function(id) local c = T.counts[id] or 0 if T.secretItems then return SECRET end return c end,
            GetItemSpell = function(id) local s = T.itemSpells[id] if s then return S(s[1]), S(s[2]) end end,
            GetItemNameByID = function(id) return T.itemNames[id] end,
-           GetItemInfoInstant = function(id) local c = T.itemClass[id] or {} return id, "", "", "", 100 + id, c[1], c[2] end,
+           GetItemInfoInstant = function(id) local c = T.itemClass[id] or {} return id, "", "", c[3] or "", 100 + id, c[1], c[2] end,
            GetItemIconByID = function(id) return 100 + id end }
 Enum = { SpellBookSpellBank = { Player = 0 } }
 local BOOK = { { name = "Mark of the Wild", subName = "Rank 3", spellID = 5232 }, { name = "Wrath", spellID = 5176 },

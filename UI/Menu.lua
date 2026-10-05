@@ -43,6 +43,7 @@ Menu.onScale = nil
 Menu.onToggleCount = nil -- tallet i midten av medaljongen av/på
 Menu.onToggleOpenCore = nil -- gjennomsiktig midte av/på
 Menu.onUseSet, Menu.onNewSet, Menu.onEditSet = nil, nil, nil -- sett: bytt, nytt, nytt navn/slett
+Menu.onEquip, Menu.gearPlan = nil, nil -- «Ta på» ved Utstyr
 Menu.onToggleCityCheck = nil -- (key): reparasjon/bagplass i byvakta av/på    -- (skala 0,70–1,50): settes når du slipper slideren
 
 ------------------------------------------------------------------------
@@ -249,6 +250,7 @@ end
 -- på knappen (høyreklikk bytter).
 local function rows(list, isParty, st)
   local host = Menu.host
+  if not isParty then Menu.equipButton = nil end
   local per = math.floor((W - 2 * PAD + GAP) / (BTN + GAP))
   local byCat = {}
   for _, e in ipairs(list) do
@@ -276,8 +278,20 @@ local function rows(list, isParty, st)
     local items = byCat[cat]
     if items then
       local label = text(L["CAT_" .. cat:upper()], C.help, 11)
-      place(label, PAD, y)
-      y = y + TEXTH
+      if cat == "gear" and not isParty and Menu.gearPlan then
+        -- «Ta på» til høyre for overskriften: tar på utstyret i settet (grå når alt er på)
+        local plan = Menu.gearPlan()
+        local can = #plan.todo > 0
+        local tip = can and string.format(L.EQUIP_TIP, #plan.todo) or (#plan.missing > 0 and L.EQUIP_TIP_MISSING or L.EQUIP_TIP_ON)
+        local b = action(L.EQUIP_BUTTON, can, tip, function() if Menu.onEquip then Menu.onEquip() end end)
+        place(b, W - PAD - b:GetWidth(), y)
+        Menu.equipButton = b
+        place(label, PAD, y + 4)
+        y = y + 22 + 2
+      else
+        place(label, PAD, y)
+        y = y + TEXTH
+      end
       for i, e in ipairs(items) do
         local col, line = (i - 1) % per, math.floor((i - 1) / per)
         button(e, PAD + col * (BTN + GAP), y + line * (BTN + GAP))

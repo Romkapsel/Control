@@ -55,6 +55,11 @@ ting og sin egen «Må ha». Party-buffene er felles.
 - **«+»** lager et nytt sett. Det starter som en kopi av settet du står i – så endrer du det du vil.
 - **Høyreklikk** et sett for å gi det nytt navn eller slette det. Det siste settet kan ikke slettes.
 - Har du mer enn ett sett, står navnet i sidemenyen: «Meg · Healing».
+- **Når du bytter sett**, kommer en beskjed (uten lyd): hva som mangler av det du skal ha med, om utstyret er reparert,
+  og hvor mye av utstyret i settet du har på («Utstyr på 4/6»). Grønt når alt er i orden.
+- **Ta på:** ved overskriften Utstyr i menyen står knappen «Ta på». Den tar på utstyret i settet du står i. Ringer,
+  trinkets og enhånds våpen havner på riktig plass – en ring fra settet som alt sitter på, får sitte. Grå når alt er på.
+  Ikke i kamp.
 - Sett kan ikke byttes i kamp.
 
 ## Knappene

@@ -346,6 +346,67 @@ function Actions.ToggleCityCheck(key)
   Core.Draw()
 end
 
+-- Utstyret i settet (kategorien Utstyr): hva som er på, hva som skal på (og på hvilken plass), hva som ikke finnes.
+-- Ringer, trinkets og enhånds våpen har to plasser: en ting fra settet som alt sitter på én av dem, får stå, og den
+-- neste går på den andre (ellers ville den andre ringen i settet tatt av den første).
+local PAIRS = { INVTYPE_FINGER = { 11, 12 }, INVTYPE_TRINKET = { 13, 14 }, INVTYPE_WEAPON = { 16, 17 } }
+function Core.GearPlan(list)
+  local worn = ns.Scan.Equipped()
+  local taken, rest, todo, missing, total = {}, {}, {}, {}, 0
+  for _, e in ipairs(list or {}) do
+    if e.cat == "gear" and e.itemId then
+      total = total + 1
+      local found
+      for slot = 1, 19 do
+        if worn[slot] == e.itemId and not taken[slot] then found = slot break end
+      end
+      if found then taken[found] = true else rest[#rest + 1] = e end
+    end
+  end
+  for _, e in ipairs(rest) do
+    if ns.Scan.ItemCount(e.itemId) == 0 then
+      missing[#missing + 1] = e
+    else
+      local pair, dst = PAIRS[ns.Scan.EquipLoc(e.itemId) or ""], nil
+      if pair then
+        for _, s in ipairs(pair) do if not taken[s] then dst = s break end end
+        if dst then taken[dst] = true end
+      end
+      todo[#todo + 1] = { e = e, slot = dst }
+    end
+  end
+  return { todo = todo, missing = missing, total = total, off = #todo + #missing }
+end
+
+local function names(list, get)
+  local out = {}
+  for _, x in ipairs(list) do out[#out + 1] = get(x).name or "?" end
+  return table.concat(out, ", ")
+end
+
+-- «Ta på» (Daniel 5. okt): utstyret i settet du står i. Spillet bytter én og én ting; menyen tegnes på nytt etterpå.
+function Actions.EquipSet()
+  if InCombatLockdown() then return Say(ns.L.NOT_IN_COMBAT) end
+  local plan = Core.GearPlan(ns.db.self)
+  for _, t in ipairs(plan.todo) do ns.Scan.Equip(t.e.itemId, t.slot) end
+  if #plan.todo > 0 then
+    Say(string.format(ns.L.EQUIP_DONE, names(plan.todo, function(t) return t.e end)))
+  elseif #plan.missing == 0 then
+    Say(string.format(ns.L.EQUIP_ALL_ON, ns.db.activeSet or ""))
+  end
+  if #plan.missing > 0 then
+    Say(string.format(ns.L.EQUIP_MISSING, names(plan.missing, function(e) return e end)))
+  end
+end
+
+-- Beskjed når du bytter sett (Daniel 5. okt): det samme som byvakta sier, pluss utstyr som ikke er på. Uten lyd.
+function Core.SetStatus(name)
+  local model = Core.Model()
+  local plan = Core.GearPlan(ns.db.self)
+  local extra = { repair = ns.Scan.Durability(), gearOff = #plan.todo, gearTotal = plan.total }
+  ns.Alert.Show(string.format(ns.L.SET_STATUS, name), ns.Rules.departure(model.self, model.st, ns.L, extra), true)
+end
+
 -- Sett: bytte, nytt, nytt navn, slette (ikke i kamp – knappene ville byttet midt i kampen)
 function Actions.UseSet(name)
   if InCombatLockdown() or name == ns.db.activeSet then return end
@@ -353,6 +414,7 @@ function Actions.UseSet(name)
     undo = nil -- «angre» gjelder settet du sto i
     Say(string.format(ns.L.SET_USED, name))
     ns.Refresh(true)
+    Core.SetStatus(name)
   end
 end
 
@@ -506,6 +568,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onUseSet = Actions.UseSet
     ns.Menu.onNewSet = Actions.AskNewSet
     ns.Menu.onEditSet = Actions.AskEditSet
+    ns.Menu.onEquip = Actions.EquipSet
+    ns.Menu.gearPlan = function() return Core.GearPlan(ns.db.self) end
     ns.Menu.onToggleCityCheck = Actions.ToggleCityCheck
     ns.Menu.onScale = Actions.SetScale
     ns.Medallion.isMenuOpen = ns.Menu.IsOpen
@@ -548,7 +612,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     for _, e in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
                          "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED",
                          "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "TAXIMAP_OPENED", "GOSSIP_SHOW",
-                         "TAXIMAP_CLOSED", "GOSSIP_CLOSED" }) do
+                         "TAXIMAP_CLOSED", "GOSSIP_CLOSED", "PLAYER_EQUIPMENT_CHANGED" }) do
       pcall(self.RegisterEvent, self, e)
     end
     C_Timer.NewTicker(0.25, function()

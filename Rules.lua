@@ -287,6 +287,11 @@ function Rules.departure(entries, st, L, extra)
   if bs > 0 then
     problems[#problems + 1] = { name = L.BAGS_LABEL, stock = tostring(extra.bags), sev = bs }
   end
+  -- Utstyr i settet som ikke er på (bare når du bytter sett): oransje, «Utstyr på 4/6»
+  if extra.gearOff and extra.gearOff > 0 and extra.gearTotal then
+    problems[#problems + 1] = { name = L.GEAR_ON_LABEL, stock = (extra.gearTotal - extra.gearOff) .. "/" .. extra.gearTotal,
+                                sev = SEV_WARN }
+  end
   for _, p in ipairs(problems) do sev = math.max(sev, p.sev) end
   for _, e in ipairs(entries or {}) do
     local s = Rules.stockSeverity(e, st[e.id])

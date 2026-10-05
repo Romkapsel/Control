@@ -66,7 +66,7 @@ local function playSound()
 end
 
 -- where = «Du forlater Stormwind City», d = Rules.departure(...)
-function Alert.Show(where, d)
+function Alert.Show(where, d, quiet)
   if not f then build() end
   title:SetText(where or "")
   local text
@@ -88,7 +88,7 @@ function Alert.Show(where, d)
   shownAt, hold = GetTime(), HOLD[d.sev] or 4
   f:SetAlpha(1)
   f:Show()
-  if d.sev == 2 then
+  if d.sev == 2 and not quiet then -- bytte sett: ingen «Watch it!», du står ikke ved porten
     playSound()
     Alert.sounds = (Alert.sounds or 0) + 1
   end
