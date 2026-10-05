@@ -24,7 +24,7 @@ end
 -- Tegning: tilstand → regler → UI (SPEC §17: én tegnerunde)
 ------------------------------------------------------------------------
 
-Core.sample = nil -- nil = ekte data; ellers indeks i Data.SAMPLES (/control test)
+Core.sample = nil -- nil = ekte data; ellers indeks i Data.SAMPLES (/ctrl test)
 local prevTray, auraCache, partyAuraCache
 local members = {}
 
@@ -482,11 +482,11 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
 end)
 
 ------------------------------------------------------------------------
--- Kommandoer: /control og /ctl
+-- Kommandoer: /ctrl (Daniel 5. okt: alltid /ctrl). /control virker fortsatt, men nevnes ikke noe sted.
 ------------------------------------------------------------------------
 
-SLASH_CONTROL1 = "/control"
-SLASH_CONTROL2 = "/ctl"
+SLASH_CONTROL1 = "/ctrl"
+SLASH_CONTROL2 = "/control"
 SlashCmdList.CONTROL = function(msg)
   -- Ikke lower() på hele teksten: den ødelegger «æøå» i noen klienter. Sammenlign råteksten også.
   local raw = (msg or ""):match("^%s*(.-)%s*$")

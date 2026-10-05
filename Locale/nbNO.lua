@@ -59,7 +59,7 @@ ns.L = {
   CITY_ADD = "Legg til",
   CITY_ALREADY = "Voktes allerede",
   CITY_ADDED = "%s voktes nå.",
-  CITY_REMOVED = "%s fjernet (/control angre).",
+  CITY_REMOVED = "%s fjernet (/ctrl angre).",
   DIR_SWAP = "Bytt side på gruppene",
   SCALE = "Størrelse",
   COUNT_LABEL = "Tall i midten",
@@ -68,7 +68,7 @@ ns.L = {
   OFF = "Av",
   SCALE_VALUE = "%d %%",
   SCALE_TIP = "Dra eller rull (70–150 %)",
-  -- Avstandstest (/control avstand)
+  -- Avstandstest (/ctrl avstand)
   RANGE_BUTTON = "Avstandstest",
   RANGE_TIP = "Lagrer hva spillet sier om avstanden til kompisene i partyet. Trykk nær og langt unna, i og utenfor kamp.",
   RANGE_ON = "Avstandstest er på: knappen står under Oppsett i menyen. Gjør /reload når du er ferdig.",
@@ -91,7 +91,7 @@ ns.L = {
   SAMPLE_ORANGE = "oransje (2 under ønsket eller snart ute)",
   SAMPLE_OK = "alt med",
   SAMPLE_EMPTY = "tom liste",
-  HELP = "/control test (bla i testdata) · /control varsel (se byvaktvarselet) · /control lås · /control nullstill · /control tøm · /control debug",
+  HELP = "/ctrl test (bla i testdata) · /ctrl varsel (se byvaktvarselet) · /ctrl lås · /ctrl nullstill · /ctrl tøm · /ctrl debug",
   MODE_LIVE = "dine egne buffer og ting",
 
   -- Tooltip (SPEC §7.7)
@@ -116,7 +116,7 @@ ns.L = {
   -- Sidemenyene (fase 4)
   ADDED_SIDE = "%s lagt til i tier II.",
   DRAG_REMOVE = "Slipp for å fjerne",
-  REMOVED = "%s fjernet (/control angre).",
+  REMOVED = "%s fjernet (/ctrl angre).",
   UNDO_NONE = "Ingenting å angre.",
   UNDONE = "%s er tilbake.",
   TIP_WHEEL = "Hjul: antall (Shift = 5)",

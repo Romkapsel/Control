@@ -71,13 +71,13 @@ slot(false, 1).mouse = true
 bm.scripts.OnDragStop(bm)
 slot(false, 1).mouse = false
 eq(motw.tier, 1, "dra til rad I: tier I")
--- Shift + dra ut av menyen: fjernet, og /control angre gir den tilbake
+-- Shift + dra ut av menyen: fjernet, og /ctrl angre gir den tilbake
 bm = Menu.host.buttons[2]
 check(bm.entry == motw, "MotW står sist i rad I")
 bm.scripts.OnDragStart(bm)
 Menu.frame.mouse = false
 bm.scripts.OnDragStop(bm)
-check(#ControlCharDB.self == 1 and Chat("Mark of the Wild fjernet (/control angre)."), "dra ut: fjernet")
+check(#ControlCharDB.self == 1 and Chat("Mark of the Wild fjernet (/ctrl angre)."), "dra ut: fjernet")
 SlashCmdList.CONTROL("angre")
 check(#ControlCharDB.self == 2, "angre: tilbake")
 T.shift = false
@@ -141,7 +141,7 @@ eq(#cities, 4, "slipp inni lista: ingenting fjernet")
 darn.scripts.OnDragStart(darn)
 Menu.cityBox.mouse = false
 darn.scripts.OnDragStop(darn)
-check(#cities == 3 and Chat("Darnassus fjernet (/control angre)."), "dra ut: Darnassus fjernet")
+check(#cities == 3 and Chat("Darnassus fjernet (/ctrl angre)."), "dra ut: Darnassus fjernet")
 SlashCmdList.CONTROL("angre")
 check(#cities == 4 and cities[3] == "Darnassus", "angre: Darnassus tilbake på plassen sin")
 Menu.cityListButton.scripts.OnClick(Menu.cityListButton)

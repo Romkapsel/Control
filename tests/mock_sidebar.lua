@@ -1,5 +1,5 @@
 -- Fase 4: sidemenyene (SPEC §7.4, §6.6, §8): åpne/lukke, rader, fure, tomme ruter, statuslinje,
--- høyreklikk = tier, musehjul = antall, slipp inn, Shift + dra ut = fjern, dra på en annen = flytt, /control angre.
+-- høyreklikk = tier, musehjul = antall, slipp inn, Shift + dra ut = fjern, dra på en annen = flytt, /ctrl angre.
 local ns = NS
 local fails, n = {}, 0
 local function check(c, m) n = n + 1 if not c then table.insert(fails, m) end end
@@ -84,9 +84,9 @@ mb.frame.mouse = false
 b2.scripts.OnDragStop(b2)
 T.shift = false
 eq(#ControlCharDB.self, 1, "Shift + dra ut: flasken er fjernet")
-check(Chat("Flask of the Titans fjernet (/control angre)."), "sier fra i chatten")
+check(Chat("Flask of the Titans fjernet (/ctrl angre)."), "sier fra i chatten")
 SlashCmdList.CONTROL("angre")
-check(#ControlCharDB.self == 2 and ControlCharDB.self[2] == flask and Chat("Flask of the Titans er tilbake."), "/control angre: tilbake på samme plass")
+check(#ControlCharDB.self == 2 and ControlCharDB.self[2] == flask and Chat("Flask of the Titans er tilbake."), "/ctrl angre: tilbake på samme plass")
 SlashCmdList.CONTROL("angre")
 check(Chat("Ingenting å angre"), "angre to ganger")
 

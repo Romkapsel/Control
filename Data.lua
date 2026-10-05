@@ -176,7 +176,7 @@ function Data.FindDuplicate(list, info)
 end
 
 ------------------------------------------------------------------------
--- Testdata (SPEC §19): /control test blar gjennom dem
+-- Testdata (SPEC §19): /ctrl test blar gjennom dem
 ------------------------------------------------------------------------
 
 local function scenarioStart()
@@ -210,7 +210,7 @@ local function scenarioStart()
   }
 end
 
--- Fire tilstander å bla gjennom med /control test: rød (7), oransje (2), alt ok, tom.
+-- Fire tilstander å bla gjennom med /ctrl test: rød (7), oransje (2), alt ok, tom.
 Data.SAMPLES = { "start", "orange", "ok", "empty" }
 
 function Data.Sample(kind)

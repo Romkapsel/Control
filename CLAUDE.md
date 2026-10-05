@@ -32,7 +32,7 @@ Control viser hva du mangler av buffer og ting, og lar deg fikse det med ett kli
 python tests/run.py    # alle tester (krever pip install lupa)
 ```
 
-I spillet: `/reload`, `/control debug` (kortform `/ctl`), `/control angre`.
+I spillet: `/reload`, `/ctrl debug` (alltid `/ctrl` – Daniel 5. okt), `/ctrl angre`.
 
 ## Installasjon i spillet
 

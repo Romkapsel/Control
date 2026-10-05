@@ -152,9 +152,9 @@ eq(sounds(), before + 2, "står stille utenfor: ikke en gang til")
 T.zone = "Teldrassil"
 Tick()
 
--- /control varsel: se varselet når som helst
+-- /ctrl varsel: se varselet når som helst
 SlashCmdList.CONTROL("varsel")
-check(A.frame.shown and A.title.text == "Du forlater Teldrassil", "/control varsel viser varselet")
+check(A.frame.shown and A.title.text == "Du forlater Teldrassil", "/ctrl varsel viser varselet")
 
 -- Kan lydfila ikke spilles: vanlig varsellyd i stedet
 T.soundOk = false

@@ -706,7 +706,7 @@ function Menu.Layout(model, members, sideOpen)
   separator()
   scaleRow()
   if db.debug and db.debug.rangeButton then
-    -- Avstandstest (slås på med /control avstand): ett bilde per trykk, også i kamp
+    -- Avstandstest (slås på med /ctrl avstand): ett bilde per trykk, også i kamp
     separator()
     local ww = W - 2 * PAD - 80
     local a = action(L.RANGE_BUTTON, true, L.RANGE_TIP, function() if ns.RangeProbe then ns.RangeProbe() end end, ww)

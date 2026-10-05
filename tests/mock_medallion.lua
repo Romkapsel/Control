@@ -87,7 +87,7 @@ st.hit.scripts.OnMouseUp(st.hit, "LeftButton")
 
 -- Lås opp og flytt
 SlashCmdList.CONTROL("lås")
-check(ControlCharDB.ui.locked == false and Chat("Låst opp."), "/control lås låser opp")
+check(ControlCharDB.ui.locked == false and Chat("Låst opp."), "/ctrl lås låser opp")
 M.TrackMouse()
 check(st.anim.hubMove.to == 1 and st.anim.hubLock.to == 0, "ulåst: flyttekryss i midten")
 eq(T.tooltip.text, "Dra", "tooltip: dra")
@@ -127,9 +127,9 @@ check(ns.view.empty and Chat("dine egne buffer og ting"), "etter testdataene: ti
 -- Nullstill
 SlashCmdList.CONTROL("nullstill")
 p = M.State().root.points[1]
-check(p[1] == "CENTER" and p[5] == 200 and Chat("Tilbakestilt."), "/control nullstill")
+check(p[1] == "CENTER" and p[5] == 200 and Chat("Tilbakestilt."), "/ctrl nullstill")
 SlashCmdList.CONTROL("")
-check(Chat("/control test"), "hjelpetekst")
+check(Chat("/ctrl test"), "hjelpetekst")
 
 -- Optisk midt: «1» flyttes litt til venstre, andre tall står i midten
 local cnt = M.State().parts.count

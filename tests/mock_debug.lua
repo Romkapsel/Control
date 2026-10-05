@@ -1,4 +1,4 @@
--- Fase 0: /control debug skal aldri krasje, også når klienten gir hemmelige verdier (V1–V9).
+-- Fase 0: /ctrl debug skal aldri krasje, også når klienten gir hemmelige verdier (V1–V9).
 local fails, n = {}, 0
 local function check(c, m) n = n + 1 if not c then table.insert(fails, m) end end
 
@@ -8,7 +8,7 @@ Fire("ADDON_LOADED", "Control")
 local db = ControlCharDB and ControlCharDB.debug
 check(db and db.runs and db.casts and db.events and db.clicks and db.combat and db.errors, "loggen er satt opp")
 check(ControlCharDB.schema == 1 and ControlCharDB.ui and ControlCharDB.ui.point, "lagringen har standardene fra SPEC §5.2")
-check(SlashCmdList.CONTROL and SLASH_CONTROL1 == "/control" and SLASH_CONTROL2 == "/ctl", "/control og /ctl finnes")
+check(SlashCmdList.CONTROL and SLASH_CONTROL1 == "/ctrl" and SLASH_CONTROL2 == "/control", "/ctrl og /ctl finnes")
 
 -- Vanlige verdier, ute av kamp
 T.auras = { { "Mark of the Wild", 1126, 2800, 1800 }, { "Well Fed", 19705, 1900, 900 } }
@@ -62,7 +62,7 @@ check(c.zone.zone == "<hemmelig>", "hemmelig sone")
 ok, err = pcall(Fire, "UNIT_SPELLCAST_SUCCEEDED", "player", SECRET, SECRET)
 check(ok and db.casts[#db.casts].spellID == "<hemmelig>" and db.casts[#db.casts].guidSecret == true, "V4: hemmelig spell-ID i kamp logges uten krasj " .. tostring(err))
 ok, err = pcall(SlashCmdList.CONTROL, "debug")
-check(ok and Chat("spell-ID hemmelig i kamp: 1"), "/control debug i kamp: ingen krasj " .. tostring(err))
+check(ok and Chat("spell-ID hemmelig i kamp: 1"), "/ctrl debug i kamp: ingen krasj " .. tostring(err))
 ok, err = pcall(Fire, "ZONE_CHANGED")
 check(ok, "sted i kamp: ingen krasj " .. tostring(err))
 SlashCmdList.CONTROL("debug knapp")
@@ -81,5 +81,5 @@ Fire("ADDON_ACTION_BLOCKED", "Control", "CastSpellByID()")
 Fire("UI_ERROR_MESSAGE", 51, "Out of range.")
 check(#db.errors == 2 and db.errors[1].b == "CastSpellByID()" and db.errors[2].b == "Out of range.", "V5: blokkerte handlinger og feilmeldinger logges")
 SlashCmdList.CONTROL("debug tøm")
-check(#db.runs == 0 and #db.casts == 0 and #db.errors == 0 and Chat("Loggen er tømt"), "/control debug tøm")
+check(#db.runs == 0 and #db.casts == 0 and #db.errors == 0 and Chat("Loggen er tømt"), "/ctrl debug tøm")
 return n, fails

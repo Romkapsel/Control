@@ -1,4 +1,4 @@
--- Avstandstest (Daniel 5. okt): /control avstand viser knappen «Avstandstest» under Oppsett i menyen.
+-- Avstandstest (Daniel 5. okt): /ctrl avstand viser knappen «Avstandstest» under Oppsett i menyen.
 -- Hvert trykk lagrer hva spillet sier om avstanden til hver kompis, også i kamp, i ControlCharDB.debug.range.
 local ns = NS
 local fails, n = {}, 0
@@ -15,7 +15,7 @@ ns.Refresh(false)
 check(Menu.rangeButton == nil, "knappen er skjult som standard")
 
 SlashCmdList.CONTROL("avstand")
-check(ControlCharDB.debug.rangeButton and Chat("Avstandstest er på"), "/control avstand slår den på")
+check(ControlCharDB.debug.rangeButton and Chat("Avstandstest er på"), "/ctrl avstand slår den på")
 local b = Menu.rangeButton
 check(b and b.shown and b.text == "Avstandstest", "knappen står under Oppsett")
 
@@ -41,6 +41,6 @@ T.combat, T.secret = false, false
 Fire("PLAYER_REGEN_ENABLED")
 
 SlashCmdList.CONTROL("avstand")
-check(Menu.rangeButton == nil and Chat("Avstandstest er av."), "/control avstand igjen: knappen er borte")
+check(Menu.rangeButton == nil and Chat("Avstandstest er av."), "/ctrl avstand igjen: knappen er borte")
 
 return n, fails

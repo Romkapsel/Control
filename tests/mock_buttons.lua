@@ -159,7 +159,7 @@ check(not tray.frame.shown, "testdata: ingen knapper ute")
 for _ = 1, 4 do SlashCmdList.CONTROL("test") end
 check(tray.frame.shown, "egne data igjen: knappene tilbake")
 
--- /control tøm
+-- /ctrl tøm
 SlashCmdList.CONTROL("tøm")
-check(#ControlCharDB.self == 0 and not tray.frame.shown and Chat("Lista er tømt"), "/control tøm")
+check(#ControlCharDB.self == 0 and not tray.frame.shown and Chat("Lista er tømt"), "/ctrl tøm")
 return n, fails

@@ -47,7 +47,7 @@ Det som kan legges til:
 | Høyreklikk | Bytter mellom tier I og II |
 | Musehjul | Hvor mange du vil ha (Shift = 5 om gangen) |
 | Shift + dra | Flytt den (gullstreken viser hvor), eller dra den ut for å fjerne |
-| `/control angre` | Får tilbake det du nettopp fjernet |
+| `/ctrl angre` | Får tilbake det du nettopp fjernet |
 
 Siste 40 sekunder før en buff går ut, teller knappen ned.
 
@@ -92,7 +92,7 @@ dra et sted ut av lista for å fjerne det.
 
 ## Kommandoer
 
-`/control` eller `/ctl`, etterfulgt av:
+`/ctrl`, etterfulgt av:
 
 | Kommando | Gjør |
 |---|---|

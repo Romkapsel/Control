@@ -1,7 +1,7 @@
 -- Control, fase 0 (SPEC §18): finn ut hva WoW Forever lar en addon lese, før vi bygger på det (SPEC §2, V1–V9).
--- /control debug        tar et øyeblikksbilde nå og skriver et sammendrag i chatten
--- /control debug knapp  viser to testknapper (V5): dra en spell eller et item på dem og klikk
--- /control debug tøm    tømmer loggen
+-- /ctrl debug        tar et øyeblikksbilde nå og skriver et sammendrag i chatten
+-- /ctrl debug knapp  viser to testknapper (V5): dra en spell eller et item på dem og klikk
+-- /ctrl debug tøm    tømmer loggen
 -- Alt lagres i ControlCharDB.debug. Spillet skriver det til disk ved /reload og utlogging; Claude leser det derfra.
 -- Regel: en hemmelig verdi blir aldri regnet med, sammenlignet eller skrevet ut, bare byttet med «<hemmelig>».
 
@@ -501,7 +501,7 @@ end
 ------------------------------------------------------------------------
 -- Avstand (Daniel 5. okt): hvilke måter å måle avstand til en kompis virker i Forever, i og utenfor kamp?
 -- Til shouts: telle bare de som var nær nok, og la knappen lyse bare når noen som mangler er innenfor.
--- Knappen «Avstandstest» under Oppsett i menyen (slås på med /control avstand) lagrer ett bilde per trykk
+-- Knappen «Avstandstest» under Oppsett i menyen (slås på med /ctrl avstand) lagrer ett bilde per trykk
 -- i ControlCharDB.debug.range. Stå nær og langt unna en kompis, i og utenfor kamp, trykk, og gjør /reload.
 ------------------------------------------------------------------------
 
@@ -633,7 +633,7 @@ ev:SetScript("OnEvent", function(self, event, ...)
   end
 end)
 
--- Kalles fra Core.lua for «/control debug …» (raw = teksten uten å endre bokstavene).
+-- Kalles fra Core.lua for «/ctrl debug …» (raw = teksten uten å endre bokstavene).
 function ns.DebugCommand(raw)
   local msg = raw:lower()
   if not db then return Say("Ikke lastet ennå.") end
@@ -648,7 +648,7 @@ function ns.DebugCommand(raw)
     db.runs, db.casts, db.events, db.clicks, db.combat, db.errors = {}, {}, {}, {}, {}, {}
     Say("Loggen er tømt.")
   else
-    Say("Skriv /control debug, /control debug knapp eller /control debug tøm.")
+    Say("Skriv /ctrl debug, /ctrl debug knapp eller /ctrl debug tøm.")
   end
 end
 
