@@ -474,13 +474,28 @@ end
 -- Tooltip (SPEC §7.7)
 ------------------------------------------------------------------------
 
+-- Tingen selv øverst (Daniel 5. okt: se itemet når du holder over), så Controls linjer under en tom linje.
+-- Klarer ikke spillet å vise den, blir det navnet som før.
+local function itemTooltip(e)
+  if not e.itemId then return false end
+  local link = ns.Scan.ItemLink(e.itemId)
+  local ok = pcall(function()
+    if link then GameTooltip:SetHyperlink(link) else GameTooltip:SetItemByID(e.itemId) end
+  end)
+  if not ok or (GameTooltip:NumLines() or 0) == 0 then return false end
+  GameTooltip:AddLine(" ")
+  return true
+end
+
 function EB.ShowTooltip(b)
   local e, st, L = b.entry, b.st or {}, ns.L
   if not e then return end
   local R = ns.Rules
   GameTooltip:SetOwner(b, "ANCHOR_RIGHT")
-  GameTooltip:SetText(e.type == "buffitem" and (e.auraNames and e.auraNames[1] or e.name) or e.name, 1, 1, 1)
   local line, action, actColor = "", "", C.green
+  if ns.Rules.isParty(e) or not itemTooltip(e) then
+    GameTooltip:SetText(e.type == "buffitem" and (e.auraNames and e.auraNames[1] or e.name) or e.name, 1, 1, 1)
+  end
   if ns.Rules.isParty(e) then
     partyTooltip(b, e, st, L)
     local h = C.help

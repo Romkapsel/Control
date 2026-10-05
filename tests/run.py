@@ -155,6 +155,15 @@ function GameTooltip:Show() T.tooltip.hidden = false end
 NumberFontNormal = {}
 function GameTooltip:SetText(t) T.tooltip.text = t end
 function GameTooltip:AddLine(t) table.insert(T.tooltip.lines, t) end
+-- Tingens egen tooltip: tittelen er navnet (med endelse når lenken har en), resten er spillets linjer
+function GameTooltip:SetHyperlink(l)
+  T.tooltip.link = l
+  local id, suffix = l:match("item:(%d+):?(.*)")
+  T.tooltip.text = (T.itemNames[tonumber(id)] or "?") .. ((suffix ~= "" and suffix) and (" " .. suffix) or "")
+  T.tooltip.itemLines = 3
+end
+function GameTooltip:SetItemByID(id) T.tooltip.itemId = id T.tooltip.text = T.itemNames[id] T.tooltip.itemLines = 3 end
+function GameTooltip:NumLines() return (T.tooltip.itemLines or 0) + #T.tooltip.lines end
 function GameTooltip:Hide() T.tooltip.hidden = true end
 GameFontNormalHuge = {}
 SlashCmdList = {}
@@ -180,6 +189,7 @@ function GetWeaponEnchantInfo()
   return S(w.mh ~= nil), S(w.mh), S(w.mhCharges or 0), S(0), S(w.oh ~= nil), S(w.oh), S(0), S(0)
 end
 function GetInventoryItemID(unit, slot) return T.equip and T.equip[slot] end
+function GetInventoryItemLink(unit, slot) local id = T.equip and T.equip[slot] return id and ("item:" .. id .. ":" .. ((T.suffix and T.suffix[id]) or "")) end
 function EquipItemByName(id, slot)
   T.equipCalls = T.equipCalls or {}
   table.insert(T.equipCalls, { id = id, slot = slot })
@@ -224,7 +234,8 @@ RAID_CLASS_COLORS = { WARRIOR = { r = 0.78, g = 0.61, b = 0.43 }, MAGE = { r = 0
 function UnitInRange() return S(true), true end
 C_Container = { GetContainerNumSlots = function(b) return T.bags[b] and #T.bags[b] or 0 end,
                 GetContainerNumFreeSlots = function(b) if T.free then local f = T.free[b] if f then return f[1], f[2] or 0 end return 0, 0 end return (b == 0) and 16 or 0, 0 end, -- standard: 16 ledige
-                GetContainerItemID = function(b, s) return T.bags[b] and T.bags[b][s] end }
+                GetContainerItemID = function(b, s) return T.bags[b] and T.bags[b][s] end,
+                GetContainerItemLink = function(b, s) local id = T.bags[b] and T.bags[b][s] return id and ("item:" .. id .. ":" .. ((T.suffix and T.suffix[id]) or "")) end }
 T.itemNames = { [13510] = "Flask of the Titans", [14529] = "Runecloth Bandage", [21023] = "Dirge's Kickin' Chimaerok Chops",
                 [13446] = "Major Healing Potion", [4540] = "Tough Hunk of Bread" }
 T.itemSpells = { [13510] = { "Flask of the Titans", 17626 }, [21023] = { "Food", 433 }, [13446] = { "Healing Potion", 17534 },

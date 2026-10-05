@@ -101,4 +101,26 @@ T.dura = { [5] = { 100, 100 } }
 ns.Actions.UseSet("Solo")
 eq(ns.Alert.sev, 0, "alt i orden: grønt varsel")
 
+
+-- Tooltip (Daniel 5. okt): selve tingen øverst – akkurat eksemplaret du har (med endelse) – og Controls linjer under
+T.suffix = { [3001] = "of the Owl" }
+ns.Menu.SetOpen(true)
+ns.Refresh(false)
+local robeBtn
+for _, mb in ipairs(ns.Menu.host.buttons) do if mb.entry.itemId == 3001 then robeBtn = mb end end
+robeBtn.scripts.hookOnEnter(robeBtn)
+check(T.tooltip.link and T.tooltip.link:find("item:3001", 1, true), "tooltip: lenken til roben du har på")
+eq(T.tooltip.text, "Robe of Healing of the Owl", "tooltip: navnet med endelse")
+eq(T.tooltip.lines[1], " ", "tom linje mellom tingen og Controls linjer")
+check(T.tooltip.lines[2] == "1 av 1", "så antallet")
+-- I baggen: lenken derfra
+T.equip = {}
+T.bags[0] = { 3001 }
+robeBtn.scripts.hookOnEnter(robeBtn)
+check(T.tooltip.link and T.tooltip.link:find("item:3001", 1, true), "i baggen: lenken derfra")
+-- Har du den ikke: spillets tooltip for tingen (uten endelse)
+T.bags[0] = {}
+robeBtn.scripts.hookOnEnter(robeBtn)
+check(not T.tooltip.link and T.tooltip.itemId == 3001 and T.tooltip.text == "Robe of Healing", "ikke din: tingen fra id")
+
 return n, fails

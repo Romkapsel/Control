@@ -123,6 +123,39 @@ function Scan.Equipped()
   return out
 end
 
+-- Lenken til akkurat det eksemplaret du har (på deg først, så i baggen): med tilfeldig endelse og riktige tall
+-- («Nomad Tunic of the Bear», ikke bare «Nomad Tunic»). nil hvis du ikke har det.
+function Scan.ItemLink(id)
+  if not id then return nil end
+  if GetInventoryItemID and GetInventoryItemLink then
+    for slot = 1, 19 do
+      local ok, sid = pcall(GetInventoryItemID, "player", slot)
+      if ok and not isSecret(sid) and sid == id then
+        local okL, l = pcall(GetInventoryItemLink, "player", slot)
+        if okL and not isSecret(l) and type(l) == "string" then return l end
+      end
+    end
+  end
+  local C = C_Container
+  local num = (C and C.GetContainerNumSlots) or GetContainerNumSlots
+  local getId = (C and C.GetContainerItemID) or GetContainerItemID
+  local getLink = (C and C.GetContainerItemLink) or GetContainerItemLink
+  if not (num and getId and getLink) then return nil end
+  for bag = 0, (NUM_BAG_SLOTS or 4) do
+    local okN, n = pcall(num, bag)
+    if okN and not isSecret(n) and type(n) == "number" then
+      for s = 1, n do
+        local okI, iid = pcall(getId, bag, s)
+        if okI and not isSecret(iid) and iid == id then
+          local okL, l = pcall(getLink, bag, s)
+          if okL and not isSecret(l) and type(l) == "string" then return l end
+        end
+      end
+    end
+  end
+  return nil
+end
+
 -- Hvor tingen sitter (INVTYPE_FINGER, INVTYPE_TRINKET, INVTYPE_WEAPON …)
 function Scan.EquipLoc(id)
   local ok, _, _, _, loc = pcall(function()
