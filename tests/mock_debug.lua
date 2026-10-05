@@ -19,6 +19,9 @@ local s = db.runs[#db.runs]
 check(s.client.interface == 16001 and s.client.build == "70205", "V1: build og interface lagres")
 check(s.zone.zone == "Stormwind City" and s.zone.mapID == 1453, "sted lagres")
 check(s.player.n == 2 and s.player.secretFields == 0 and s.player.list[1].name == "Mark of the Wild", "V2: egne buffer leses")
+check(s.vitals and s.vitals.health == 800 and s.vitals.canCompareHealth == true and s.vitals.canCompareMana == true,
+  "helse og mana: lesbare og kan sammenlignes utenfor kamp")
+check(Chat("Helse 800/1000"), "helse står i sammendraget")
 check(#s.items == 2 and s.items[1].count == 3 and s.items[1].spell == "Flask of the Titans", "V6/V7: lager og spell på item")
 check(#s.spellbook == 2 and s.spellbook[1].rank == "Rank 3" and s.spellbook[1].id == 5232, "V7: buffer i spellboken med rank og ID")
 check(s.ids[1].name == "Mark of the Wild" and s.ids[2].name == nil, "V7: hvilke ID-er klienten kjenner (ukjent = nil, ikke «feil»)")
@@ -49,6 +52,8 @@ T.combat = true
 local ok, err = pcall(Fire, "PLAYER_REGEN_DISABLED")
 check(ok, "i kamp med hemmelige verdier: ingen krasj " .. tostring(err))
 local c = db.combat[#db.combat]
+check(c.vitals and c.vitals.health == "<hemmelig>" and c.vitals.canCompareHealth == "<feil>",
+  "i kamp (hemmelig): helsa lagres som hemmelig, og sammenligning feiler uten å krasje")
 check(c and c.reason == "i kamp" and c.combat == true, "øyeblikksbilde i kamp")
 check(c.player.secretFields == 8 and c.player.list[1].name == "<hemmelig>", "V2: hemmelige felt telles og byttes ut")
 check(c.party[1].name == "<hemmelig>" and c.party[1].guid == "<hemmelig>", "V9: hemmelig navn og GUID på party")

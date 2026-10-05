@@ -266,6 +266,61 @@ end
 -- Øyeblikksbilder
 ------------------------------------------------------------------------
 
+------------------------------------------------------------------------
+-- Helse og mana (Daniel 5. okt: kan midten foreslå en healing/mana pot når du er lav?). Kan vi lese, og
+-- sammenligne, egen helse og mana i kamp? Kan en måler vise dem selv om de er hemmelige? Pot-cooldown?
+-- Tas med i hvert øyeblikksbilde – også det som tas automatisk ett sekund inn i kampen.
+------------------------------------------------------------------------
+
+local POTIONS = { 118, 858, 929, 1710, 3928, 13446, 2455, 3385, 3827, 6149, 13443 } -- healing og mana, lav til høy
+local probeBar
+
+local function v1(fn, ...)
+  if not fn then return "<finnes ikke>" end
+  local ok, v = pcall(fn, ...)
+  return try(ok, v)
+end
+
+local function scanVitals()
+  local r = {}
+  r.health, r.healthMax = v1(UnitHealth, "player"), v1(UnitHealthMax, "player")
+  r.powerType = v1(UnitPowerType, "player")
+  r.mana, r.manaMax = v1(UnitPower, "player", 0), v1(UnitPowerMax, "player", 0)
+  r.power = v1(UnitPower, "player")
+  r.healthPercent = v1(UnitHealthPercent, "player")
+  -- Kan vi regne med dem? (En hemmelig verdi feiler når den sammenlignes.)
+  local okC, less = pcall(function() return UnitHealth("player") < UnitHealthMax("player") * 0.35 end)
+  r.canCompareHealth = (okC and less ~= nil and not isSecret(less)) and true or "<feil>"
+  local okM, lessM = pcall(function() return UnitPower("player", 0) < UnitPowerMax("player", 0) * 0.3 end)
+  r.canCompareMana = (okM and lessM ~= nil and not isSecret(lessM)) and true or "<feil>"
+  -- Godtar en måler (StatusBar) verdiene, selv om de skulle være hemmelige?
+  if not probeBar and CreateFrame then
+    local okB, bar = pcall(CreateFrame, "StatusBar", nil, UIParent)
+    if okB then probeBar = bar bar:Hide() end
+  end
+  if probeBar then
+    local okS = pcall(function()
+      probeBar:SetMinMaxValues(0, UnitHealthMax("player"))
+      probeBar:SetValue(UnitHealth("player"))
+    end)
+    r.barAcceptsHealth = okS
+  end
+  -- Potions: antall og cooldown
+  r.potions = {}
+  local getCD = (C_Container and C_Container.GetItemCooldown) or GetItemCooldown
+  local usable = (C_Item and C_Item.IsUsableItem) or IsUsableItem
+  for _, id in ipairs(POTIONS) do
+    local count = itemCount(id)
+    if count and count ~= 0 and count ~= "<hemmelig>" then
+      local okCD, start, dur, enable = pcall(getCD, id)
+      local okU, use = pcall(usable, id)
+      r.potions[#r.potions + 1] = { id = id, count = count, start = okCD and safe(start) or "<feil>",
+        duration = okCD and safe(dur) or "<feil>", enable = okCD and safe(enable) or "<feil>", usable = try(okU, use) }
+    end
+  end
+  return r
+end
+
 local function snapshot(reason, full)
   local s = { reason = reason, at = stamp(), t = now(), combat = inCombat() }
   s.client = buildInfo()
@@ -276,6 +331,8 @@ local function snapshot(reason, full)
   s.party = ok and res or { error = str(res) }
   ok, res = pcall(scanItems, 10)
   s.items = ok and res or { error = str(res) }
+  ok, res = pcall(scanVitals)
+  s.vitals = ok and res or { error = str(res) }
   if full then
     ok, res = pcall(scanSpellbook)
     s.spellbook = ok and res or { error = str(res) }
@@ -432,6 +489,10 @@ local function summary(s)
       if e.spellID == "<hemmelig>" then secret = secret + 1 end
     end
   end
+  local vt = s.vitals or {}
+  Say(("Helse %s/%s, mana %s/%s · kan sammenligne helse: %s, mana: %s · måler godtar helse: %s · potions i baggen: %d"):format(
+      str(vt.health), str(vt.healthMax), str(vt.mana), str(vt.manaMax), str(vt.canCompareHealth), str(vt.canCompareMana),
+      str(vt.barAcceptsHealth), vt.potions and #vt.potions or 0))
   Say(("Kast logget: %d, i kamp: %d, spell-ID hemmelig i kamp: %d · klikk på testknapper: %d · steder: %d · feil/blokkert: %d"):format(
       #db.casts, inC, secret, #db.clicks, #db.events, #db.errors))
   Say("Lagret. /reload eller logg ut, så kan Claude lese svarene.")

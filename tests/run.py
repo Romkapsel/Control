@@ -171,6 +171,11 @@ C_Texture = { GetAtlasInfo = function(a) if T.atlases[a] then return { width = 6
 function GetBuildInfo() return "1.60.1", "70205", "Oct 2 2026", 16001 end
 function GetRealZoneText() return S(T.zone or "Stormwind City") end
 function UnitFactionGroup() return "Alliance", "Alliance" end
+function UnitHealth() return S(T.hp or 800) end
+function UnitHealthMax() return S(1000) end
+function UnitPower(u, t) return S(T.mana or 500) end
+function UnitPowerMax(u, t) return S(1000) end
+function UnitPowerType() return 0 end
 function PlaySoundFile(id, channel) T.soundFiles = T.soundFiles or {} table.insert(T.soundFiles, id) return T.soundOk ~= false end
 function PlaySound(id) T.soundKits = T.soundKits or {} table.insert(T.soundKits, id) return true end
 function UnitPosition(u) local p = T.pos and T.pos[u] if p then return S(p[1]), S(p[2]), 0, 0 end end
