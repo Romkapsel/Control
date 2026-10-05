@@ -92,6 +92,36 @@ function Style.HairlineAt(t, point, rel, relPoint, x, y)
   end
 end
 
+-- Glir inn: rammen starter litt nærmere medaljongen og glir de siste pikslene ut mens den tones inn. Hele rammen
+-- flytter seg som én ting (Daniel 5. okt: å strekke den ut fra medaljongen tegnet kant og innhold i utakt).
+-- g:SetDirection(dx, dy) = hvor rammen glir mot (f.eks. 10, 0 = mot høyre). Spill med g:Play().
+function Style.SlideIn(frame, duration)
+  local g = frame:CreateAnimationGroup()
+  local back = g:CreateAnimation("Translation") -- 1: hopp inn mot medaljongen (ingen tid, usynlig)
+  back:SetDuration(0)
+  back:SetOrder(1)
+  local hide = g:CreateAnimation("Alpha")
+  hide:SetFromAlpha(0)
+  hide:SetToAlpha(0)
+  hide:SetDuration(0)
+  hide:SetOrder(1)
+  local out = g:CreateAnimation("Translation") -- 2: gli ut på plass mens den tones inn
+  out:SetDuration(duration or 0.25)
+  out:SetSmoothing("OUT")
+  out:SetOrder(2)
+  local show = g:CreateAnimation("Alpha")
+  show:SetFromAlpha(0)
+  show:SetToAlpha(1)
+  show:SetDuration(duration or 0.25)
+  show:SetOrder(2)
+  function g:SetDirection(dx, dy)
+    back:SetOffset(-dx, -dy)
+    out:SetOffset(dx, dy)
+    g.dx, g.dy = dx, dy
+  end
+  return g
+end
+
 -- Liten lukke-pil i hjørnet (Daniel 5. okt): en sikker knapp, så den virker også i kamp. dir = retningen pila
 -- peker (mot medaljongen): "left", "right", "up", "down". snippet = det sikre skriptet (_onclick).
 -- onAfter() kalles etter klikket (Lua: tegn på nytt).

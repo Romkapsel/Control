@@ -136,17 +136,9 @@ function SB.Create(root, side)
   bar.close:SetPoint(side == "right" and "BOTTOMRIGHT" or "BOTTOMLEFT", f, side == "right" and "BOTTOMRIGHT" or "BOTTOMLEFT",
     side == "right" and -8 or 8, 9)
 
-  -- Folder seg ut fra medaljongsiden (SPEC §7.4: 0,35 s, opasitet 0,2 s)
-  f.unfold = f:CreateAnimationGroup()
-  local sc = f.unfold:CreateAnimation("Scale")
-  if sc.SetScaleFrom then sc:SetScaleFrom(0.2, 1) sc:SetScaleTo(1, 1) end
-  sc:SetOrigin(side == "right" and "LEFT" or "RIGHT", 0, 0)
-  sc:SetDuration(0.35)
-  sc:SetSmoothing("OUT")
-  local a = f.unfold:CreateAnimation("Alpha")
-  a:SetFromAlpha(0)
-  a:SetToAlpha(1)
-  a:SetDuration(0.2)
+  -- Glir ut fra medaljongen de siste 10 px mens den tones inn (0,25 s)
+  f.unfold = Style.SlideIn(f, 0.25)
+  f.unfold:SetDirection(side == "right" and 10 or -10, 0)
   f:Hide()
   bars[side] = bar
   return bar

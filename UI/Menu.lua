@@ -636,16 +636,8 @@ function Menu.Create(parent, database, locale)
   frame:SetHeight(100)
   Style.Frame(frame)
   frame:EnableMouse(true)
-  frame.unfold = frame:CreateAnimationGroup()
-  local sc = frame.unfold:CreateAnimation("Scale")
-  if sc.SetScaleFrom then sc:SetScaleFrom(1, 0.25) sc:SetScaleTo(1, 1) end
-  sc:SetDuration(0.3)
-  sc:SetSmoothing("OUT")
-  frame.unfoldScale = sc
-  local a = frame.unfold:CreateAnimation("Alpha")
-  a:SetFromAlpha(0)
-  a:SetToAlpha(1)
-  a:SetDuration(0.2)
+  -- Glir ut fra medaljongen de siste 10 px mens den tones inn (retningen settes når den åpnes)
+  frame.unfold = Style.SlideIn(frame, 0.25)
   -- Lukke-piler nederst til høyre (én av dem vises, etter hvilken vei menyen åpner)
   local function after() if Menu.onChange then Menu.onChange() end end
   Menu.closeUp = Style.CloseArrow(frame, "up", Menu.CLOSE, L.CLOSE, after)
@@ -669,7 +661,7 @@ function Menu.SetOpen(v)
   if v then
     frame:Show()
     -- Glir ut fra medaljongen: ned når den henger under, opp når den står over (SPEC §7.6, 0,3 s)
-    frame.unfoldScale:SetOrigin(Menu.OpensUp() and "BOTTOM" or "TOP", 0, 0)
+    frame.unfold:SetDirection(0, Menu.OpensUp() and 10 or -10)
     frame.unfold:Play()
   else
     frame:Hide()

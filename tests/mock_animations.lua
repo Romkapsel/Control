@@ -68,7 +68,8 @@ check(mb.hA == nil and mb.hB == nil, "ingen vannrett strek under knappene")
 mouse(20, 0)
 M.TrackMouse()
 st.hit.scripts.OnMouseUp(st.hit, "LeftButton")
-check(mb.frame.shown and mb.frame.unfold.playing, "sidemenyen folder seg ut")
+check(mb.frame.shown and mb.frame.unfold.playing and mb.frame.unfold.dx == 10 and mb.frame.unfold.dy == 0,
+  "sidemenyen glir ut mot høyre (hele rammen samtidig)")
 
 -- 5. Gullstreken ved Shift + dra: på kanten av knappen du står over
 T.cursor = { "item", 13510, "[Flask]" }
@@ -94,7 +95,7 @@ mb.frame.mouse = false
 mouse(0, -20)
 M.TrackMouse()
 st.hit.scripts.OnMouseUp(st.hit, "LeftButton")
-check(ns.Menu.IsOpen() and ns.Menu.frame.unfold.playing, "menyen glir ut")
+check(ns.Menu.IsOpen() and ns.Menu.frame.unfold.playing and ns.Menu.frame.unfold.dy == -10, "menyen glir ned fra medaljongen")
 
 -- Diskret ramme i ringens farge: bandasjer under ønsket antall (oransje), mens MotW som lyser, ikke får den
 T.counts[14529] = 2
