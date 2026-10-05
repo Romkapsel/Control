@@ -346,7 +346,7 @@ end
 
 function applyAll()
   local grow = v("grow", 0)
-  face:SetScale(M.Size() * (1 + 0.06 * grow))
+  face:SetScale((M.preview or M.Size()) * (1 + 0.06 * grow))
   -- Bronsen lyser opp ved mus over: lyset legges oppå (ADD), sterkest oppe
   parts.rim:SetAlpha(0.22 * grow)
 
@@ -494,6 +494,15 @@ end
 
 function M.Size() return (db and db.ui.scale) or 1 end
 
+-- Mens du drar i Størrelse (Daniel 5. okt: «fryser når jeg drar»): bare selve medaljongen (og sverdene) vokser
+-- i sanntid. Menyen, sidemenyene og knappene står stille til du slipper – ellers flyttet slideren seg bort fra musa.
+-- M.Extra() bruker den lagrede størrelsen, så de flytter seg først når SetScale lagrer den.
+function M.Preview(s)
+  M.preview = s
+  if swordFrame then swordFrame:SetScale(s or M.Size()) end
+  applyAll()
+end
+
 -- Hvor mye lenger ut kanten av sirkelen står enn ved 100 % (px)
 function M.Extra() return math.floor(SIZE / 2 * (M.Size() - 1) + 0.5) end
 
@@ -505,6 +514,7 @@ end
 
 function M.SetScale(s)
   if inCombat() or type(s) ~= "number" or s <= 0 then return false end
+  M.preview = nil
   db.ui.scale = s
   applySize()
   applyAll()

@@ -499,9 +499,20 @@ local function makeSlider()
   s:SetScript("OnValueChanged", function(self, v)
     self.label:SetText(string.format(L.SCALE_VALUE, math.floor((v or 100) + 0.5)))
     if not self.dragging and not self.setting then commit(self) end -- hjul og klikk på sporet: med en gang
+    -- Mens du drar: medaljongen vokser i sanntid; resten flytter seg når du slipper
+    if self.dragging and not self.setting and not InCombatLockdown() and ns.Medallion.Preview then
+      ns.Medallion.Preview((v or 100) / 100)
+    end
   end)
   s:SetScript("OnMouseDown", function(self) self.dragging = true end)
-  s:SetScript("OnMouseUp", function(self) self.dragging = false commit(self) end)
+  s:SetScript("OnMouseUp", function(self)
+    self.dragging = false
+    if InCombatLockdown() then -- kan ikke lagres i kamp: tilbake til størrelsen du hadde
+      if ns.Medallion.Preview then ns.Medallion.Preview(nil) end
+      return
+    end
+    commit(self)
+  end)
   s:SetScript("OnMouseWheel", function(self, delta)
     if InCombatLockdown() then return end
     self:SetValue((self:GetValue() or 100) + (delta > 0 and 5 or -5))

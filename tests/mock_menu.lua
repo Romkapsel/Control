@@ -208,7 +208,9 @@ local sl = Menu.slider
 eq(sl:GetValue(), 100, "slideren står på 100 %")
 sl.scripts.OnMouseDown(sl)
 sl:SetValue(150)
-eq(ControlCharDB.ui.scale, 1.0, "mens du drar: ingen endring ennå")
+eq(ControlCharDB.ui.scale, 1.0, "mens du drar: ikke lagret ennå")
+eq(M.State().face.scale, 1.5, "mens du drar: medaljongen vokser i sanntid")
+eq(M.Extra(), 0, "mens du drar: menyen og knappene står stille")
 eq(sl.label.text, "150 %", "tallet følger med")
 ns.Refresh(false) -- menyen tegnes på nytt mens du drar
 eq(sl:GetValue(), 150, "slideren hopper ikke tilbake mens du drar")
@@ -236,9 +238,11 @@ T.combat = true
 Fire("PLAYER_REGEN_DISABLED")
 zoneClick(0, -20)
 check(Menu.IsOpen(), "i kamp: lukkes ikke")
-sl.scripts.OnMouseUp(sl)
+sl.scripts.OnMouseDown(sl)
 sl:SetValue(100)
+sl.scripts.OnMouseUp(sl)
 eq(ControlCharDB.ui.scale, 1.45, "i kamp: størrelsen endres ikke")
+eq(M.State().face.scale, 1.45, "i kamp: medaljongen går tilbake til størrelsen den hadde")
 T.combat = false
 Fire("PLAYER_REGEN_ENABLED")
 SlashCmdList.CONTROL("nullstill")
