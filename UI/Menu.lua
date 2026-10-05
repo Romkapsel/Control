@@ -247,7 +247,7 @@ local function rows(list, isParty, st)
         local e = items[i]
         local b = take("btn", function()
           local nb = ns.EntryButton.Create(frame)
-          SecureHandlerWrapScript(nb, "OnClick", ns.EntryButton.Header(), "", ns.Tray.RETARGET) -- gruppebuff i kamp
+          SecureHandlerWrapScript(nb, "OnClick", ns.EntryButton.Header(), ns.Tray.PRE, ns.Tray.RETARGET) -- gruppebuff i kamp
           nb.canDrag, nb.inMenu, nb.dragHost = true, true, host
           return nb
         end)

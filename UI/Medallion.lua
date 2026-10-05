@@ -245,20 +245,28 @@ local function sword(parent, ux, uy)
   f.ux, f.uy = ux, uy
   local px, py = -uy, ux
   local function P(a, b) return a * ux + b * px, a * uy + b * py end -- a langs bladet, b på tvers
-  local function seg(a1, b1, a2, b2, t, c, sub)
+  local function seg(a1, b1, a2, b2, t, c, sub, alpha)
     local x1, y1 = P(a1, b1)
     local x2, y2 = P(a2, b2)
-    return line(f, "ARTWORK", sub, x1, y1, x2, y2, t, c)
+    return line(f, "ARTWORK", sub, x1, y1, x2, y2, t, c, alpha)
   end
   local hx, hy = P(-45, 0)
+  -- Myk kant: spillet glatter ikke skrå streker (trappetrinn). En bredere, svak skygge under omrisset
+  -- demper trinnene (Daniel 5. okt: «litt pixelerte»).
+  local SOFT = 0.3
+  seg(-30, 0, 51, 0, 9, C.black, -1, SOFT)
+  seg(48, 0, 57, 0, 6, C.black, -1, SOFT)
+  seg(-31, -10.5, -31, 10.5, 7, C.black, -1, SOFT)
+  seg(-31, 0, -43, 0, 7, C.black, -1, SOFT)
+  Style.Disc(f, "ARTWORK", -1, 10, C.black, SOFT, hx, hy)
   -- omriss
-  seg(-30, 0, 51, 0, 6, C.black, 0)
+  seg(-30, 0, 51, 0, 7, C.black, 0)
   seg(48, 0, 56, 0, 4, C.black, 0)
   seg(-31, -9.5, -31, 9.5, 5, C.black, 0)
   seg(-31, 0, -42, 0, 5, C.black, 0)
   Style.Disc(f, "ARTWORK", 0, 8, C.black, 1, hx, hy)
-  -- blad med lys rygg og spiss
-  seg(-30, 0, 50, 0, 4, STEEL, 1)
+  -- blad med lys rygg og spiss (litt kraftigere)
+  seg(-30, 0, 50, 0, 5, STEEL, 1)
   seg(-28, 0, 47, 0, 1, STEEL_LIGHT, 2)
   seg(48, 0, 55, 0, 2, STEEL, 1)
   -- parerstang, grep, knapp

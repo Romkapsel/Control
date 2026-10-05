@@ -41,6 +41,10 @@ end
 -- self = knappen, owner = rammen (SecureHandlerBaseTemplate). Ingen funksjoner defineres i skriptet.
 ------------------------------------------------------------------------
 
+-- Før-delen må sende en beskjed (andre returverdi), ellers kjører spillet aldri etter-delen (Daniel 5. okt:
+-- ramma ble stående igjen i kamp – skriptet hadde aldri kjørt). nil = samme museknapp, true = beskjeden.
+Tray.PRE = "return nil, true"
+
 Tray.AFTER_CLICK = [[
   if button ~= "LeftButton" or SecureCmdOptionParse("[combat] k; u") ~= "k" then return end
   local qn = self:GetAttribute("ks-qn")
@@ -119,7 +123,7 @@ local function button(t, i)
   local b = t.buttons[i]
   if not b then
     b = ns.EntryButton.Create(t.frame)
-    SecureHandlerWrapScript(b, "OnClick", t.frame, "", Tray.AFTER_CLICK)
+    SecureHandlerWrapScript(b, "OnClick", t.frame, Tray.PRE, Tray.AFTER_CLICK)
     t.buttons[i] = b
   end
   b:SetAttribute("ks-order", i)

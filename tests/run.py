@@ -108,7 +108,7 @@ function CreateFrame(kind, name, parent, template)
   return f
 end
 -- Sikre skript (restricted Lua): lagres ved WrapScript og kjøres av SecureClick, som spillet gjør etter OnClick.
-function SecureHandlerWrapScript(f, script, header, pre, post) f.wrap = { header = header, post = post } end
+function SecureHandlerWrapScript(f, script, header, pre, post) f.wrap = { header = header, pre = pre, post = post } end
 function SecureHandlerSetFrameRef(f, k, r) f.refs = f.refs or {} f.refs[k] = r end
 local function secureEnv(b, mouse, owner)
   return { self = b, owner = owner, button = mouse,
@@ -123,9 +123,19 @@ function SecureClick(b, mouse)
     chunk()
   end
   if b.wrap and b.wrap.post ~= "" then
-    local chunk = assert(loadstring(b.wrap.post))
-    setfenv(chunk, secureEnv(b, mouse, b.wrap.header))
-    chunk()
+    -- Som i spillet: etter-delen kjøres bare når før-delen returnerer en beskjed (andre returverdi ~= nil)
+    local message
+    if b.wrap.pre and b.wrap.pre ~= "" then
+      local pre = assert(loadstring(b.wrap.pre))
+      setfenv(pre, secureEnv(b, mouse, b.wrap.header))
+      local _, msg = pre()
+      message = msg
+    end
+    if message ~= nil then
+      local chunk = assert(loadstring(b.wrap.post))
+      setfenv(chunk, secureEnv(b, mouse, b.wrap.header))
+      chunk()
+    end
   end
   if b.scripts.hookPostClick then b.scripts.hookPostClick(b, mouse) end
 end
