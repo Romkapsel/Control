@@ -328,6 +328,18 @@ function Actions.SetScale(s)
 end
 
 ------------------------------------------------------------------------
+-- Byvakt (SPEC §10): varsel når du forlater et sted som voktes. I kamp: vises når kampen er over (§11).
+------------------------------------------------------------------------
+
+function Core.Depart(zone)
+  local function show()
+    local model = Core.Model()
+    ns.Alert.Show(string.format(ns.L.CITY_LEAVING, zone or "?"), ns.Rules.departure(model.self, model.st, ns.L))
+  end
+  if InCombatLockdown() then ns.RunAfterCombat(show) else show() end
+end
+
+------------------------------------------------------------------------
 -- Hendelser
 ------------------------------------------------------------------------
 
@@ -360,6 +372,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Medallion.isSideOpen = ns.SideBar.IsOpen
     local okF, faction = pcall(UnitFactionGroup, "player")
     if okF and not ns.Scan.isSecret(faction) then ns.Data.SeedCities(ns.db, faction) end
+    ns.CityWatch.Init(ns.db)
+    ns.CityWatch.onDepart = Core.Depart
     ns.Menu.Create(ns.Medallion.frame, ns.db, ns.L)
     ns.Menu.onChange = Core.Draw
     ns.Menu.onDrop = Actions.DropOn
@@ -389,7 +403,8 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     self:RegisterEvent("GROUP_ROSTER_UPDATE")
     for e in pairs(CAST) do pcall(self.RegisterUnitEvent, self, e, "player") end
     for _, e in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
-                         "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED", "UI_SCALE_CHANGED", "DISPLAY_SIZE_CHANGED" }) do
+                         "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED", "UI_SCALE_CHANGED", "DISPLAY_SIZE_CHANGED",
+                         "ZONE_CHANGED_NEW_AREA", "TAXIMAP_OPENED" }) do
       pcall(self.RegisterEvent, self, e)
     end
     C_Timer.NewTicker(0.25, function() Core.Draw() end) -- én felles klokke for nedtellingene
@@ -406,6 +421,16 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
       end
       ns.Refresh(true)
     end
+  elseif event == "ZONE_CHANGED_NEW_AREA" then
+    ns.CityWatch.Zone(ns.Menu.Zone())
+    ns.Refresh(false) -- «Du er i …» i menyen
+  elseif event == "TAXIMAP_OPENED" then
+    ns.CityWatch.Taxi()
+  elseif event == "PLAYER_ENTERING_WORLD" then
+    -- Båt, portal og hearthstone gir lasteskjerm. Sonenavnet kan være tomt akkurat nå (V8): prøv igjen om litt.
+    ns.CityWatch.Zone(ns.Menu.Zone())
+    C_Timer.After(1, function() ns.CityWatch.Zone(ns.Menu.Zone()) end)
+    ns.Refresh(true)
   elseif event == "PLAYER_REGEN_ENABLED" then
     local queue = afterCombat
     afterCombat = {}
@@ -445,6 +470,8 @@ SlashCmdList.CONTROL = function(msg)
   elseif raw == "lås" or raw == "Lås" or cmd == "las" or cmd == "lock" then
     ns.Medallion.SetLocked(not ns.db.ui.locked)
     Say(ns.db.ui.locked and ns.L.LOCKED or ns.L.UNLOCKED)
+  elseif cmd == "varsel" then
+    Core.Depart(ns.Menu.Zone() or "?") -- se hvordan byvaktvarselet ser ut akkurat nå
   elseif cmd == "angre" then
     Actions.Undo()
   elseif raw == "tøm" or raw == "Tøm" or cmd == "tom" then

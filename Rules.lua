@@ -234,6 +234,22 @@ end
 -- Alt UI-et trenger (som renderVals() i prototypen)
 ------------------------------------------------------------------------
 
+------------------------------------------------------------------------
+-- Byvakt (SPEC §10, §11 nivå 3): hva du drar ut uten. Alle mine oppføringer, begge tier.
+-- sev 2 = noe er tomt eller mangler i tier I (rød + lyd), 1 = under ønsket / tier II (oransje), 0 = alt med.
+------------------------------------------------------------------------
+
+function Rules.departure(entries, st, L)
+  local sev = SEV_OK
+  for _, e in ipairs(entries or {}) do sev = math.max(sev, Rules.severity(e, st[e.id])) end
+  if sev == SEV_OK then return { sev = SEV_OK, parts = {}, more = 0, text = L.ALL_OK } end
+  local s = selfStatus(entries, st, L)
+  local texts = {}
+  for _, p in ipairs(s.parts) do texts[#texts + 1] = p.stock and (p.name .. " " .. p.stock) or p.name end
+  if (s.more or 0) > 0 then texts[#texts + 1] = "+" .. s.more end
+  return { sev = sev, parts = s.parts, more = s.more or 0, text = table.concat(texts, L.SEP) }
+end
+
 -- model = { self = { entries }, party = { entries }, st = { [id] = state } }
 -- opts  = { inCombat = true/false, prevTray = forrige view.tray }: i kamp står det som stod ute (SPEC §6.8)
 function Rules.render(model, L, opts)

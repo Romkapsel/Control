@@ -52,6 +52,7 @@ ns.L = {
   CITY_LIST = "Voktes (%d)",
   CITY_ROW_TIP = "Dra ut: fjern",
   CITY_HERE = "Du er i %s",
+  CITY_LEAVING = "Du forlater %s",
   CITY_ADD = "Legg til",
   CITY_ALREADY = "Voktes allerede",
   CITY_ADDED = "%s voktes nå.",
@@ -74,7 +75,7 @@ ns.L = {
   SAMPLE_ORANGE = "oransje (2 under ønsket eller snart ute)",
   SAMPLE_OK = "alt med",
   SAMPLE_EMPTY = "tom liste",
-  HELP = "/control test (bla i testdata) · /control lås · /control nullstill · /control tøm · /control debug",
+  HELP = "/control test (bla i testdata) · /control varsel (se byvaktvarselet) · /control lås · /control nullstill · /control tøm · /control debug",
   MODE_LIVE = "dine egne buffer og ting",
 
   -- Tooltip (SPEC §7.7)

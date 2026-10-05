@@ -229,4 +229,18 @@ eq(inFight.count, 2, "i kamp: tallet oppdateres")
 local after = R.render(warnModel, L, { inCombat = false, prevTray = before.tray })
 check(not after.trayFrozen and #after.tray.self == 0, "etter kampen: knappen forsvinner")
 
+------------------------------------------------------------------------
+-- Byvakt (§10): hva du drar ut uten
+------------------------------------------------------------------------
+local d = R.departure(warnModel.self, { x = { count = 1 }, y = { status = "on" }, z = { count = 4 } }, L)
+eq(d.sev, 1, "byvakt: under ønsket = oransje")
+eq(d.text, "A 1/6", "byvakt: bare det som mangler")
+d = R.departure(warnModel.self, { x = { count = 0 }, y = { status = "missing" }, z = { count = 4 } }, L)
+eq(d.sev, 2, "byvakt: MotW (tier I) ikke på = rød")
+eq(d.text, "B · A 0/6", "byvakt: verst først")
+d = R.departure(warnModel.self, { x = { count = 6 }, y = { status = "on" }, z = { count = 4 } }, L)
+check(d.sev == 0 and d.text == "Alt med", "byvakt: alt med")
+d = R.departure({}, {}, L)
+check(d.sev == 0, "byvakt: tom liste = alt med")
+
 return n, fails
