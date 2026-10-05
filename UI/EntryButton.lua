@@ -529,13 +529,15 @@ function EB.ShowTooltip(b)
   -- «Lag selv»: kan du lage tingen og har for få, hva trengs for å komme opp på grønt (Daniel 5. okt)
   local plan = ns.Craft and ns.db and ns.Craft.Plan(ns.db, e, st.count)
   if plan then
-    local hc = plan.ok and C.green or C.text
-    local head = plan.times == 1 and string.format(L.CRAFT_HEAD_1, plan.gets)
-      or string.format(L.CRAFT_HEAD, plan.times, plan.gets)
-    GameTooltip:AddLine(head, hc[1], hc[2], hc[3])
+    -- Én linje (Daniel 5. okt): hva du må kjøpe inn for å lage resten – «Kan lages – mangler 2 Wool Cloth»
+    local short = {}
     for _, p in ipairs(plan.parts) do
-      local c = p.have >= p.need and C.green or C.red
-      GameTooltip:AddLine(string.format(L.CRAFT_PART, p.name, p.have, p.need), c[1], c[2], c[3])
+      if p.have < p.need then short[#short + 1] = (p.need - p.have) .. " " .. p.name end
+    end
+    if #short > 0 then
+      GameTooltip:AddLine(string.format(L.CRAFT_MISSING, table.concat(short, ", ")), C.orange[1], C.orange[2], C.orange[3])
+    else
+      GameTooltip:AddLine(L.CRAFT_ALL, C.green[1], C.green[2], C.green[3])
     end
   end
   local h = C.help

@@ -62,11 +62,11 @@ ting og sin egen «Må ha». Party-buffene er felles.
   Ikke i kamp.
 - Sett kan ikke byttes i kamp.
 
-## Lag selv
+## Kan lages
 
-Kan du lage en ting selv (for eksempel bandasjer med First Aid), og har du for få, viser tooltipen hva som trengs for å
-komme opp på antallet du vil ha – ikke bare for én: «Lag selv, 3 ganger (6 til):» og under det hver ting med hva du
-har og hva som trengs (grønt når du har nok, rødt når du mangler).
+Kan du lage en ting selv (for eksempel bandasjer med First Aid), og har du for få, sier tooltipen hva du må kjøpe inn
+for å komme opp på antallet du vil ha: «Kan lages – mangler 2 Wool Cloth». Har du alt som trengs i baggen, står det
+«Kan lages – du har alt som trengs».
 
 Control lærer oppskriftene når du åpner yrkesvinduet, og husker dem for karakteren. Åpne det én gang for hvert yrke.
 

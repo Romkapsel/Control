@@ -38,7 +38,7 @@ end
 
 -- Før yrkesvinduet har vært åpent: ingenting om å lage
 hover(rune)
-check(not hasPrefix("Lag selv"), "uten oppskrifter: ingen «Lag selv»")
+check(not hasPrefix("Kan lages"), "uten oppskrifter: ingen «Kan lages»")
 
 -- Åpne yrkesvinduet: oppskriftene leses (overskrifter hoppes over)
 T.trade = {
@@ -55,25 +55,23 @@ eq(db.debug.craft.read, 2, "to oppskrifter lest")
 
 -- Runecloth Bandage: 3 av 10 → 7 ganger, du har 12 Runecloth – alt grønt
 hover(rune)
-check(has("Lag selv, 7 ganger (7 til):"), "7 ganger for å nå 10")
-check(has("  Runecloth 12/7"), "Runecloth 12/7")
+check(has("Kan lages – du har alt som trengs"), "7 til trenger 7 Runecloth, du har 12")
 
 -- Heavy Linen Bandage: 0 av 5, gir 2 per gang → 3 ganger (6 til); 6 Linen og 3 Wool trengs
 hover(linen)
-check(has("Lag selv, 3 ganger (6 til):"), "3 ganger, 2 per gang")
-check(has("  Linen Cloth 4/6") and has("  Wool Cloth 0/3"), "Linen 4/6, Wool 0/3")
+check(has("Kan lages – mangler 2 Linen Cloth, 3 Wool Cloth"), "3 ganger à 2: 6 Linen (har 4) og 3 Wool (har 0)")
 
 -- Én gang holder: «1 gang»
 T.counts[2581] = 4
 Fire("BAG_UPDATE_DELAYED")
 hover(linen)
-check(has("Lag selv, 1 gang (2 til):"), "én gang igjen")
+check(has("Kan lages – mangler 1 Wool Cloth"), "én gang igjen: Linen holder, 1 Wool mangler")
 
 -- Grønt: ingenting om å lage (ikke for 1, bare opp til ønsket antall)
 T.counts[14529] = 10
 Fire("BAG_UPDATE_DELAYED")
 hover(rune)
-check(not hasPrefix("Lag selv"), "nok: ingen «Lag selv»")
+check(not hasPrefix("Kan lages"), "nok: ingenting om å lage")
 
 -- Huskes etter at vinduet er lukket, og mister ikke det som ble lest før (sammenfelt gruppe neste gang)
 T.trade = { { name = "Bandasjer", header = true } }
