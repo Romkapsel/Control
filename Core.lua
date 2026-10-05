@@ -421,10 +421,15 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     for e in pairs(CAST) do pcall(self.RegisterUnitEvent, self, e, "player") end
     for _, e in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
                          "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED",
-                         "ZONE_CHANGED_NEW_AREA", "TAXIMAP_OPENED", "GOSSIP_SHOW" }) do
+                         "ZONE_CHANGED_NEW_AREA", "ZONE_CHANGED", "ZONE_CHANGED_INDOORS", "TAXIMAP_OPENED", "GOSSIP_SHOW" }) do
       pcall(self.RegisterEvent, self, e)
     end
-    C_Timer.NewTicker(0.25, function() Core.Draw() end) -- én felles klokke for nedtellingene
+    C_Timer.NewTicker(0.25, function()
+      -- Byvakt: les stedet selv også. Ut av et hus (Anvilmar, et vertshus) gir ikke alltid ZONE_CHANGED_NEW_AREA
+      -- (Daniel 5. okt: ingen advarsel ut av Anvilmar). CityWatch.Zone gjør ingenting når stedet er det samme.
+      ns.CityWatch.Zone(ns.Menu.Zone())
+      Core.Draw()
+    end) -- én felles klokke for nedtellingene
     ns.Refresh(true)
     return
   end
@@ -438,7 +443,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
       end
       ns.Refresh(true)
     end
-  elseif event == "ZONE_CHANGED_NEW_AREA" then
+  elseif event == "ZONE_CHANGED_NEW_AREA" or event == "ZONE_CHANGED" or event == "ZONE_CHANGED_INDOORS" then
     ns.CityWatch.Zone(ns.Menu.Zone())
     ns.Refresh(false) -- «Du er i …» i menyen
   elseif event == "TAXIMAP_OPENED" then

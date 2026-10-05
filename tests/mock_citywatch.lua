@@ -116,6 +116,40 @@ table.remove(ControlCharDB.cityWatch.cities, 3)
 zone("Teldrassil")
 eq(sounds(), 6, "Darnassus fjernet fra vakta: ingen varsel")
 
+-- Inn på et vertshus i Stormwind: eget sted for spillet, men kartet sier Stormwind – ingen varsel
+zone("Stormwind City")
+local b0 = sounds()
+T.maps = { [1453] = { name = "Stormwind City", mapType = 3 } }
+T.mapId = 1453
+zone("The Gilded Rose")
+eq(sounds(), b0, "inn på Gilded Rose i Stormwind: ingen varsel")
+zone("Stormwind City")
+T.maps = { [1429] = { name = "Elwynn Forest", mapType = 3 } }
+T.mapId = 1429
+zone("Elwynn Forest")
+eq(sounds(), b0 + 1, "ut porten (kartet sier Elwynn): varsel")
+T.maps, T.mapId = nil, nil
+zone("Teldrassil")
+
+-- Ut av et hus (Anvilmar): spillet sender bare ZONE_CHANGED_INDOORS, ikke NEW_AREA (Daniel 5. okt)
+table.insert(ControlCharDB.cityWatch.cities, "Anvilmar")
+local before = sounds()
+T.zone = "Anvilmar"
+Fire("ZONE_CHANGED_INDOORS")
+T.zone = "Dun Morogh"
+Fire("ZONE_CHANGED_INDOORS")
+eq(sounds(), before + 1, "ut av Anvilmar (ZONE_CHANGED_INDOORS): varsel")
+-- ... og uten noen beskjed fra spillet: klokka merker det
+T.zone = "Anvilmar"
+Tick()
+T.zone = "Dun Morogh"
+Tick()
+eq(sounds(), before + 2, "ut av Anvilmar uten beskjed fra spillet: klokka merker det")
+Tick()
+eq(sounds(), before + 2, "står stille utenfor: ikke en gang til")
+T.zone = "Teldrassil"
+Tick()
+
 -- /control varsel: se varselet når som helst
 SlashCmdList.CONTROL("varsel")
 check(A.frame.shown and A.title.text == "Du forlater Teldrassil", "/control varsel viser varselet")

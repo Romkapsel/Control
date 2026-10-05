@@ -175,7 +175,8 @@ function UnitPosition(u) local p = T.pos and T.pos[u] if p then return S(p[1]), 
 function CheckInteractDistance(u, i) if T.secret then return SECRET end return (T.near and T.near[u]) or false end
 C_GossipInfo = { GetOptions = function() return T.gossip or {} end }
 function GetSubZoneText() return S("Trade District") end
-C_Map = { GetBestMapForUnit = function() return S(1453) end }
+C_Map = { GetBestMapForUnit = function() return S(T.mapId or 1453) end,
+          GetMapInfo = function(id) return T.maps and T.maps[id] end }
 function IsInInstance() return false, "none" end
 function IsResting() return S(true) end
 function InCombatLockdown() return T.combat end

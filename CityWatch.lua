@@ -30,7 +30,8 @@ function CW.Zone(z)
     if not CW.Watched(was) then alerted = false end -- framme på et vaktet sted: neste avreise varsles igjen
     return
   end
-  if was and CW.Watched(was) and not alerted then
+  -- Inn på et vertshus i byen: spillet kaller det et eget sted, men kartet sier at du fortsatt er i byen
+  if was and CW.Watched(was) and not alerted and not (ns.Scan and ns.Scan.InsideZone(was)) then
     alerted = true
     if CW.onDepart then CW.onDepart(was) end
   end

@@ -374,5 +374,21 @@ function Scan.GossipHasTaxi()
   return found, seen
 end
 
+-- Er du fortsatt inne i stedet «name» ifølge kartet? (Et vertshus i Stormwind ligger på Stormwinds kart.)
+-- Byvakta varsler ikke da, selv om spillet kaller vertshuset et eget sted. Kan ikke kartet leses: nei.
+function Scan.InsideZone(name)
+  if not name or not (C_Map and C_Map.GetBestMapForUnit and C_Map.GetMapInfo) then return false end
+  local ok, id = pcall(C_Map.GetBestMapForUnit, "player")
+  if not ok or isSecret(id) or type(id) ~= "number" then return false end
+  for _ = 1, 8 do
+    local ok2, info = pcall(C_Map.GetMapInfo, id)
+    if not ok2 or type(info) ~= "table" or isSecret(info.name) then return false end
+    if info.name == name then return true end
+    id = info.parentMapID
+    if isSecret(id) or not id or id == 0 then return false end
+  end
+  return false
+end
+
 -- For testene
 function Scan.Reset() seen, expires, lastStatus, Scan.confirmed = {}, {}, {}, {} end
