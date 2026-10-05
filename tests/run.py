@@ -221,7 +221,7 @@ C_SpellBook = { GetNumSpellBookSkillLines = function() return 1 end,
                 GetSpellBookItemInfo = function(i) return BOOK[i] end }
 T.spellNames = { [1126] = "Mark of the Wild", [5232] = "Mark of the Wild", [17626] = "Flask of the Titans",
                  [19705] = "Well Fed", [433] = "Food", [5176] = "Wrath" }
-C_Spell = { GetSpellInfo = function(id) local n = T.spellNames[id] if n then return { name = n, iconID = 1000 + id } end end,
+C_Spell = { GetSpellInfo = function(id) local n = T.spellNames[id] if n then return { name = n, iconID = 1000 + id, maxRange = T.spellRange and T.spellRange[id] } end end,
             IsSpellUsable = function(name) if T.usable and T.usable[name] ~= nil then return T.usable[name] end return true end }
 function GetCursorInfo() if T.cursor then return unpack(T.cursor) end end
 function ClearCursor() T.cursor = nil end

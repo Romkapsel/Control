@@ -176,4 +176,36 @@ T.cursor = { "item", 13510, "[Flask]" }
 pb.frame.scripts.OnReceiveDrag(pb.frame)
 check(#ControlCharDB.party == 2 and Chat("Bare scrolls kan brukes på andre"), "flask på gruppesiden avvises med forklaring")
 
+-- Warrior shout (Daniel 5. okt): ingen rekkevidde – kastes på deg selv, og ett kast gjelder alle i gruppa
+T.spellNames[6673] = "Battle Shout"
+T.spellRange = { [6673] = 0, [1126] = 30 }
+T.party = { party1 = "Brakk", party2 = "Mira" }
+T.pa = { party1 = {}, party2 = {} }
+Fire("GROUP_ROSTER_UPDATE")
+T.cursor = { "spell", 3, "spell", 6673 }
+ns.Actions.DropOn(true, 1)
+local shout
+for _, x in ipairs(ControlCharDB.party) do if x.name == "Battle Shout" then shout = x end end
+check(shout and shout.tier == 1, "Battle Shout lagt til gruppa")
+local ss = ns.model.st[shout.id]
+check(ss.cast and ss.cast.self and ss.cast.group, "shout: kastes på deg selv")
+local shoutBtn
+for _, bt in ipairs(ns.Tray.Get("left").buttons) do if bt.entry == shout and bt.shown then shoutBtn = bt end end
+check(shoutBtn and shoutBtn:GetAttribute("unit") == "player" and shoutBtn:GetAttribute("spell") == "Battle Shout",
+  "knappen kaster Battle Shout på deg selv")
+check(shoutBtn:GetAttribute("ks-qn") == nil, "ingen kø: ett kast gjelder alle")
+local motwEntry = ControlCharDB.party[1]
+local ms = ns.model.st[motwEntry.id]
+check(ms.cast and not ms.cast.self, "MotW (30 yards) kastes fortsatt på den som mangler")
+T.combat, T.secret = true, true -- i kamp: buffene kan ikke leses, bekreftelsen er det vi har
+Fire("PLAYER_REGEN_DISABLED")
+shoutBtn.scripts.hookPreClick(shoutBtn, "LeftButton")
+Fire("UNIT_SPELLCAST_SENT", "player", "", "c9", 6673)
+Fire("UNIT_SPELLCAST_SUCCEEDED", "player", "c9", 6673)
+ss = ns.model.st[shout.id]
+check(#ss.missingOn == 0 and ss.members[1].has and ss.members[2].has, "ett kast i kamp: begge regnes som buffet")
+T.combat, T.secret = false, false
+Fire("PLAYER_REGEN_ENABLED")
+T.spellRange = nil
+
 return n, fails

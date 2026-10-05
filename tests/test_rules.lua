@@ -251,4 +251,14 @@ check(d.sev == 0 and d.text == "Alt med", "byvakt: alt med")
 d = R.departure({}, {}, L)
 check(d.sev == 0, "byvakt: tom liste = alt med")
 
+------------------------------------------------------------------------
+-- Shouts (Daniel 5. okt): ingen rekkevidde = kastes på deg selv, gjelder alle
+------------------------------------------------------------------------
+local shout = { id = "s", type = "partyspell", tier = 1, name = "Battle Shout" }
+local sst = { missingOn = { { name = "Brakk", unit = "party1" }, { name = "Mira", unit = "party2" } } }
+local c = R.partyCast(shout, sst, { inParty = true, selfCast = true })
+check(c and c.self and c.group and c.spell == "Battle Shout", "shout: på deg selv, gjelder alle")
+c = R.partyCast(shout, sst, { inParty = true })
+check(c and not c.self and not c.group and c.target.unit == "party1", "uten selfCast: som før")
+
 return n, fails

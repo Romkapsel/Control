@@ -193,7 +193,7 @@ function EB.Bind(b, e, st)
     if cast and cast.target then
       b:SetAttribute("type", "spell")
       b:SetAttribute("spell", cast.spell)
-      b:SetAttribute("unit", cast.target.unit)
+      b:SetAttribute("unit", cast.self and "player" or cast.target.unit) -- shouts: på deg selv
     else
       b:SetAttribute("type", nil) -- alle har den: ingenting å kaste
     end

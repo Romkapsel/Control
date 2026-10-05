@@ -92,12 +92,16 @@ end
 -- Gruppebuff: hva kastes og på hvem (SPEC §9.3, §9.5)
 ------------------------------------------------------------------------
 
--- ctx = { inParty = true/false, groupUsable = spillet sier at gruppeversjonen kan kastes nå (kjent, reagens, mana) }
+-- ctx = { inParty = true/false, groupUsable = spillet sier at gruppeversjonen kan kastes nå (kjent, reagens, mana),
+--         selfCast = spellen har ingen rekkevidde (warrior shouts o.l.): kastes på deg selv og treffer gruppa }
 -- Gruppeversjonen bare i party, når flere enn 2 mangler, og reagensen finnes. Ellers enkeltversjonen på neste som mangler.
 function Rules.partyCast(e, st, ctx)
   local missing = Rules.partyMissing(st)
   if #missing == 0 then return nil end
   ctx = ctx or {}
+  if ctx.selfCast then -- Daniel 5. okt: shouts kastes på deg selv; ett kast gjelder alle i nærheten
+    return { spell = e.castName or e.spellName or e.name, group = true, self = true, target = missing[1] }
+  end
   local useGroup = e.groupSpell ~= nil and ctx.inParty == true and #missing > 2
     and ctx.groupUsable == true
   return {

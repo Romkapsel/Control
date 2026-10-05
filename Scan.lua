@@ -52,6 +52,27 @@ function Scan.SpellUsable(name)
   return ok and not isSecret(usable) and usable == true
 end
 
+-- Har spellen ingen rekkevidde (kastes på deg selv og treffer gruppa, som warrior shouts)? Fra maxRange i
+-- spillets spell-info: 0 = ingen rekkevidde. Vet vi ikke, svarer vi nei – da oppfører knappen seg som før.
+local selfCastCache = {}
+function Scan.SelfCast(e)
+  local key = e.spellId or e.name
+  if key == nil then return false end
+  if selfCastCache[key] ~= nil then return selfCastCache[key] end
+  local result = false
+  if C_Spell and C_Spell.GetSpellInfo then
+    local ok, info = pcall(C_Spell.GetSpellInfo, key)
+    if ok and type(info) == "table" and not isSecret(info.maxRange) and type(info.maxRange) == "number" then
+      result = info.maxRange == 0
+    end
+  elseif GetSpellInfo then
+    local ok, _, _, _, _, _, maxRange = pcall(GetSpellInfo, key)
+    if ok and not isSecret(maxRange) and type(maxRange) == "number" then result = maxRange == 0 end
+  end
+  selfCastCache[key] = result
+  return result
+end
+
 function Scan.ItemCount(id)
   if not id then return 0 end
   local ok, c = pcall(function()

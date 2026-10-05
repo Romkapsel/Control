@@ -36,7 +36,8 @@ function Core.Model()
   for _, e in ipairs(ns.db.party) do
     local s = pst[e.id]
     -- Hva knappen kaster og på hvem (SPEC §9.3, §9.5); gruppeversjonen bare når spillet sier den kan kastes nå
-    s.cast = ns.Rules.partyCast(e, s, { inParty = #members > 0, groupUsable = e.groupSpell and ns.Scan.SpellUsable(e.groupSpell) })
+    s.cast = ns.Rules.partyCast(e, s, { inParty = #members > 0, groupUsable = e.groupSpell and ns.Scan.SpellUsable(e.groupSpell),
+                                        selfCast = e.type == "partyspell" and ns.Scan.SelfCast(e) })
     if e.itemId then s.count = ns.Scan.ItemCount(e.itemId) or 0 end
     st[e.id] = s
   end
