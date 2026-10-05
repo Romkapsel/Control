@@ -33,7 +33,7 @@ local DEFAULTS = {
     partySide = "left",
     showCount = true,   -- tallet i midten av medaljongen (Oppsett i menyen)
     openCore = false,   -- gjennomsiktig midte: verden synes gjennom kjernen (Oppsett i menyen)
-    menuSections = { self = true, party = true, city = true },
+    menuSections = { self = true, party = false, city = false, setup = false }, -- åpnes med bare Meg utfoldet
   },
   durations = {},
   cityWatch = { cities = {}, checkRepair = true, checkBags = false }, -- reparasjon på, bagplass av som standard (Daniel 5. okt)

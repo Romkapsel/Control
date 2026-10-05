@@ -11,6 +11,7 @@ Fire("ADDON_LOADED", "Control")
 Fire("PLAYER_LOGIN")
 local Menu = ns.Menu
 Menu.SetOpen(true)
+ControlCharDB.ui.menuSections.setup = true
 ns.Refresh(false)
 check(Menu.rangeButton == nil, "knappen er skjult som standard")
 

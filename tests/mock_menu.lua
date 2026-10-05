@@ -34,6 +34,10 @@ eq(T.tooltip.text, "Lukke meny", "tooltip: Lukke meny")
 zoneClick(0, -20)
 zoneClick(0, -20)
 check(Menu.IsOpen() and Menu.frame.shown, "nedre sone åpner menyen")
+check(Menu.heads[1].pm.text == "-" and Menu.heads[2].pm.text == "+" and Menu.heads[3].pm.text == "+" and Menu.heads[4].pm.text == "+",
+  "åpnes med bare Meg utfoldet (Party, Byvakt og Oppsett minimert)")
+for _, k in ipairs({ "party", "city", "setup" }) do ControlCharDB.ui.menuSections[k] = true end -- resten av testen: alt utfoldet
+ns.Refresh(false)
 local p = Menu.frame.points[1]
 check(p[1] == "TOP" and p[3] == "TOP" and p[5] == -70, "under medaljongen: 6 px luft (toppen 70 px under medaljongens topp)")
 eq(Menu.frame.width, 356, "like bred som to sidemenyer med 2 knapper og 1 pluss")
@@ -42,7 +46,7 @@ eq(#Menu.heads, 4, "fire deler")
 check(Menu.heads[1].title.text == "Meg" and Menu.heads[2].title.text == "Party"
   and Menu.heads[3].title.text == "Byvakt" and Menu.heads[4].title.text == "Oppsett", "delene i rekkefølge")
 check(Menu.heads[1].right.text == "høyre" and Menu.heads[2].right.text == "venstre", "hvilken side de står på")
-check(Menu.heads[4].pm.text == "", "Oppsett kan ikke felles sammen")
+check(Menu.heads[4].pm.text == "-", "Oppsett kan også felles sammen")
 
 -- Slipp inn i rad I og rad II
 check(slot(false, 1) and slot(false, 2) and slot(true, 1) and slot(true, 2), "tomme rader: én «+»-rute hver")

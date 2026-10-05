@@ -685,6 +685,9 @@ function Menu.IsOpen() return frame ~= nil and frame:IsShown() end
 function Menu.SetOpen(v)
   if InCombatLockdown() or not frame then return end
   if v then
+    -- Alt minimert når menyen åpnes, unntatt Meg (Daniel 5. okt)
+    local ms = db.ui.menuSections
+    ms.self, ms.party, ms.city, ms.setup = true, false, false, false
     frame:Show()
     -- Glir ut fra medaljongen: ned når den henger under, opp når den står over (SPEC §7.6, 0,3 s)
     frame.unfold:SetDirection(0, Menu.OpensUp() and 10 or -10)
@@ -712,7 +715,8 @@ function Menu.Layout(model, members, sideOpen)
     picker(model.party, members or {})
   end
   if header("city", L.MENU_CITY) then cityWatch() end
-  header(nil, L.MENU_DIR)
+  local setupOpen = header("setup", L.MENU_DIR)
+  if setupOpen then
   direction()
   separator()
   countRow()
@@ -720,7 +724,9 @@ function Menu.Layout(model, members, sideOpen)
   openCoreRow()
   separator()
   scaleRow()
-  if db.debug and db.debug.rangeButton then
+  end
+  if not setupOpen and Menu.slider then Menu.slider:Hide() Menu.slider.label:Hide() end
+  if setupOpen and db.debug and db.debug.rangeButton then
     -- Avstandstest (slås på med /ctrl avstand): ett bilde per trykk, også i kamp
     separator()
     local ww = W - 2 * PAD - 80

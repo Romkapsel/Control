@@ -84,6 +84,7 @@ T.combat, T.cursor = false, nil
 
 -- Glidebryteren: kamp midt i et dra skal ikke la medaljongen henge i forhåndsvisningen
 ns.Menu.SetOpen(true)
+ControlCharDB.ui.menuSections.setup = true
 ns.Refresh(false)
 local sl = ns.Menu.slider
 sl.scripts.OnMouseDown(sl)
@@ -99,6 +100,7 @@ Fire("PLAYER_REGEN_ENABLED")
 T.partyClass = { party1 = nil, party2 = "MAGE" }
 local g = ControlCharDB.party[1]
 g.onlyOn = { Brakk = true }
+ControlCharDB.ui.menuSections.party = true
 ns.Refresh(false)
 local count = 0
 for _, c in ipairs(ns.Menu.frame.children or {}) do if c.shown and c.text == "Brakk" then count = count + 1 end end
