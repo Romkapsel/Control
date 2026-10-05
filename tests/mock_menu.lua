@@ -270,7 +270,33 @@ T.center = { 500, 200 }
 ns.Refresh(false)
 p = Menu.frame.points[1]
 check(p[1] == "BOTTOM" and p[3] == "TOP" and p[5] == 6, "nedre halvdel: menyen åpner oppover")
+-- Lås og meny bytter plass: menysymbolet øverst, låsen nederst (Daniel 5. okt)
+check(M.IsFlipped() and st.hit:GetAttribute("ks-flip") == true, "menyen åpner oppover: lås og meny har byttet plass")
+check(M.State().sym.up == M.State().sym.menu and M.State().sym.menu.baseY > 0, "menysymbolet står øverst")
+mouse(0, 20)
+M.TrackMouse()
+eq(T.tooltip.text, "Lukke meny", "øverste sone er menyen nå")
+-- Lukke-pila står i den ytterste enden: øverst
+check(Menu.closeDown.shown and Menu.closeDown.points[1][1] == "TOPRIGHT", "lukke-pila øverst til høyre")
+zoneClick(0, 20)
+check(not Menu.IsOpen(), "klikk øverst: menyen lukkes")
+-- I kamp: det sikre skriptet åpner menyen fra den øverste sonen
+T.combat = true
+T.mousePos = { 0.5, 0.95 }
+SecureClick(st.hit, "LeftButton")
+check(Menu.IsOpen(), "i kamp: øverste sone åpner menyen")
+T.mousePos = { 0.5, 0.05 }
+SecureClick(st.hit, "LeftButton")
+check(Menu.IsOpen(), "i kamp: nederste sone (låsen) gjør ingenting")
+T.mousePos = { 0.5, 0.95 }
+SecureClick(st.hit, "LeftButton")
+T.combat = false
 T.center = { 500, 400 }
+ns.Refresh(false)
+check(not M.IsFlipped() and st.hit:GetAttribute("ks-flip") == nil, "øvre halvdel: tilbake – låsen øverst")
+zoneClick(0, -20)
+check(Menu.IsOpen(), "nederst: menyen åpnes")
+check(Menu.closeUp.shown and Menu.closeUp.points[1][1] == "BOTTOMRIGHT", "lukke-pila nederst til høyre")
 zoneClick(0, -20)
 check(not Menu.IsOpen(), "klikk igjen: lukket")
 

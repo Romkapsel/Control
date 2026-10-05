@@ -88,6 +88,7 @@ function Core.Draw()
     ns.SideBar.Layout(mb, model.self, model.st, view, false, ns.L)
     ns.SideBar.Layout(pb, model.party, model.st, view, true, ns.L)
     ns.Tray.UpdateNext(mb, pb) -- tasten «neste buff»: den første knappen ved medaljongen
+    ns.Medallion.SetFlipped(ns.Menu.OpensUp()) -- menyen åpner oppover: menysymbolet øverst, låsen nederst
     ns.Menu.Layout(model, members, ns.SideBar.IsOpen(mb) or ns.SideBar.IsOpen(pb))
     prevTray = view.tray
   end

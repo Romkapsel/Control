@@ -632,10 +632,13 @@ local function anchor(sideOpen)
     if sideOpen then top = math.max(top, 4 + 88 + 4) end
     frame:SetPoint("TOP", root, "TOP", 0, -top)
   end
-  -- Pila peker mot medaljongen: opp når menyen henger under, ned når den står over
+  -- Pila peker mot medaljongen og står i den ytterste enden: nederst når menyen henger under, øverst når den står
+  -- over (Daniel 5. okt: en snarvei til å lukke når musa er langt fra medaljongen)
   if Menu.closeUp and Menu.closeDown then
     Menu.closeUp:SetShown(not up)
     Menu.closeDown:SetShown(up)
+    Menu.closeDown:ClearAllPoints()
+    Menu.closeDown:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -8, -8)
   end
 end
 
@@ -708,7 +711,7 @@ function Menu.Layout(model, members, sideOpen)
   local host = Menu.host
   host.buttons, host.ids, host.slots = {}, {}, {}
   Menu.heads = {}
-  y = 8
+  y = Menu.OpensUp() and 8 + 22 or 8 -- står menyen over medaljongen, har lukke-pila en egen stripe øverst
   if header("self", L.LABEL_MY_BUFFS, sideWord(false)) then rows(model.self, false, model.st) end
   if header("party", L.LABEL_PARTY_BUFFS, sideWord(true)) then
     rows(model.party, true, model.st)

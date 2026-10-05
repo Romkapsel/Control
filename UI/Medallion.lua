@@ -141,9 +141,12 @@ M.TOGGLE = [[
   elseif dy < 0 then
     zone = "down"
   else
-    return
+    zone = "up"
   end
-  if zone == "down" then
+  local menuZone = "down"
+  if self:GetAttribute("ks-flip") then menuZone = "up" end
+  if zone == "up" or zone == "down" then
+    if zone ~= menuZone then return end -- låsen: ingenting i kamp
     local m = self:GetFrameRef("menu")
     if m then
       if m:IsShown() then m:Hide() else m:Show() end
@@ -287,13 +290,16 @@ local function build()
 
   -- Alt ok: tom kjerne, ingen hake (Daniel 5. okt: det som ikke lyser, er i orden)
 
-  sym.up = symbolFrame(face, 0, SYM_OFFSET - 1) -- låsen er høyest: 1 enhet lenger inn, så bøylen ikke når ringen
-  sym.up.open = symbolFrame(sym.up, 0, 0)
-  symbol(sym.up.open, "sym_lock_open")
-  sym.up.closed = symbolFrame(sym.up, 0, 0)
-  symbol(sym.up.closed, "sym_lock_closed")
-  sym.down = symbolFrame(face, 0, -SYM_OFFSET)
-  symbol(sym.down, "sym_menu")
+  -- Låsen og menyen: sym.up er alltid symbolet øverst, sym.down nederst. Åpner menyen oppover (medaljongen i nedre
+  -- halvdel), bytter de plass, så du klikker på den siden menyen kommer (Daniel 5. okt) – se M.SetFlipped.
+  sym.lock = symbolFrame(face, 0, SYM_OFFSET - 1) -- låsen er høyest: 1 enhet lenger inn, så bøylen ikke når ringen
+  sym.lock.open = symbolFrame(sym.lock, 0, 0)
+  symbol(sym.lock.open, "sym_lock_open")
+  sym.lock.closed = symbolFrame(sym.lock, 0, 0)
+  symbol(sym.lock.closed, "sym_lock_closed")
+  sym.menu = symbolFrame(face, 0, -SYM_OFFSET)
+  symbol(sym.menu, "sym_menu")
+  sym.up, sym.down = sym.lock, sym.menu
   sym.left = symbolFrame(face, -SYM_SIDE, 0)
   sym.left.one = symbolFrame(sym.left, 0, 0) symbol(sym.left.one, "sym_one")
   sym.left.two = symbolFrame(sym.left, 0, 0) symbol(sym.left.two, "sym_two")
@@ -402,8 +408,8 @@ end
 
 local function refreshSymbols()
   local locked = db.ui.locked
-  sym.up.open:SetShown(not locked)
-  sym.up.closed:SetShown(locked)
+  sym.lock.open:SetShown(not locked)
+  sym.lock.closed:SetShown(locked)
   local pl = partyLeft()
   sym.left.two:SetShown(pl)
   sym.left.one:SetShown(not pl)
@@ -415,9 +421,26 @@ end
 -- Tooltip for sonene og midten (SPEC §14)
 ------------------------------------------------------------------------
 
+local flipped = false
+local function lockZone() return flipped and "down" or "up" end
+local function menuZone() return flipped and "up" or "down" end
+
+-- Menyen åpner oppover: menyen øverst og låsen nederst (bare utenfor kamp; det sikre skriptet leser ks-flip)
+function M.SetFlipped(f)
+  f = f and true or false
+  if f == flipped or InCombatLockdown() then return end
+  flipped = f
+  sym.up, sym.down = (f and sym.menu or sym.lock), (f and sym.lock or sym.menu)
+  sym.lock.baseY = f and -(SYM_OFFSET - 1) or (SYM_OFFSET - 1)
+  sym.menu.baseY = f and SYM_OFFSET or -SYM_OFFSET
+  hit:SetAttribute("ks-flip", f or nil)
+  applyAll()
+end
+function M.IsFlipped() return flipped end
+
 local function zoneText(z)
-  if z == "up" then return db.ui.locked and L.ZONE_UNLOCK or L.ZONE_LOCK end
-  if z == "down" then
+  if z == lockZone() then return db.ui.locked and L.ZONE_UNLOCK or L.ZONE_LOCK end
+  if z == menuZone() then
     local open = M.isMenuOpen and M.isMenuOpen()
     return open and L.ZONE_MENU_CLOSE or L.ZONE_MENU_OPEN
   end
@@ -548,11 +571,11 @@ local function onMouseUp(_, button)
     return
   end
   if button ~= "LeftButton" then return end
-  if hover == "up" then
+  if hover == lockZone() then
     M.SetLocked(not db.ui.locked)
     if M.onLockChanged then M.onLockChanged(db.ui.locked) end
   elseif hover and M.onZoneClick then
-    M.onZoneClick(hover)
+    M.onZoneClick(hover == menuZone() and "down" or hover) -- "down" = menyen for Core, uansett hvor den står
     showTip()
   end
 end
