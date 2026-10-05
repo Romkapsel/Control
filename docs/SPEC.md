@@ -539,7 +539,7 @@ Alt gjøres med musa direkte på medaljongen og knappene. Ingen innstillingsvind
 
 Sjekk navnene i Forever. Tabellen er data, ikke logikk. Likeverdige buffer fylles inn automatisk (Q9).
 
-**Gruppeversjonen foreslås bare når den lønner seg** (Daniel, 3. okt.): knappen for en gruppebuff kaster gruppeversjonen (Gift of the Wild, Prayer of Fortitude, Arcane Brilliance …) bare når du er i party, **flere enn 2** av dem som følges mangler buffen, og du har reagensen i baggen. Ellers kaster den enkeltversjonen (Mark of the Wild osv.) på neste som mangler. Begge teller som «på». Valget gjøres utenfor kamp, sammen med målet (§9.3).
+**Gruppeversjonen foreslås bare når den lønner seg** (Daniel, 3. okt.): knappen for en gruppebuff kaster gruppeversjonen (Gift of the Wild, Prayer of Fortitude, Arcane Brilliance …) bare når du er i party, **flere enn 2** av dem som følges mangler buffen, og spillet sier at gruppeversjonen kan kastes nå (`C_Spell.IsSpellUsable`: lært, reagens i baggen, nok mana). Ellers kaster den enkeltversjonen (Mark of the Wild osv.) på neste som mangler. Begge teller som «på». Valget gjøres utenfor kamp, sammen med målet (§9.3).
 
 ---
 

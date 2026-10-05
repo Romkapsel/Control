@@ -118,7 +118,7 @@ function EB.Create(parent)
   b.glow:SetAlpha(0)
 
   b:HookScript("PreClick", function(self, mouse)
-    if mouse == "LeftButton" and self.entry then ns.Track.Pressed(self.entry) end
+    if mouse == "LeftButton" and self.entry then ns.Track.Pressed(self.entry, self.cast) end
     self.flashAnim:Stop()
     self.flashAnim:Play()
   end)
@@ -150,10 +150,23 @@ function EB.Create(parent)
   return b
 end
 
--- Hva knappen gjør når den klikkes. Bare utenfor kamp (beskyttet).
-function EB.Bind(b, e)
-  b.entry = e
-  if e.type == "spell" then
+-- Hva knappen gjør når den klikkes. Bare utenfor kamp (beskyttet). Attributter settes bare når de endres.
+-- Gruppebuff: st.cast = { spell, group, target = { name, unit } } fra Rules.partyCast.
+function EB.Bind(b, e, st)
+  local cast = st and st.cast
+  local sig = e.id .. "|" .. e.type .. "|" .. tostring(cast and cast.spell) .. "|" .. tostring(cast and cast.target and cast.target.unit)
+  if b.entry == e and b.sig == sig then return end
+  b.entry, b.sig, b.cast = e, sig, cast
+  if e.type == "partyspell" then
+    if cast and cast.target then
+      b:SetAttribute("type", "spell")
+      b:SetAttribute("spell", cast.spell)
+      b:SetAttribute("unit", cast.target.unit)
+    else
+      b:SetAttribute("type", nil) -- alle har den: ingenting å kaste
+    end
+    b:SetAttribute("item", nil)
+  elseif e.type == "spell" then
     b:SetAttribute("type", "spell")
     b:SetAttribute("spell", e.name) -- etter navn: kaster høyeste rank (fase 0, V5)
     b:SetAttribute("unit", "player")
@@ -186,8 +199,11 @@ function EB.Paint(b, e, st, L, frozen)
   b.band:Hide()
   b.bandText:SetText("")
   local drain, grey, glow = 0, false, false
+  EB.Squares(b, e.type == "partyspell" and st.members or nil)
 
-  if e.type == "item" then
+  if e.type == "partyspell" then
+    glow = #(st.missingOn or {}) > 0 -- gløder når noen mangler (SPEC §7.5)
+  elseif e.type == "item" then
     local count, want = st.count or 0, e.want or 1
     if count <= 0 then
       b.band:Show()
@@ -236,8 +252,93 @@ function EB.Paint(b, e, st, L, frozen)
   end
   b.glowing = glow
   b.faded = frozen and not R.canPress(e, st)
-  b:SetAlpha(b.faded and 0 or 1)
+  local alpha = 1
+  if b.faded then alpha = 0
+  elseif e.type == "partyspell" and InCombatLockdown() then alpha = 0.45 end -- vi ser ikke hvem som har den i kamp
+  b:SetAlpha(alpha)
   if GameTooltip:IsOwned(b) then EB.ShowTooltip(b) end
+end
+
+------------------------------------------------------------------------
+-- Gruppebuff: én rute (5 px) per medlem som følges, i et 11 px-bånd nederst (SPEC §7.5).
+-- Fylt lys = har, tom med gul kant = mangler, dempet = ukjent (ute av syne, offline, død).
+------------------------------------------------------------------------
+
+local LIGHT, GOLD, DIM = C.text, C.gold, Style.hex("5E5446")
+
+function EB.Squares(b, members)
+  b.squares = b.squares or {}
+  local n = members and #members or 0
+  if n == 0 then
+    for _, sq in ipairs(b.squares) do sq.edge:Hide() sq.fill:Hide() end
+    if b.partyBand then b.partyBand:Hide() end
+    return
+  end
+  if not b.partyBand then
+    b.partyBand = b:CreateTexture(nil, "OVERLAY", nil, 0)
+    b.partyBand:SetColorTexture(0, 0, 0, 0.72)
+    b.partyBand:SetPoint("BOTTOMLEFT", b.icon, "BOTTOMLEFT")
+    b.partyBand:SetPoint("BOTTOMRIGHT", b.icon, "BOTTOMRIGHT")
+    b.partyBand:SetHeight(11)
+  end
+  b.partyBand:Show()
+  local total = n * 5 + (n - 1) * 2
+  for i = 1, math.max(n, #b.squares) do
+    local sq = b.squares[i]
+    if not sq then
+      sq = { edge = b:CreateTexture(nil, "OVERLAY", nil, 1), fill = b:CreateTexture(nil, "OVERLAY", nil, 2) }
+      sq.edge:SetSize(5, 5)
+      sq.fill:SetSize(3, 3)
+      b.squares[i] = sq
+    end
+    local m = members[i]
+    if m then
+      local x = -total / 2 + (i - 1) * 7 + 2.5
+      sq.edge:ClearAllPoints()
+      sq.edge:SetPoint("CENTER", b.partyBand, "CENTER", x, 0)
+      sq.fill:ClearAllPoints()
+      sq.fill:SetPoint("CENTER", sq.edge, "CENTER")
+      local edgeC, fillC, fillA = LIGHT, LIGHT, 1
+      if m.has == false then edgeC, fillC, fillA = GOLD, C.black, 1
+      elseif m.has == nil then edgeC, fillC, fillA = DIM, DIM, 1 end
+      sq.edge:SetColorTexture(edgeC[1], edgeC[2], edgeC[3], 1)
+      sq.fill:SetColorTexture(fillC[1], fillC[2], fillC[3], fillA)
+      sq.edge:Show()
+      sq.fill:Show()
+    else
+      sq.edge:Hide()
+      sq.fill:Hide()
+    end
+  end
+end
+
+local function classColor(class)
+  local c = class and RAID_CLASS_COLORS and RAID_CLASS_COLORS[class]
+  if c then return c.r, c.g, c.b end
+  return C.text[1], C.text[2], C.text[3]
+end
+
+local function partyTooltip(b, e, st, L)
+  local members, missing = st.members or {}, st.missingOn or {}
+  local known = 0
+  for _, m in ipairs(members) do if m.has ~= nil then known = known + 1 end end
+  GameTooltip:AddLine(#missing > 0 and string.format(L.TIP_PARTY_MISSING, #missing, #members) or L.TIP_PARTY_ALL, 1, 1, 1)
+  for _, m in ipairs(members) do
+    local r, g, bl = classColor(m.class)
+    local word, wc = L.TIP_HAS, C.help
+    if m.has == false then word, wc = L.TIP_LACKS, C.red
+    elseif m.has == nil then word, wc = L.TIP_UNKNOWN, C.help end
+    GameTooltip:AddDoubleLine(m.name, word, r, g, bl, wc[1], wc[2], wc[3])
+  end
+  local cast = b.cast
+  if cast and cast.target then
+    local action = cast.group and string.format(L.TIP_CAST_GROUP, cast.spell) or string.format(L.TIP_CAST_ON, cast.target.name)
+    GameTooltip:AddLine(action, C.green[1], C.green[2], C.green[3])
+  else
+    GameTooltip:AddLine(L.TIP_NO_TARGET, C.help[1], C.help[2], C.help[3])
+  end
+  local h = C.help
+  GameTooltip:AddLine(e.onlyOn and L.TIP_ONLY_ON or L.TIP_PARTY_COMBAT, h[1], h[2], h[3])
 end
 
 ------------------------------------------------------------------------
@@ -251,7 +352,14 @@ function EB.ShowTooltip(b)
   GameTooltip:SetOwner(b, "ANCHOR_RIGHT")
   GameTooltip:SetText(e.type == "buffitem" and (e.auraNames and e.auraNames[1] or e.name) or e.name, 1, 1, 1)
   local line, action, actColor = "", "", C.green
-  if e.type == "item" then
+  if e.type == "partyspell" then
+    partyTooltip(b, e, st, L)
+    local h = C.help
+    GameTooltip:AddLine(string.format(L.TIP_RCLICK, e.tier == 1 and L.TIER_1 or L.TIER_2), h[1], h[2], h[3])
+    if b.canDrag then GameTooltip:AddLine(L.TIP_DRAG, h[1], h[2], h[3]) end
+    GameTooltip:Show()
+    return
+  elseif e.type == "item" then
     line = string.format(L.TIP_HAVE, st.count or 0, e.want or 1)
     local s = R.stockSeverity(e, st)
     action = s == 2 and L.TIP_STOCK_EMPTY or s == 1 and L.TIP_STOCK_LOW or L.TIP_STOCK_OK

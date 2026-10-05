@@ -25,12 +25,21 @@ end
 ------------------------------------------------------------------------
 
 Core.sample = nil -- nil = ekte data; ellers indeks i Data.SAMPLES (/control test)
-local prevTray, auraCache
+local prevTray, auraCache, partyAuraCache
+local members = {}
 
 function Core.Model()
   if Core.sample then return ns.Data.Sample(ns.Data.SAMPLES[Core.sample]) end
   local st = ns.Scan.State(ns.db, auraCache)
-  return { self = ns.db.self, party = ns.db.party, st = st } -- gruppebuffene leses fra fase 5
+  members = ns.Scan.Party()
+  local pst = ns.Scan.PartyState(ns.db.party, members, partyAuraCache, ns.db.durations)
+  for _, e in ipairs(ns.db.party) do
+    local s = pst[e.id]
+    -- Hva knappen kaster og på hvem (SPEC §9.3, §9.5); gruppeversjonen bare når spillet sier den kan kastes nå
+    s.cast = ns.Rules.partyCast(e, s, { inParty = #members > 0, groupUsable = e.groupSpell and ns.Scan.SpellUsable(e.groupSpell) })
+    st[e.id] = s
+  end
+  return { self = ns.db.self, party = ns.db.party, st = st }
 end
 
 local function byId(list)
@@ -61,16 +70,19 @@ function Core.Draw()
     return
   end
   local map = byId(model.self)
+  local pmap = byId(model.party)
   local mb, pb = mbSide(), pbSide()
   if inCombat then
     ns.Tray.Paint(mb, map, model.st, ns.L) -- frosset: bare tider, lager og glød
+    ns.Tray.Paint(pb, pmap, model.st, ns.L)
     ns.SideBar.Paint(mb, model.self, model.st, view, false, ns.L)
     ns.SideBar.Paint(pb, model.party, model.st, view, true, ns.L)
   else
     -- Sidemenyen dekker knappene ved medaljongen på sin side mens den er åpen (SPEC §7.4)
     local mbOut = ns.SideBar.IsOpen(mb) and {} or trayEntries(view.tray.self, map)
     ns.Tray.Layout(mb, mbOut, model.st, ns.L)
-    ns.Tray.Layout(pb, {}, {}, ns.L) -- gruppeknappene ved medaljongen kommer i fase 5
+    local pbOut = ns.SideBar.IsOpen(pb) and {} or trayEntries(view.tray.party, pmap)
+    ns.Tray.Layout(pb, pbOut, model.st, ns.L)
     ns.SideBar.Layout(mb, model.self, model.st, view, false, ns.L)
     ns.SideBar.Layout(pb, model.party, model.st, view, true, ns.L)
     prevTray = view.tray
@@ -87,6 +99,7 @@ function ns.Refresh(readAuras)
     scheduled = false
     if Core.readAuras then
       auraCache = ns.Scan.ReadAuras()
+      partyAuraCache = ns.Scan.ReadPartyAuras(ns.Scan.Party())
       Core.readAuras = false
     end
     Core.Draw()
@@ -217,7 +230,6 @@ function Actions.DropOnSide(sideKey)
   local e = party and ns.Data.MakePartyEntry(ns.db, info) or ns.Data.MakeEntry(ns.db, info, 2)
   table.insert(list, e)
   Say(string.format(ns.L.ADDED_SIDE, e.name))
-  if party then Say(ns.L.PARTY_LATER) end
   ns.Refresh(true)
 end
 
@@ -258,6 +270,13 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
       end
     end
     pcall(self.RegisterUnitEvent, self, "UNIT_AURA", "player")
+    -- Partyets buffer: egne små rammer (RegisterUnitEvent tar to enheter), så vi aldri må sammenligne enhetsnavn
+    for _, pair in ipairs({ { "party1", "party2" }, { "party3", "party4" } }) do
+      local pf = CreateFrame("Frame")
+      pcall(pf.RegisterUnitEvent, pf, "UNIT_AURA", pair[1], pair[2])
+      pf:SetScript("OnEvent", function() ns.Refresh(true) end)
+    end
+    self:RegisterEvent("GROUP_ROSTER_UPDATE")
     for e in pairs(CAST) do pcall(self.RegisterUnitEvent, self, e, "player") end
     for _, e in ipairs({ "BAG_UPDATE_DELAYED", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",
                          "PLAYER_ENTERING_WORLD", "GET_ITEM_INFO_RECEIVED" }) do
@@ -268,9 +287,13 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     return
   end
   if CAST[event] then
-    local e = ns.Track.OnEvent(event, arg1, ...)
+    local e, cast = ns.Track.OnEvent(event, arg1, ...)
     if e then
-      ns.Scan.Confirm(e, ns.db.durations)
+      if e.type == "partyspell" then
+        ns.Scan.ConfirmParty(e, cast and cast.target and cast.target.name, cast and cast.group, members, ns.db.durations)
+      else
+        ns.Scan.Confirm(e, ns.db.durations)
+      end
       ns.Refresh(true)
     end
   elseif event == "PLAYER_REGEN_ENABLED" then
@@ -279,10 +302,10 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     for _, fn in ipairs(queue) do pcall(fn) end
     ns.Refresh(true) -- les alt på nytt, legg ut knappene på nytt (SPEC §6.8)
   elseif event == "PLAYER_REGEN_DISABLED" then
-    auraCache = nil
+    auraCache, partyAuraCache = nil, nil
     Core.Draw()
   else
-    ns.Refresh(event == "UNIT_AURA" or event == "PLAYER_ENTERING_WORLD")
+    ns.Refresh(event == "UNIT_AURA" or event == "PLAYER_ENTERING_WORLD" or event == "GROUP_ROSTER_UPDATE")
   end
 end)
 

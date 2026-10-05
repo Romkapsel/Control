@@ -184,7 +184,7 @@ function SB.Layout(sideKey, entries, st, view, isParty, L)
     end
     b.side, b.index, b.isParty = sideKey, i, isParty
     place(bar, b, slotX(i - 1, n1, groove))
-    if b.entry ~= e then ns.EntryButton.Bind(b, e) end
+    ns.EntryButton.Bind(b, e, st[e.id]) -- setter attributter bare når noe er endret
     ns.EntryButton.Paint(b, e, st[e.id], L)
     b:Show()
     bar.ids[i] = e.id

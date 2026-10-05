@@ -90,5 +90,16 @@ ns.L = {
   TIP_WHEEL = "Musehjul: ønsket antall (Shift = 5)",
   TIP_RCLICK = "Høyreklikk: bytt tier (nå %s)",
   TIP_DRAG = "Shift + dra: flytt, eller slipp utenfor for å fjerne",
-  PARTY_LATER = "Gruppebuffene følges fra fase 5.",
+
+  -- Gruppebuffer (fase 5, SPEC §7.7)
+  TIP_PARTY_MISSING = "%d av %d mangler",
+  TIP_PARTY_ALL = "Alle har den",
+  TIP_HAS = "har",
+  TIP_LACKS = "mangler",
+  TIP_UNKNOWN = "ukjent",
+  TIP_CAST_ON = "Klikk: kast på %s",
+  TIP_CAST_GROUP = "Klikk: %s på hele gruppa",
+  TIP_NO_TARGET = "Ingen å kaste på",
+  TIP_PARTY_COMBAT = "I kamp: kaster på den som manglet før kampen",
+  TIP_ONLY_ON = "Følges bare på noen (velges i menyen)",
 }

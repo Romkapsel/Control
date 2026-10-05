@@ -141,15 +141,19 @@ C_Timer = { After = function(_, fn) fn() end, NewTicker = function(_, fn) T.tick
 function Tick() if T.ticker then T.ticker() end end
 C_Secrets = { ShouldAurasBeSecret = function() return T.secret end }
 C_UnitAuras = { GetAuraDataByIndex = function(unit, i)
-  local list = unit == "player" and T.auras or (T.partyAuras or {})
+  local list = unit == "player" and T.auras or ((T.pa and T.pa[unit]) or T.partyAuras or {})
   local a = list[i]
   if not a then return nil end
   return { name = S(a[1]), spellId = S(a[2]), expirationTime = S(a[3]), duration = S(a[4]), sourceUnit = S("player") }
 end }
 function UnitExists(u) return T.party[u] ~= nil end
-function UnitName(u) return S(T.party[u]) end
+function UnitName(u) if T.namesSecret then return SECRET end return T.party[u] end -- lesbare i kamp (V9); vernet testes med T.namesSecret
 function UnitGUID(u) return S("Player-1-" .. tostring(T.party[u])) end
-function UnitClass(u) return "Warrior", S("WARRIOR") end
+function UnitClass(u) local c = (T.partyClass and T.partyClass[u]) or "WARRIOR" return c, S(c) end
+function UnitIsVisible(u) return not (T.hidden and T.hidden[u]) end
+function UnitIsConnected(u) return not (T.offline and T.offline[u]) end
+function UnitIsDeadOrGhost(u) return (T.deadUnits and T.deadUnits[u]) or false end
+RAID_CLASS_COLORS = { WARRIOR = { r = 0.78, g = 0.61, b = 0.43 }, MAGE = { r = 0.25, g = 0.78, b = 0.92 } }
 function UnitInRange() return S(true), true end
 C_Container = { GetContainerNumSlots = function(b) return T.bags[b] and #T.bags[b] or 0 end,
                 GetContainerItemID = function(b, s) return T.bags[b] and T.bags[b][s] end }
@@ -181,7 +185,8 @@ C_SpellBook = { GetNumSpellBookSkillLines = function() return 1 end,
                 GetSpellBookItemInfo = function(i) return BOOK[i] end }
 T.spellNames = { [1126] = "Mark of the Wild", [5232] = "Mark of the Wild", [17626] = "Flask of the Titans",
                  [19705] = "Well Fed", [433] = "Food", [5176] = "Wrath" }
-C_Spell = { GetSpellInfo = function(id) local n = T.spellNames[id] if n then return { name = n, iconID = 1000 + id } end end }
+C_Spell = { GetSpellInfo = function(id) local n = T.spellNames[id] if n then return { name = n, iconID = 1000 + id } end end,
+            IsSpellUsable = function(name) if T.usable and T.usable[name] ~= nil then return T.usable[name] end return true end }
 function GetCursorInfo() if T.cursor then return unpack(T.cursor) end end
 function ClearCursor() T.cursor = nil end
 function Fire(e, ...) for _, f in ipairs(T.handlers[e] or {}) do f.scripts.OnEvent(f, e, ...) end end

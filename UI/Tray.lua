@@ -118,7 +118,7 @@ function Tray.Layout(side, entries, st, L)
   end
   if same then
     for i, e in ipairs(entries) do
-      if t.buttons[i].entry ~= e then ns.EntryButton.Bind(t.buttons[i], e) end
+      ns.EntryButton.Bind(t.buttons[i], e, st[e.id]) -- nytt mål for en gruppebuff setter nye attributter
       ns.EntryButton.Paint(t.buttons[i], e, st[e.id], L)
     end
     return true
@@ -128,7 +128,7 @@ function Tray.Layout(side, entries, st, L)
   t.ids = {}
   for i, e in ipairs(entries) do
     local b = button(t, i)
-    ns.EntryButton.Bind(b, e)
+    ns.EntryButton.Bind(b, e, st[e.id])
     ns.EntryButton.Paint(b, e, st[e.id], L)
     b:Show()
     if not old[e.id] then popIn(b) end

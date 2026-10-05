@@ -42,6 +42,16 @@ function Scan.SpellInfo(id)
   end
 end
 
+-- Kan spellen kastes nå (lært, reagens, mana)? Brukes for gruppeversjonen (Gift of the Wild osv.).
+function Scan.SpellUsable(name)
+  if not name then return false end
+  local ok, usable = pcall(function()
+    if C_Spell and C_Spell.IsSpellUsable then return C_Spell.IsSpellUsable(name) end
+    return IsUsableSpell(name)
+  end)
+  return ok and not isSecret(usable) and usable == true
+end
+
 function Scan.ItemCount(id)
   if not id then return 0 end
   local ok, c = pcall(function()
@@ -183,6 +193,122 @@ function Scan.State(db, auras)
     st[e.id] = s
   end
   return st
+end
+
+------------------------------------------------------------------------
+-- Gruppa (SPEC §9). Navn og GUID er lesbare i kamp (V9), buffene ikke (V3), rekkevidde aldri (V3).
+-- Et medlem som er ute av syne, offline eller dødt, er ukjent: vist dempet, telles ikke (Q8).
+------------------------------------------------------------------------
+
+local function safe1(fn, ...)
+  if not fn then return nil end
+  local ok, a = pcall(fn, ...)
+  if not ok or isSecret(a) then return nil end
+  return a
+end
+
+function Scan.Party()
+  local out = {}
+  for i = 1, 4 do
+    local unit = "party" .. i
+    if safe1(UnitExists, unit) then
+      local okC, _, class = pcall(UnitClass, unit)
+      if not okC or isSecret(class) then class = nil end
+      out[#out + 1] = {
+        unit = unit,
+        name = safe1(UnitName, unit),
+        class = class,
+        visible = safe1(UnitIsVisible, unit) ~= false,
+        online = safe1(UnitIsConnected, unit) ~= false,
+        dead = safe1(UnitIsDeadOrGhost, unit) == true,
+      }
+    end
+  end
+  return out
+end
+
+-- Buffene på ett medlem: navn → { expires, duration }, eller nil når de er hemmelige eller uleselige
+function Scan.ReadUnitAuras(unit)
+  if Scan.AurasSecret() then return nil end
+  local out = {}
+  for i = 1, 40 do
+    local ok, a = pcall(C_UnitAuras.GetAuraDataByIndex, unit, i, "HELPFUL")
+    if not ok then return nil end
+    if a == nil then break end
+    local name, exp, dur = a.name, a.expirationTime, a.duration
+    if isSecret(name) or isSecret(exp) or isSecret(dur) then return nil end
+    if name then
+      local e = (exp and exp > 0) and exp or math.huge
+      if not out[name] or e > out[name].expires then out[name] = { expires = e, duration = dur } end
+    end
+  end
+  return out
+end
+
+function Scan.ReadPartyAuras(members)
+  local out = {}
+  for _, m in ipairs(members) do
+    if m.visible and m.online and not m.dead then out[m.unit] = Scan.ReadUnitAuras(m.unit) end
+  end
+  return out
+end
+
+local partyKnown = {} -- entryId → navn → utløpstidspunkt (sist lest eller bekreftet); false = manglet
+Scan.partyConfirmed = partyKnown
+
+local function followed(e, m)
+  if not e.onlyOn then return true end
+  return m.name ~= nil and e.onlyOn[m.name] == true
+end
+
+-- Tilstand for gruppebuffene: members (alle som følges, med has = true/false/nil) og missingOn (bare de som mangler)
+function Scan.PartyState(list, members, partyAuras, durations)
+  local st, t = {}, now()
+  for _, e in ipairs(list or {}) do
+    local known = partyKnown[e.id] or {}
+    partyKnown[e.id] = known
+    local s = { members = {}, missingOn = {} }
+    for _, m in ipairs(members) do
+      if followed(e, m) then
+        local has
+        local auras = partyAuras and partyAuras[m.unit]
+        if m.dead or not m.online then
+          has = nil
+        elseif auras then
+          local best
+          for _, n in ipairs(e.auraNames or { e.name }) do
+            local a = auras[n]
+            if a and (not best or a.expires > best) then best = a.expires end
+            if a and a.duration and a.duration > 0 then durations[n] = a.duration end
+          end
+          if m.name then known[m.name] = best or false end
+          has = best ~= nil
+        elseif m.name and known[m.name] ~= nil then
+          local exp = known[m.name]
+          has = exp ~= false and exp > t -- i kamp eller ute av syne: det vi visste, telt ned
+        end
+        s.members[#s.members + 1] = { name = m.name or "?", unit = m.unit, class = m.class, has = has }
+        if has == false then s.missingOn[#s.missingOn + 1] = { name = m.name or "?", unit = m.unit } end
+      end
+    end
+    st[e.id] = s
+  end
+  return st
+end
+
+-- Et bekreftet kast på et medlem (eller på alle, for gruppeversjonen)
+function Scan.ConfirmParty(e, targetName, group, members, durations)
+  local d
+  for _, n in ipairs(e.auraNames or {}) do d = d or durations[n] end
+  if group then d = durations[e.groupSpell] or d end
+  local exp = d and (now() + d) or math.huge
+  local known = partyKnown[e.id] or {}
+  partyKnown[e.id] = known
+  if group then
+    for _, m in ipairs(members) do if m.name then known[m.name] = exp end end
+  elseif targetName then
+    known[targetName] = exp
+  end
 end
 
 -- For testene

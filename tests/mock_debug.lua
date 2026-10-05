@@ -43,6 +43,7 @@ check(#db.events >= 3 and db.events[#db.events].ev == "ZONE_CHANGED_NEW_AREA", "
 
 -- Alt blir hemmelig (som i kamp i WoW Forever): ingenting skal krasje
 T.secret = true
+T.namesSecret = true
 T.secretItems = true
 T.combat = true
 local ok, err = pcall(Fire, "PLAYER_REGEN_DISABLED")
@@ -62,6 +63,7 @@ check(ok, "sted i kamp: ingen krasj " .. tostring(err))
 SlashCmdList.CONTROL("debug knapp")
 check(Chat("bare vises og skjules utenfor kamp"), "testknapper avvises i kamp")
 T.secret = false
+T.namesSecret = false
 T.secretItems = false
 T.combat = false
 Fire("PLAYER_REGEN_ENABLED")

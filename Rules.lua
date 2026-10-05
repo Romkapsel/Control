@@ -89,14 +89,14 @@ end
 -- Gruppebuff: hva kastes og på hvem (SPEC §9.3, §9.5)
 ------------------------------------------------------------------------
 
--- ctx = { inParty = true/false, reagents = antall reagens i baggen (nil = trengs ikke) }
+-- ctx = { inParty = true/false, groupUsable = spillet sier at gruppeversjonen kan kastes nå (kjent, reagens, mana) }
 -- Gruppeversjonen bare i party, når flere enn 2 mangler, og reagensen finnes. Ellers enkeltversjonen på neste som mangler.
 function Rules.partyCast(e, st, ctx)
   local missing = Rules.partyMissing(st)
   if #missing == 0 then return nil end
   ctx = ctx or {}
   local useGroup = e.groupSpell ~= nil and ctx.inParty == true and #missing > 2
-    and (ctx.reagents == nil or ctx.reagents > 0)
+    and ctx.groupUsable == true
   return {
     spell = useGroup and e.groupSpell or (e.spellName or e.name),
     group = useGroup,

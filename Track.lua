@@ -11,23 +11,25 @@ ns.Track = Track
 local WINDOW = 1.0     -- et kast må starte (SENT) eller lykkes innen så lenge etter trykket
 local CAST_MAX = 10.0  -- når SENT kom i tide, venter vi så lenge på SUCCEEDED (spells med kastetid)
 
-local pending -- { entry, at, sent }
+local pending -- { entry, at, sent, cast }
 
-local function castName(e)
-  if e.type == "buffitem" then return e.castName end
-  return e.name
+local function castName(p)
+  if p.cast then return p.cast.spell end -- gruppebuff: enkelt- eller gruppeversjonen som knappen kaster
+  if p.entry.type == "buffitem" then return p.entry.castName end
+  return p.entry.name
 end
 
-function Track.Pressed(e)
+-- cast (bare gruppebuff) = { spell, group, target = { name, unit } } slik knappen var satt opp da du trykket
+function Track.Pressed(e, cast)
   if not e then return end
-  pending = { entry = e, at = GetTime(), sent = false }
+  pending = { entry = e, at = GetTime(), sent = false, cast = cast }
 end
 
 local function matches(spellID)
   if not pending then return false end
   if ns.Scan.isSecret(spellID) then return true end
   local name = ns.Scan.SpellInfo(spellID)
-  return name ~= nil and name == castName(pending.entry)
+  return name ~= nil and name == castName(pending)
 end
 
 local function alive(t)
@@ -37,7 +39,7 @@ local function alive(t)
   return true
 end
 
--- Returnerer oppføringen som ble bekreftet, eller nil.
+-- Returnerer oppføringen som ble bekreftet (og kastet: mål og om det var gruppeversjonen), eller nil.
 function Track.OnEvent(event, unit, a, b, c)
   if unit ~= "player" then return nil end
   local t = GetTime()
@@ -46,9 +48,9 @@ function Track.OnEvent(event, unit, a, b, c)
     if matches(c) then pending.sent = true end -- SENT: unit, target, castGUID, spellID
   elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
     if matches(b) then                          -- SUCCEEDED: unit, castGUID, spellID
-      local e = pending.entry
+      local e, cast = pending.entry, pending.cast
       pending = nil
-      return e
+      return e, cast
     end
   elseif event == "UNIT_SPELLCAST_FAILED" or event == "UNIT_SPELLCAST_INTERRUPTED" then
     if matches(b) then pending = nil end
