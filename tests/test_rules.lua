@@ -184,10 +184,10 @@ find(model.self, "def").tier = 2
 ------------------------------------------------------------------------
 v = R.render(model, L)
 eq(ids(v.side.self.tier1), "motw,thorns,flask", "MB tier I i brukerens rekkefølge")
-eq(ids(v.side.self.tier2), "fed,mong,def,band,mana", "MB tier II")
+eq(ids(v.side.self.tier2), "fed,mong,def,band", "MB tier II: mana-tingen har nok, og står ikke i sidemenyen")
 check(v.side.self.groove, "fure mellom tier I og II")
 eq(v.side.self.slots, 1, "8 knapper: minst én tom rute")
-eq(v.side.self.width, 40 + 9 * 46 + 12, "bredde MB")
+eq(v.side.self.width, 40 + 8 * 46 + 12, "bredde MB")
 eq(v.side.party.slots, 1, "2 gruppeknapper: bare én «+»-rute")
 eq(v.side.party.width, 40 + 3 * 46 + 12, "bredde PB med fure")
 

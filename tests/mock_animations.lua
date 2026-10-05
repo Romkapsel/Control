@@ -100,13 +100,15 @@ check(ns.Menu.IsOpen() and ns.Menu.frame.unfold.playing, "menyen glir ut")
 T.counts[14529] = 2
 T.cursor = { "item", 14529, "[Runecloth Bandage]" }
 ns.Actions.DropOn(false, 2)
-local bandBtn, motwBtn
-for _, x in ipairs(mb.buttons) do
-  if x.shown and x.entry and x.entry.itemId == 14529 then bandBtn = x end
-  if x.shown and x.entry and x.entry.name == "Mark of the Wild" then motwBtn = x end
-end
-bandBtn.entry.want = 5
+local function find(id) for _, x in ipairs(mb.buttons) do if x.shown and x.entry and x.entry.itemId == id then return x end end end
+check(find(14529) == nil, "2 bandasjer, vil ha 1: nok – står ikke i sidemenyen (Daniel 5. okt)")
+local band
+for _, e in ipairs(ControlCharDB.self) do if e.itemId == 14529 then band = e end end
+band.want = 5
 ns.Refresh(false)
+local bandBtn, motwBtn = find(14529), nil
+for _, x in ipairs(mb.buttons) do if x.shown and x.entry and x.entry.name == "Mark of the Wild" then motwBtn = x end end
+check(bandBtn ~= nil, "2 av 5: under ønsket – står i sidemenyen")
 check(bandBtn.warn.alpha > 0.4 and near(bandBtn.warn.vertex[1], 1) and near(bandBtn.warn.vertex[2], 0x8C / 255),
   "bandasjer 2 av 5: diskret oransje ramme")
 check(not bandBtn.glowing, "... og den lyser ikke")
@@ -118,6 +120,11 @@ for _, x in ipairs(mb.buttons) do if x.shown and x.entry and x.entry.itemId == 1
 check(near(bandBtn.warn.vertex[1], 1) and near(bandBtn.warn.vertex[2], 0x20 / 255), "tom i tier I: rød ramme")
 T.counts[14529] = 5
 ns.Refresh(false)
-eq(bandBtn.warn.alpha, 0, "nok på lager: ingen ramme")
+check(find(14529) == nil, "nok på lager igjen: borte fra sidemenyen")
+local inMenu = false
+ns.Menu.SetOpen(true)
+ns.Refresh(false)
+for i, id in ipairs(ns.Menu.host.ids) do if id == band.id and ns.Menu.host.buttons[i].shown then inMenu = true end end
+check(inMenu, "... men står fortsatt i menyen")
 
 return n, fails

@@ -164,7 +164,17 @@ end
 -- Sidemenyen (SPEC §7.4) og ved knappen (SPEC §6.4, §6.7)
 ------------------------------------------------------------------------
 
-local function sideBar(entries)
+-- Ting du bare skal ha med (lagerting: utstyr, bandasjer, potions …) står i sidemenyen bare når de mangler eller
+-- er under ønsket antall (Daniel 5. okt: et helt utstyrssett i sidemenyen er bare støy når alt er med).
+-- Buffer og buffting står alltid (de viser tid og kan klikkes). Menyen viser alt.
+local function shownInSide(e, st)
+  return e.type ~= "item" or Rules.stockSeverity(e, st[e.id]) > 0
+end
+
+local function sideBar(entries, st)
+  local shown = {}
+  for _, e in ipairs(entries) do if shownInSide(e, st or {}) then shown[#shown + 1] = e end end
+  entries = shown
   local t1, t2 = byTier(entries)
   local n = #t1 + #t2
   -- Bare én tom rute («+»), etter det som er lagt til: sida vokser én og én (Daniel 5. okt)
@@ -298,7 +308,7 @@ function Rules.render(model, L, opts)
     empty = #selfList == 0 and #partyList == 0,
     tray = frozen and opts.prevTray or newTray,
     trayFrozen = frozen,
-    side = { self = sideBar(selfList), party = sideBar(partyList) },
+    side = { self = sideBar(selfList, st), party = sideBar(partyList, st) },
     status = { self = selfStatus(selfList, st, L), party = partyStatus(partyList, st, L) },
   }
 end

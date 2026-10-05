@@ -31,6 +31,8 @@ Ny versjon: slett den gamle `Control`-mappa, pakk ut den nye, og start spillet p
   - på en sidemeny eller i menyen → havner i **tier II** (eller raden du slipper den i)
 - **Tier I:** knappen dukker opp ved medaljongen når noe mangler – klikk, så er det fikset.
 - **Tier II:** står bare i sidemenyen.
+- **Ting du bare skal ha med** (utstyr, bandasjer, potions, reagenser) står i sidemenyen bare når de mangler eller er
+  under antallet – med rød eller oransje ramme. Er alt med, er de borte derfra. Menyen viser alltid alt.
 
 Det som kan legges til:
 - spells du kaster på deg selv (Mark of the Wild, Arcane Intellect …)
