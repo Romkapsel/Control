@@ -65,4 +65,12 @@ ns.Refresh(true)
 for _, b in ipairs(ns.Tray.Get("right").buttons) do if b.entry == ft and b.shown then btn = b end end
 check(btn and btn:GetAttribute("type") == "spell" and btn:GetAttribute("spell") == "Flametongue Weapon", "knappen kaster Flametongue Weapon")
 
+-- /ctrl våpen: hva spillet sier om våpenet og buffene, rett i chatten
+T.wench = { mh = 300 * 1000 }
+T.auras = { { "Lightning Shield", 324, T.now + 600, 600 } }
+SlashCmdList.CONTROL("våpen")
+check(Chat("Våpen (GetWeaponEnchantInfo): true, 300000, 0, 0, false"), "våpen: rådata fra spillet")
+check(Chat("Buffer på deg: Lightning Shield (324)"), "buffene dine med navn og id")
+check(ControlCharDB.debug.weaponProbe and ControlCharDB.debug.weaponProbe.raw[1] == "true", "lagret til lagringsfila")
+
 return n, fails

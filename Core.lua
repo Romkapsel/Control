@@ -802,6 +802,31 @@ SlashCmdList.CONTROL = function(msg)
     ns.db.debug.rangeButton = not ns.db.debug.rangeButton
     Say(ns.db.debug.rangeButton and ns.L.RANGE_ON or ns.L.RANGE_OFF)
     Core.Draw()
+  elseif raw == "våpen" or raw == "Våpen" or cmd == "vapen" then
+    -- Hva spillet sier om våpenet og buffene dine akkurat nå (Daniel 7. okt: Flametongue sto som «Gått ut»)
+    local function show(v)
+      if ns.Scan.isSecret(v) then return "<hemmelig>" end
+      return tostring(v)
+    end
+    local probe = { at = date and date("%Y-%m-%d %H:%M:%S") or nil }
+    if GetWeaponEnchantInfo then
+      local w = { pcall(GetWeaponEnchantInfo) }
+      probe.raw = {}
+      for i = 2, #w do probe.raw[i - 1] = show(w[i]) end
+      Say(string.format("Våpen (GetWeaponEnchantInfo): %s", w[1] and table.concat(probe.raw, ", ") or ("feil: " .. tostring(w[2]))))
+    else
+      Say("Våpen: GetWeaponEnchantInfo finnes ikke")
+    end
+    local names = {}
+    for i = 1, 40 do
+      local ok, a = pcall(C_UnitAuras.GetAuraDataByIndex, "player", i, "HELPFUL")
+      if not ok or not a then break end
+      names[#names + 1] = show(a.name) .. " (" .. show(a.spellId) .. ")"
+    end
+    probe.auras = names
+    Say("Buffer på deg: " .. (#names > 0 and table.concat(names, ", ") or "ingen"))
+    ns.db.debug = ns.db.debug or {}
+    ns.db.debug.weaponProbe = probe
   elseif cmd == "varsel" then
     Core.Depart(ns.Menu.Zone() or "?") -- se hvordan byvaktvarselet ser ut akkurat nå
   elseif cmd == "angre" then
