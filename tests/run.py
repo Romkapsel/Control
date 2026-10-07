@@ -251,7 +251,15 @@ T.itemSpells = { [13510] = { "Flask of the Titans", 17626 }, [21023] = { "Food",
 T.itemClass = { [13510] = { 0, 3 }, [14529] = { 0, 7 }, [21023] = { 0, 5 }, [13446] = { 0, 1 }, [4540] = { 0, 5 } }
 T.tooltips = { [21023] = { "Dirge's Kickin' Chimaerok Chops", "Use: ... If you spend at least 10 seconds eating you will become well fed and gain 25 Stamina." },
                [4540] = { "Tough Hunk of Bread", "Use: Restores 61 health over 18 sec." } }
-C_TooltipInfo = { GetItemByID = function(id)
+-- Våpenets tooltip: T.slotTips[slot] = { "Linje", … }
+local function slotTip(unit, slot)
+  local t = T.slotTips and T.slotTips[slot]
+  if not t then return nil end
+  local lines = {}
+  for _, x in ipairs(t) do lines[#lines + 1] = { leftText = S(x) } end
+  return { lines = lines }
+end
+C_TooltipInfo = { GetInventoryItem = slotTip, GetItemByID = function(id)
   local t = T.tooltips[id]
   if not t then return nil end
   local lines = {}

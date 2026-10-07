@@ -73,4 +73,30 @@ check(Chat("Våpen (GetWeaponEnchantInfo): true, 300000, 0, 0, false"), "våpen:
 check(Chat("Buffer på deg: Lightning Shield (324)"), "buffene dine med navn og id")
 check(ControlCharDB.debug.weaponProbe and ControlCharDB.debug.weaponProbe.raw[1] == "true", "lagret til lagringsfila")
 
+-- WoW Forever (Daniel 7. okt): GetWeaponEnchantInfo svarer «ingenting» selv med Flametongue på – tooltipen sier det
+T.wench = nil
+T.slotTips = { [16] = { "Gnarled Ash Staff", "Two-Hand", "Flametongue 3 (60 min)", "Durability 40 / 40" } }
+local st2 = ns.Scan.State(db, {})
+check(st2[ft.id].status == "on" and st2[ft.id].left and st2[ft.id].left > 3500, "fra tooltipen: Flametongue er på, 60 min")
+T.slotTips[16][3] = "Flametongue 3 (30 sec)"
+st2 = ns.Scan.State(db, {})
+check(st2[ft.id].status == "expiring" and st2[ft.id].left <= 30, "30 sek igjen: snart ute")
+T.slotTips[16] = { "Gnarled Ash Staff", "Two-Hand", "Durability 40 / 40" }
+st2 = ns.Scan.State(db, {})
+check(st2[ft.id].status ~= "on", "borte fra tooltipen: ikke på lenger")
+-- Linjer som ligner, men ikke er en forsterkning, teller ikke
+T.slotTips[16] = { "Gnarled Ash Staff", "Use: Restores mana (5 Min Cooldown)" }
+check(ns.Scan.WeaponTipEnchant(16) == false, "«(5 Min Cooldown)» er ikke en forsterkning")
+-- /ctrl våpen viser tooltipen
+-- Akkurat slik det sto hos Daniel (7. okt)
+T.slotTips[16] = { "Heavy Copper Maul", "Soulbound", "Two-Hand", "28 - 43 Damage", "(10.8 damage per second)", "+4 Strength",
+                   "Flametongue 1 (59 min)", "Durability 55 / 55", "Requires Level 11", "Sell Price: 595" }
+local left = ns.Scan.WeaponTipEnchant(16)
+eq(left, 59 * 60, "Daniels maul: Flametongue 1 (59 min)")
+T.slotTips[16] = { "Gnarled Ash Staff", "Flametongue 3 (60 min)" }
+SlashCmdList.CONTROL("våpen")
+check(Chat("Tooltip MH: Gnarled Ash Staff | Flametongue 3 (60 min)"), "våpen: tooltip-linjene")
+check(Chat("  → forsterkning: Flametongue 3 (60 min) = 3600 s"), "våpen: hva Control leser ut av den")
+T.slotTips = nil
+
 return n, fails

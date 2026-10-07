@@ -825,6 +825,21 @@ SlashCmdList.CONTROL = function(msg)
     end
     probe.auras = names
     Say("Buffer på deg: " .. (#names > 0 and table.concat(names, ", ") or "ingen"))
+    -- Våpenets tooltip (der står forsterkningen i grønt, «Flametongue 3 (60 min)»)
+    probe.tips = {}
+    for _, slot in ipairs({ 16, 17 }) do
+      local ok, data = pcall(C_TooltipInfo.GetInventoryItem, "player", slot)
+      local lines = {}
+      if ok and type(data) == "table" and type(data.lines) == "table" then
+        for _, l in ipairs(data.lines) do lines[#lines + 1] = show(l.leftText) end
+      end
+      probe.tips[slot] = lines
+      if #lines > 0 then
+        local left, line = ns.Scan.WeaponTipEnchant(slot)
+        Say(string.format("Tooltip %s: %s", slot == 16 and "MH" or "OH", table.concat(lines, " | ")))
+        Say(string.format("  → forsterkning: %s", left and (line .. " = " .. left .. " s") or "ingen"))
+      end
+    end
     ns.db.debug = ns.db.debug or {}
     ns.db.debug.weaponProbe = probe
   elseif cmd == "varsel" then

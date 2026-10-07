@@ -261,7 +261,7 @@ function Scan.State(db, auras)
           local w = weapons[e.weaponSlot]
           if w then
             local key = weaponKey(e)
-            durations[key] = math.max(durations[key] or 0, w.left) -- varigheten: det lengste vi har sett
+            durations[key] = math.max(durations[key] or 0, w.left) -- varigheten: det lengste vi har sett (også fra tooltipen)
             best = { expires = w.expires, duration = durations[key] }
           end
         else
@@ -464,6 +464,26 @@ end
 
 -- Midlertidige forsterkninger på våpnene (gift, olje, slipestein – Daniel 5. okt). Spillet sier om hovedhånda (16)
 -- og annen hånd (17) har en, og hvor mange millisekunder den varer. nil = kan ikke leses nå (hemmelig i kamp?).
+-- Forsterkningen slik den står i våpenets tooltip: «Flametongue 3 (60 min)» (grønt). WoW Forever svarer «ingenting» på
+-- GetWeaponEnchantInfo selv med Flametongue på våpenet (Daniel 7. okt, /ctrl våpen), så tooltipen er reserven.
+-- Gir sekunder igjen og linja, false hvis ingen slik linje, nil hvis tooltipen ikke kan leses (hemmelig i kamp).
+local UNIT = { s = 1, m = 60, h = 3600, d = 86400 }
+function Scan.WeaponTipEnchant(slot)
+  if not (C_TooltipInfo and C_TooltipInfo.GetInventoryItem) then return nil end
+  local ok, data = pcall(C_TooltipInfo.GetInventoryItem, "player", slot)
+  if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return nil end
+  for _, line in ipairs(data.lines) do
+    local t = line.leftText
+    if isSecret(t) then return nil end
+    if type(t) == "string" then
+      local n, unit = t:match("%((%d+) (%a+)%)%s*$")
+      local mult = unit and UNIT[unit:sub(1, 1):lower()]
+      if n and mult then return tonumber(n) * mult, t end
+    end
+  end
+  return false
+end
+
 function Scan.WeaponEnchants()
   if not GetWeaponEnchantInfo then return nil end
   local r = { pcall(GetWeaponEnchantInfo) }
@@ -471,12 +491,20 @@ function Scan.WeaponEnchants()
   local hasMH, mhMs, hasOH, ohMs = r[2], r[3], r[6], r[7]
   if isSecret(hasMH) or isSecret(mhMs) or isSecret(hasOH) or isSecret(ohMs) then return nil end
   local t = now()
-  local function one(has, ms)
-    if not has then return false end
-    local left = (type(ms) == "number" and ms or 0) / 1000
-    return { expires = t + left, left = left }
+  local function one(has, ms, slot)
+    if has then
+      local left = (type(ms) == "number" and ms or 0) / 1000
+      return { expires = t + left, left = left }
+    end
+    -- Spillet sier nei: se i tooltipen til våpenet (der står det, også når API-et ikke vet om det)
+    local left = Scan.WeaponTipEnchant(slot)
+    if left == nil then return nil end -- kan ikke leses: vet ikke
+    if not left then return false end
+    return { expires = t + left, left = left, fromTip = true }
   end
-  return { [16] = one(hasMH, mhMs), [17] = one(hasOH, ohMs) }
+  local mh, oh = one(hasMH, mhMs, 16), one(hasOH, ohMs, 17)
+  if mh == nil and oh == nil then return nil end
+  return { [16] = mh or false, [17] = oh or false }
 end
 
 -- Har du et våpen i annen hånd (ikke skjold eller noe du holder)? Da kan en gift/olje ha en egen knapp for den.
