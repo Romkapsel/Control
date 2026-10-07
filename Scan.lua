@@ -231,10 +231,18 @@ local function hasBuff(e) return e.type == "spell" or e.type == "buffitem" end
 -- Et bekreftet trykk (Track.lua): buffen regnes som på fra nå, med full varighet hvis vi kjenner den.
 local function weaponKey(e) return "weapon:" .. tostring(e.castName or e.name) end
 
+Scan.weaponPending = {} -- id → { at, before }: brukt nettopp, venter på å se hva som kom på våpenet
 function Scan.Confirm(e, durations)
   local d
   for _, n in ipairs(e.auraNames or {}) do d = d or durations[n] end
-  if e.weaponSlot then d = durations[weaponKey(e)] or 1800 end
+  if e.weaponSlot then
+    d = durations[weaponKey(e)] or 1800
+    local w = Scan.WeaponEnchants()
+    local cur = w and w[e.weaponSlot]
+    local before = {}
+    for _, it in ipairs(cur and cur.items or {}) do if it.key then before[it.key] = true end end
+    Scan.weaponPending[e.id] = { at = now(), before = before }
+  end
   local t = now()
   seen[e.id] = true
   expires[e.id] = d and (t + d) or math.huge
@@ -258,7 +266,26 @@ function Scan.State(db, auras)
       if readable then
         local best
         if e.weaponSlot then
-          local w = weapons[e.weaponSlot]
+          local hand = weapons[e.weaponSlot]
+          local items = hand and hand.items or {}
+          -- Lær navnet: du brukte denne knappen nettopp, og noe nytt dukket opp på våpenet
+          local pend = Scan.weaponPending[e.id]
+          if pend and t - pend.at < 30 and not e.enchantKey then
+            for _, it in ipairs(items) do
+              if it.key and not pend.before[it.key] and not Scan.EnchantMatches(e, it.key) then
+                local taken = false
+                for _, x in ipairs(db.self or {}) do
+                  if x ~= e and x.weaponSlot == e.weaponSlot and x.enchantKey == it.key then taken = true end
+                end
+                if not taken then e.enchantKey = it.key Scan.weaponPending[e.id] = nil break end
+              end
+            end
+          end
+          -- Den forsterkningen på hånda som hører til denne knappen (flere kan være på samtidig)
+          local w
+          for _, it in ipairs(items) do
+            if Scan.EnchantMatches(e, it.key) then w = it break end
+          end
           if w then
             local key = weaponKey(e)
             durations[key] = math.max(durations[key] or 0, w.left) -- varigheten: det lengste vi har sett (også fra tooltipen)
@@ -464,24 +491,59 @@ end
 
 -- Midlertidige forsterkninger på våpnene (gift, olje, slipestein – Daniel 5. okt). Spillet sier om hovedhånda (16)
 -- og annen hånd (17) har en, og hvor mange millisekunder den varer. nil = kan ikke leses nå (hemmelig i kamp?).
+-- Navnet på en forsterkning fra tooltip-linja: «Flametongue 1 (59 min)» → «flametongue», «Weighted (+2 Damage) (30 min)»
+-- → «weighted». (Tid, parenteser og rang-tall bort, små bokstaver.)
+function Scan.EnchantKey(line)
+  if type(line) ~= "string" then return nil end
+  local k = line:gsub("%b()", ""):gsub("%d+", ""):gsub("%s+", " "):match("^%s*(.-)%s*$"):lower()
+  return k ~= "" and k or nil
+end
+
+-- Hører forsterkningen på våpenet til denne knappen? (Daniel 7. okt: Flametongue og Weightstone på samme hånd – bare
+-- én kan være på.) Lært navn først; ellers like de første 5 bokstavene i et ord: «flametongue» ~ «Flametongue Weapon»,
+-- «weighted» ~ «Rough Weightstone». Uten navn (API-et sier bare «noe er på»): som før.
+function Scan.EnchantMatches(e, key)
+  if not key then return true end
+  if e.enchantKey then return e.enchantKey == key end
+  local head = key:match("^(%a+)")
+  if not head or #head < 4 then return false end
+  head = head:sub(1, 5)
+  for w in ((e.name or "") .. " " .. (e.castName or "")):lower():gmatch("%a+") do
+    if #w >= 4 and w:sub(1, 5) == head then return true end
+  end
+  return false
+end
+
 -- Forsterkningen slik den står i våpenets tooltip: «Flametongue 3 (60 min)» (grønt). WoW Forever svarer «ingenting» på
 -- GetWeaponEnchantInfo selv med Flametongue på våpenet (Daniel 7. okt, /ctrl våpen), så tooltipen er reserven.
 -- Gir sekunder igjen og linja, false hvis ingen slik linje, nil hvis tooltipen ikke kan leses (hemmelig i kamp).
 local UNIT = { s = 1, m = 60, h = 3600, d = 86400 }
-function Scan.WeaponTipEnchant(slot)
+-- Alle forsterkningene i tooltipen. I WoW Forever kan et våpen ha flere samtidig (Daniel 7. okt: Flametongue 60 m og
+-- Weightstone 30 m på samme maul). nil = kan ikke leses; ellers en liste { { left, line, key } } (kan være tom).
+function Scan.WeaponTipEnchants(slot)
   if not (C_TooltipInfo and C_TooltipInfo.GetInventoryItem) then return nil end
   local ok, data = pcall(C_TooltipInfo.GetInventoryItem, "player", slot)
   if not ok or type(data) ~= "table" or type(data.lines) ~= "table" then return nil end
+  local out = {}
   for _, line in ipairs(data.lines) do
     local t = line.leftText
     if isSecret(t) then return nil end
     if type(t) == "string" then
       local n, unit = t:match("%((%d+) (%a+)%)%s*$")
       local mult = unit and UNIT[unit:sub(1, 1):lower()]
-      if n and mult then return tonumber(n) * mult, t end
+      if n and mult then out[#out + 1] = { left = tonumber(n) * mult, line = t, key = Scan.EnchantKey(t) } end
     end
   end
-  return false
+  return out
+end
+
+-- Den første (for /ctrl våpen): sekunder, linja, navnet – false hvis ingen, nil hvis ikke lesbar
+function Scan.WeaponTipEnchant(slot)
+  local list = Scan.WeaponTipEnchants(slot)
+  if not list then return nil end
+  local first = list[1]
+  if not first then return false end
+  return first.left, first.line, first.key
 end
 
 function Scan.WeaponEnchants()
@@ -491,16 +553,20 @@ function Scan.WeaponEnchants()
   local hasMH, mhMs, hasOH, ohMs = r[2], r[3], r[6], r[7]
   if isSecret(hasMH) or isSecret(mhMs) or isSecret(hasOH) or isSecret(ohMs) then return nil end
   local t = now()
+  -- Hver hånd: nil = vet ikke, false = ingenting, ellers { items = { { expires, left, key } } } – én per forsterkning
   local function one(has, ms, slot)
-    if has then
+    local tips = Scan.WeaponTipEnchants(slot)
+    local items = {}
+    for _, x in ipairs(tips or {}) do items[#items + 1] = { expires = t + x.left, left = x.left, key = x.key } end
+    if has and #items == 0 then
+      -- API-et sier «noe er på», tooltipen sier ikke hva: gjelder alle knappene på den hånda (som før)
       local left = (type(ms) == "number" and ms or 0) / 1000
-      return { expires = t + left, left = left }
+      items[1] = { expires = t + left, left = left }
     end
-    -- Spillet sier nei: se i tooltipen til våpenet (der står det, også når API-et ikke vet om det)
-    local left = Scan.WeaponTipEnchant(slot)
-    if left == nil then return nil end -- kan ikke leses: vet ikke
-    if not left then return false end
-    return { expires = t + left, left = left, fromTip = true }
+    if #items > 0 then return { items = items } end
+    -- Tooltipen kan ikke leses nå (hemmelig i kamp): vet ikke – Control teller videre fra det den vet
+    if tips == nil and C_TooltipInfo and C_TooltipInfo.GetInventoryItem then return nil end
+    return false
   end
   local mh, oh = one(hasMH, mhMs, 16), one(hasOH, ohMs, 17)
   if mh == nil and oh == nil then return nil end

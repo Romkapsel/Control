@@ -194,7 +194,11 @@ end
 -- Ny oppføring fra det som ble dratt inn. info = { kind = "spell"|"item", spellId, name,
 -- itemId, itemName, itemSpell, isFood, wellFed, count }. Ting som gir en buff = buffting, ellers lagerting.
 function Data.MakeEntry(db, info, tier)
-  db.nextId = (db.nextId or 0) + 1
+  -- Aldri en id som er i bruk (en lagring uten teller, f.eks. importert eller fra en eldre versjon)
+  local used = {}
+  for _, list in ipairs({ db.self or {}, db.party or {} }) do for _, x in ipairs(list) do used[x.id] = true end end
+  for _, list in pairs(db.sets or {}) do for _, x in ipairs(list) do used[x.id] = true end end
+  repeat db.nextId = (db.nextId or 0) + 1 until not used["e" .. db.nextId]
   local e = { id = "e" .. db.nextId, tier = tier or 2 }
   if info.kind == "spell" then
     e.type, e.spellId, e.name = "spell", info.spellId, info.name

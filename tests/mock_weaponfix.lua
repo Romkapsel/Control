@@ -99,4 +99,41 @@ check(Chat("Tooltip MH: Gnarled Ash Staff | Flametongue 3 (60 min)"), "våpen: t
 check(Chat("  → forsterkning: Flametongue 3 (60 min) = 3600 s"), "våpen: hva Control leser ut av den")
 T.slotTips = nil
 
+-- Flere forsterkninger samtidig (Daniel 7. okt: «Forever rocker på dette» – Flametongue 60 m og Weightstone 30 m på samme
+-- maul). Hver knapp finner sin egen linje i tooltipen.
+local frost = db.self[3] -- Frostbrand
+T.slotTips = { [16] = { "Heavy Copper Maul", "Two-Hand", "Flametongue 1 (59 min)", "Weighted (+2 Damage) (30 min)",
+                        "Durability 55 / 55" } }
+local s3 = ns.Scan.State(db, {})
+check(s3[ft.id].status == "on" and math.abs(s3[ft.id].left - 59 * 60) < 2, "Flametongue: 59 min")
+check(s3[stone.id].status == "on" and math.abs(s3[stone.id].left - 30 * 60) < 2, "Weightstone: 30 min (sin egen linje)")
+check(s3[frost.id].status ~= "on", "Frostbrand er ikke på, selv om hånda har andre ting")
+-- Flametongue går ut: bare den mangler
+T.slotTips[16] = { "Heavy Copper Maul", "Weighted (+2 Damage) (12 min)" }
+s3 = ns.Scan.State(db, {})
+check(s3[ft.id].status ~= "on" and s3[stone.id].status == "on", "Flametongue borte, Weightstone står")
+-- Et navn som ikke ligner: lært første gang du bruker knappen
+local odd = { id = "e99", type = "buffitem", tier = 1, itemId = 9999, name = "Odd Stone", castName = "Odd", weaponSlot = 16,
+              auraNames = {}, want = 1 }
+table.insert(db.self, odd)
+s3 = ns.Scan.State(db, {})
+eq(s3[odd.id].status, "missing", "Odd Stone: ikke på")
+ns.Scan.Confirm(odd, db.durations)
+T.slotTips[16] = { "Heavy Copper Maul", "Weighted (+2 Damage) (12 min)", "Sharpened (+3 Damage) (30 min)" }
+s3 = ns.Scan.State(db, {})
+eq(odd.enchantKey, "sharpened", "lært: «Sharpened» hører til Odd Stone")
+check(s3[odd.id].status == "on" and s3[stone.id].status == "on", "begge på, hver med sin linje")
+T.slotTips[16] = { "Heavy Copper Maul", "Weighted (+2 Damage) (11 min)" }
+s3 = ns.Scan.State(db, {})
+check(s3[odd.id].status ~= "on", "Sharpened borte: Odd Stone ikke på")
+-- I kamp kan tooltipen være hemmelig: vet ikke, teller videre (ikke «mangler»)
+T.slotTips[16] = { "Heavy Copper Maul", "Weighted (+2 Damage) (11 min)" }
+ns.Scan.State(db, {})
+T.secret = true
+s3 = ns.Scan.State(db, {})
+check(s3[stone.id].status == "on", "hemmelig tooltip: Weightstone fortsatt på (teller videre)")
+T.secret = false
+T.slotTips = nil
+table.remove(db.self)
+
 return n, fails
