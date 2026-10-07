@@ -77,9 +77,19 @@ local function firstMustHave()
   return { id = "preview", name = ns.L.BIG_PREVIEW }
 end
 
--- Test (Daniel 7. okt): /ctrl stort = nedtelling fra 10, /ctrl stort borte = buffen forsvant
-function Core.BigTest(gone)
-  Core.bigTest = { at = GetTime() or 0, gone = gone, entry = firstMustHave() }
+-- Eget bilde for en buff som går ut (tillegget ControlExtra, privat – ikke på GitHub). Leses, skrives aldri.
+local function goneImage(e)
+  local x = ControlExtras
+  local img = type(x) == "table" and type(x.goneImages) == "table" and x.goneImages[e.name]
+  return type(img) == "string" and img or nil
+end
+
+-- Test (Daniel 7. okt): /ctrl stort = nedtelling fra 10, /ctrl stort borte = buffen forsvant,
+-- /ctrl stortest = Battle Shout går ut (med bildet fra ControlExtra, om det er installert)
+function Core.BigTest(gone, name)
+  local e = firstMustHave()
+  if name then e = { id = "test", name = name, spellId = 6673 } end
+  Core.bigTest = { at = GetTime() or 0, gone = gone, entry = e }
   Core.Draw()
 end
 
@@ -87,9 +97,12 @@ local function bigAlert(model)
   if not ns.Alert.Big then return end
   local now = GetTime() or 0
   local test = Core.bigTest
+  if test or (Core.bigPreview and now < Core.bigPreview) then ns.Alert.BigClick(nil) end
   if test then
     local dt = now - test.at
-    if test.gone and dt < GONE_HOLD then return ns.Alert.Big(test.entry, 0, iconOf(test.entry), true) end
+    if test.gone and dt < GONE_HOLD then
+      return ns.Alert.Big(test.entry, 0, iconOf(test.entry), true, goneImage(test.entry))
+    end
     if not test.gone and dt < ns.Alert.BIG_AT then return ns.Alert.Big(test.entry, ns.Alert.BIG_AT - dt, iconOf(test.entry)) end
     Core.bigTest = nil
   end
@@ -97,7 +110,10 @@ local function bigAlert(model)
     local e = Core.bigPreviewEntry or { id = "preview", name = ns.L.BIG_PREVIEW }
     return ns.Alert.Big(e, ns.Alert.BIG_AT - (now - (Core.bigPreview - 3)), iconOf(e))
   end
-  if ns.db.ui.bigAlert ~= true then return ns.Alert.Big(nil) end
+  if ns.db.ui.bigAlert ~= true then
+    ns.Alert.BigClick(nil)
+    return ns.Alert.Big(nil)
+  end
   local pick, pickLeft
   for _, e in ipairs(model.self or {}) do
     local s = model.st[e.id]
@@ -111,17 +127,22 @@ local function bigAlert(model)
         b.counted = true
         if not pickLeft or s.left < pickLeft then pick, pickLeft = e, s.left end
       end
-      -- Borte før tiden (slått bort, ladningene brukt opp): skrik – men ikke etter en nedtelling (Daniel 7. okt)
-      if b.wasOn and not on and not b.counted then b.goneAt = now end
+      -- Borte før tiden (slått bort, ladningene brukt opp): skrik – men ikke etter en nedtelling (Daniel 7. okt).
+      -- Har buffen et eget bilde (ControlExtra), vises det også når den går ut etter nedtellingen.
+      if b.wasOn and not on and (not b.counted or goneImage(e)) then b.goneAt = now end
       if on then b.goneAt = nil end
       b.wasOn = on
     end
   end
-  -- «Borte!» går foran nedtellingen, i 3 sekunder
+  -- «Borte!» går foran nedtellingen, i 3 sekunder. Trykk på ikonet = kast/bruk den (utenfor kamp).
   for _, e in ipairs(model.self or {}) do
     local b = bigSeen[e.id]
-    if b and b.goneAt and now - b.goneAt < GONE_HOLD then return ns.Alert.Big(e, 0, iconOf(e), true) end
+    if b and b.goneAt and now - b.goneAt < GONE_HOLD then
+      ns.Alert.BigClick(e, model.st)
+      return ns.Alert.Big(e, 0, iconOf(e), true, goneImage(e))
+    end
   end
+  ns.Alert.BigClick(pick, model.st)
   ns.Alert.Big(pick, pickLeft, pick and iconOf(pick))
 end
 
@@ -844,6 +865,8 @@ SlashCmdList.CONTROL = function(msg)
     Core.Draw()
   elseif cmd == "stort" or cmd == "stort borte" then
     Core.BigTest(cmd == "stort borte")
+  elseif cmd == "stortest" then
+    Core.BigTest(true, "Battle Shout")
   elseif raw == "våpen" or raw == "Våpen" or cmd == "vapen" then
     -- Hva spillet sier om våpenet og buffene dine akkurat nå (Daniel 7. okt: Flametongue sto som «Gått ut»)
     local function show(v)

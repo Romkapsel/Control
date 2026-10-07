@@ -207,6 +207,11 @@ end
 function GetInventoryItemDurability(slot) local d = T.dura and T.dura[slot] if d then return d[1], d[2] end end
 function UnitHealth() return S(T.hp or 800) end
 function UnitHealthMax() return S(1000) end
+function RegisterStateDriver(f, state, value)
+  f.stateDriver = { state, value }
+  if state == "visibility" then if T.combat then f:Hide() else f:Show() end end
+end
+function UnregisterStateDriver(f, state) f.stateDriver = nil end
 function UnitPower(u, t) return S(T.mana or 500) end
 function UnitPowerMax(u, t) return S(1000) end
 function UnitPowerType() return 0 end
@@ -337,6 +342,8 @@ def run_mock(test_file, prelude=""):
     for p in paths.values():
         n += 1
         prefix = "Interface\\AddOns\\Control\\Media\\"
+        if p.startswith("Interface\\AddOns\\ControlExtra\\"):
+            continue  # det private tillegget eier sine egne bilder (brukes bare når det er installert)
         if not p.startswith(prefix):
             fails.append("teksturfil utenfor Media/: " + p)
         elif not os.path.isfile(os.path.join(ROOT, "Media", p[len(prefix):] + ".tga")):

@@ -123,7 +123,7 @@ dra et sted ut av lista for å fjerne det.
 
 - **Meg** og **Party:** alle knappene dine, sortert i kategorier. Når menyen åpnes, er bare Meg utfoldet.
 - **Byvakt:** se over.
-- **Oppsett:** **Bytt side på gruppene**, **Tall i midten** (på/av – uten tallet er det ringen som sier fra), **Gjennomsiktig midt** (på/av – verden synes gjennom medaljongen), **Stort varsel ved 10 s** (på/av, av som standard – når en «Må ha»-buff har 10 sekunder igjen, lyser ikonet opp stort midt på skjermen og teller ned 10, 9, 8 …, med én lyd; forsvinner en «Må ha»-buff før tiden (slått bort, ladningene brukt opp), skriker den «… er borte!» i rødt – også i kamp når spillet kan si det; prøv med `/ctrl stort` og `/ctrl stort borte`), **Nedtoning** (på/av – medaljongen blekner etter noen sekunder når alt er i orden, og kommer fram igjen med en gang noe mangler, du holder musa over, er i kamp eller har en meny åpen; når den er på, velger du hvor langt ned: 0 %, 20 % eller 50 %), og **Størrelse** (70–150 %).
+- **Oppsett:** **Bytt side på gruppene**, **Tall i midten** (på/av – uten tallet er det ringen som sier fra), **Gjennomsiktig midt** (på/av – verden synes gjennom medaljongen), **Stort varsel ved 10 s** (på/av, av som standard – når en «Må ha»-buff har 10 sekunder igjen, lyser ikonet opp stort midt på skjermen og teller ned 10, 9, 8 …, med én lyd; forsvinner en «Må ha»-buff før tiden (slått bort, ladningene brukt opp), skriker den «… er borte!» i rødt – også i kamp når spillet kan si det; prøv med `/ctrl stort` og `/ctrl stort borte`; trykk på ikonet for å kaste buffen (utenfor kamp)), **Nedtoning** (på/av – medaljongen blekner etter noen sekunder når alt er i orden, og kommer fram igjen med en gang noe mangler, du holder musa over, er i kamp eller har en meny åpen; når den er på, velger du hvor langt ned: 0 %, 20 % eller 50 %), og **Størrelse** (70–150 %).
 - Lukk med pila i hjørnet, eller klikk nederst på medaljongen.
 
 ## I kamp
@@ -143,6 +143,7 @@ dra et sted ut av lista for å fjerne det.
 | `angre` | Får tilbake det du sist fjernet |
 | `varsel` | Viser byvaktvarselet akkurat nå |
 | `stort` | Prøver det store varselet: nedtelling fra 10 (`stort borte`: en buff som forsvant) |
+| `stortest` | Prøver varselet for Battle Shout som går ut |
 | `våpen` | Viser hva spillet sier om våpenet og buffene dine (feilsøking) |
 | `nullstill` | Flytter medaljongen tilbake og gir den vanlig størrelse |
 | `tøm` | Tømmer settet du står i |

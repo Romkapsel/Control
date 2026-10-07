@@ -145,16 +145,25 @@ local function buildBig()
   Alert.big = big
 end
 
--- e = oppføringen (nil = ingen), left = sekunder igjen, icon = ikonet, gone = buffen forsvant før tiden («Borte!»)
-function Alert.Big(e, left, icon, gone)
+-- e = oppføringen (nil = ingen), left = sekunder igjen, icon = ikonet, gone = buffen forsvant («Borte!»),
+-- image = eget bilde i stedet for ikonet (fra tillegget ControlExtra – bare når det er installert)
+function Alert.Big(e, left, icon, gone, image)
   if not e then
     if big then big:Hide() end
     soundFor = nil
     return
   end
   if not big then buildBig() end
-  if icon then big.icon:SetTexture(icon) else big.icon:SetColorTexture(0.2, 0.2, 0.2, 1) end
-  big.icon:SetDesaturated(gone and true or false)
+  if image then
+    big.icon:SetTexture(image)
+    big.icon:SetTexCoord(0, 1, 0, 1)
+  else
+    if icon then big.icon:SetTexture(icon) else big.icon:SetColorTexture(0.2, 0.2, 0.2, 1) end
+    big.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  end
+  big.icon:SetDesaturated((gone and not image) and true or false)
+  big.edge:SetShown(not image) -- bildet er rundt: ingen firkantet kant
+  big.image = image
   local c = gone and C.red or C.gold
   big.glow:SetVertexColor(c[1], c[2], c[3])
   big.edge:SetColorTexture(c[1], c[2], c[3], 1)
@@ -172,5 +181,35 @@ function Alert.Big(e, left, icon, gone)
     soundFor = key
     pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master")
     Alert.bigSounds = (Alert.bigSounds or 0) + 1
+  end
+end
+
+-- Trykk på ikonet (Daniel 7. okt): en usynlig knapp over ikonet som kaster/bruker buffen, akkurat som knappene ved
+-- medaljongen. Bare utenfor kamp – i kamp lar ikke spillet en addon vise en klikkbar knapp når den selv vil. Starter
+-- kampen mens varselet står, skjuler spillet knappen selv ([combat]-driver).
+local clickBtn
+function Alert.BigClick(e, st)
+  if InCombatLockdown() then return end
+  if not e or not e.type then
+    if clickBtn and clickBtn.driven then
+      UnregisterStateDriver(clickBtn, "visibility")
+      clickBtn.driven = false
+    end
+    if clickBtn then clickBtn:Hide() end
+    return
+  end
+  if not clickBtn then
+    clickBtn = ns.EntryButton.Create(UIParent)
+    clickBtn:SetSize(BIG, BIG)
+    clickBtn:SetPoint("CENTER", UIParent, "CENTER", 0, 60) -- samme sted som ikonet (ikke festet til en usikker ramme)
+    clickBtn:SetFrameStrata("DIALOG")
+    clickBtn:SetAlpha(0) -- usynlig: det er ikonet under du ser
+    Alert.clickButton = clickBtn
+  end
+  if clickBtn.entry ~= e then ns.EntryButton.Bind(clickBtn, e, st and st[e.id]) end
+  clickBtn.entry = e
+  if not clickBtn.driven then
+    RegisterStateDriver(clickBtn, "visibility", "[combat] hide; show")
+    clickBtn.driven = true
   end
 end

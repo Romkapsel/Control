@@ -161,4 +161,39 @@ check(A.big.shown and A.big.gone and A.big.name.text == "Battle Shout er borte!"
 tick(3.5)
 check(not A.big.shown, "test borte: 3 s")
 
+
+-- /ctrl stortest uten ControlExtra: Battle Shout er borte, med vanlig ikon (aldri en bildesti som ikke finnes)
+SlashCmdList.CONTROL("stortest")
+check(A.big.shown and A.big.gone and A.big.name.text == "Battle Shout er borte!" and not A.big.image, "stortest uten tillegget: vanlig ikon")
+tick(3.5)
+-- Med tillegget (privat, ikke på GitHub): bildet i stedet for ikonet
+local IMG = "Interface\\AddOns\\ControlExtra\\Media\\shout"
+ControlExtras = { goneImages = { ["Battle Shout"] = IMG } }
+SlashCmdList.CONTROL("stortest")
+eq(A.big.image, IMG, "stortest: bildet")
+eq(A.big.icon.texture, IMG, "bildet står der ikonet sto")
+check(not A.big.icon.desat and not A.big.edge.shown, "i farger, uten firkantet kant")
+tick(3.5)
+-- Ekte Battle Shout: går ut etter nedtellingen – bildet kommer likevel (bare for buffer med eget bilde)
+T.auras = { { "Battle Shout", 6673, T.now + 9, 120 }, { "Lightning Shield", 324, T.now + 600, 600, 81 } }
+tick()
+check(A.big.shown and not A.big.gone and A.big.entry == shout, "nedtelling for Battle Shout")
+-- Trykk på ikonet: usynlig knapp over det, som kaster Battle Shout (utenfor kamp)
+local cb = A.clickButton
+check(cb and cb.shown and cb:GetAttribute("type") == "spell" and cb:GetAttribute("spell") == "Battle Shout", "ikonet kan trykkes: kaster Battle Shout")
+eq(cb.alpha, 0, "knappen er usynlig (det er ikonet du ser)")
+check(cb.stateDriver and cb.stateDriver[2] == "[combat] hide; show", "i kamp skjuler spillet den selv")
+T.combat = true
+Fire("PLAYER_REGEN_DISABLED")
+RegisterStateDriver(cb, "visibility", cb.stateDriver[2]) -- spillets driver
+check(not cb.shown, "i kamp: ikke klikkbar")
+T.combat = false
+Fire("PLAYER_REGEN_ENABLED")
+T.auras = { { "Lightning Shield", 324, T.now + 600, 600, 81 } }
+tick(9)
+check(A.big.shown and A.big.gone and A.big.image, "gått ut etter nedtellingen: bildet")
+tick(3.5)
+check(not A.big.shown and not A.clickButton.shown and not A.clickButton.stateDriver, "ferdig: varsel og knapp borte")
+ControlExtras = nil
+
 return n, fails
