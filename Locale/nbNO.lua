@@ -82,6 +82,7 @@ ns.L = {
   FADE_LABEL = "Nedtoning",
   BIG_LABEL = "Stort varsel ved 10 s",
   BIG_PREVIEW = "Slik ser det ut",
+  BIG_GONE = "%s er borte!",
   FADE_LEVEL_TIP = "Hvor synlig medaljongen er når alt er i orden",
   PERCENT = "%d %%",
   ON = "På",

@@ -119,9 +119,14 @@ local function buildBig()
   big.icon:SetSize(BIG, BIG)
   big.icon:SetPoint("CENTER")
   big.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-  big.time = big:CreateFontString(nil, "OVERLAY")
-  if not big.time:SetFont(Style.FONT_HEAD, 30, "OUTLINE") then big.time:SetFontObject(GameFontNormalHuge) end
-  big.time:SetPoint("CENTER", big.icon, "CENTER", 0, 0)
+  -- Tallet i en egen ramme, så det kan sprette (vokse og falle på plass) hvert sekund
+  big.timeFrame = CreateFrame("Frame", nil, big)
+  big.timeFrame:SetSize(BIG, BIG)
+  big.timeFrame:SetPoint("CENTER", big.icon, "CENTER", 0, 0)
+  big.timeFrame:SetFrameLevel(big:GetFrameLevel() + 2)
+  big.time = big.timeFrame:CreateFontString(nil, "OVERLAY")
+  if not big.time:SetFont(Style.FONT_HEAD, 40, "OUTLINE") then big.time:SetFontObject(GameFontNormalHuge) end
+  big.time:SetPoint("CENTER", big.timeFrame, "CENTER", 0, 0)
   big.time:SetTextColor(1, 1, 1)
   big.name = big:CreateFontString(nil, "OVERLAY")
   if not big.name:SetFont(Style.FONT_HEAD, 18, "OUTLINE") then big.name:SetFontObject(GameFontNormalLarge) end
@@ -129,16 +134,19 @@ local function buildBig()
   big.name:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
   -- Pulserer: gløden puster, og ikonet vokser litt i takt
   big:SetScript("OnUpdate", function(self)
-    local p = 0.5 + 0.5 * math.sin((GetTime() or 0) * 6)
+    local now = GetTime() or 0
+    local p = 0.5 + 0.5 * math.sin(now * 6)
     self.glow:SetAlpha(0.35 + 0.65 * p)
     self.icon:SetSize(BIG * (1 + 0.06 * p), BIG * (1 + 0.06 * p))
+    local k = math.min(1, (now - (self.popAt or 0)) / 0.3) -- nytt sekund: tallet starter stort og faller på plass
+    self.timeFrame:SetScale(1 + 0.7 * (1 - k) * (1 - k))
   end)
   big:Hide()
   Alert.big = big
 end
 
--- e = oppføringen med minst tid igjen (nil = ingen), left = sekunder, icon = ikonet
-function Alert.Big(e, left, icon)
+-- e = oppføringen (nil = ingen), left = sekunder igjen, icon = ikonet, gone = buffen forsvant før tiden («Borte!»)
+function Alert.Big(e, left, icon, gone)
   if not e then
     if big then big:Hide() end
     soundFor = nil
@@ -146,12 +154,22 @@ function Alert.Big(e, left, icon)
   end
   if not big then buildBig() end
   if icon then big.icon:SetTexture(icon) else big.icon:SetColorTexture(0.2, 0.2, 0.2, 1) end
-  big.time:SetText(tostring(math.max(1, math.ceil(left or 0))))
-  big.name:SetText(e.name or e.short or "") -- hele navnet: det er god plass
-  big.entry = e
+  big.icon:SetDesaturated(gone and true or false)
+  local c = gone and C.red or C.gold
+  big.glow:SetVertexColor(c[1], c[2], c[3])
+  big.edge:SetColorTexture(c[1], c[2], c[3], 1)
+  local txt = gone and "!" or tostring(math.max(1, math.ceil(left or 0)))
+  if txt ~= big.time:GetText() then
+    big.time:SetText(txt)
+    big.popAt = GetTime() or 0
+  end
+  big.time:SetTextColor(gone and C.red[1] or 1, gone and C.red[2] or 1, gone and C.red[3] or 1)
+  big.name:SetText(gone and string.format(ns.L.BIG_GONE, e.name or e.short or "") or (e.name or e.short or ""))
+  big.entry, big.gone = e, gone and true or false
   big:Show()
-  if soundFor ~= e.id then
-    soundFor = e.id
+  local key = e.id .. (gone and ":borte" or "")
+  if soundFor ~= key then
+    soundFor = key
     pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master")
     Alert.bigSounds = (Alert.bigSounds or 0) + 1
   end

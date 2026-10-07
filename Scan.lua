@@ -211,7 +211,9 @@ function Scan.ReadAuras()
     if name then
       local expiresAt = (exp and exp > 0) and exp or math.huge -- tidspunkt, ikke «igjen»: lagret mellom lesinger
       local cur = out[name]
-      if not cur or expiresAt > cur.expires then out[name] = { expires = expiresAt, duration = dur } end
+      local inst = a.auraInstanceID
+      if isSecret(inst) then inst = nil end
+      if not cur or expiresAt > cur.expires then out[name] = { expires = expiresAt, duration = dur, instance = inst } end
     end
   end
   return out
@@ -220,6 +222,17 @@ end
 ------------------------------------------------------------------------
 -- Tilstand per oppføring (SPEC §5.3)
 ------------------------------------------------------------------------
+
+-- Er buffen med dette nummeret borte? (Daniel 7. okt: varsle også når en buff blir slått bort i kamp.) I kamp er
+-- buffene hemmelige, men om en buff med et kjent nummer fortsatt finnes, kan kanskje sies: true = borte,
+-- false = finnes, nil = kan ikke vite. db.debug.auraGone sier hva klienten svarte første gang.
+function Scan.AuraGone(inst)
+  if not inst or not (C_UnitAuras and C_UnitAuras.GetAuraDataByAuraInstanceID) then return nil end
+  local ok, a = pcall(C_UnitAuras.GetAuraDataByAuraInstanceID, "player", inst)
+  if not ok or isSecret(a) then return nil end
+  return a == nil
+end
+Scan.auraInstance = {} -- id → aura-nummeret sist den ble lest (utenfor kamp)
 
 local seen = {}      -- id → buffen har vært på i økten (skiller «gått ut» fra «ikke på»)
 local expires = {}   -- id → GetTime() da buffen går ut (math.huge = uten grense), sist kjent
@@ -246,6 +259,7 @@ function Scan.Confirm(e, durations)
   local t = now()
   seen[e.id] = true
   expires[e.id] = d and (t + d) or math.huge
+  Scan.auraInstance[e.id] = nil -- kastet på nytt: ny buff med nytt nummer (kjent først utenfor kamp)
   local food = false
   for _, n in ipairs(e.auraNames or {}) do if n == "Well Fed" or n == Scan.wellFed then food = true end end
   Scan.confirmed[e.id] = { at = t, waiting = food }
@@ -294,7 +308,7 @@ function Scan.State(db, auras)
         else
           for _, n in ipairs(e.auraNames or { e.name }) do
             local a = auras[n]
-            if a and (not best or a.expires > best.expires) then best = a end
+            if a and (not best or a.expires > best.expires) then best = a Scan.auraInstance[e.id] = a.instance end
             if a and a.duration and a.duration > 0 then durations[n] = a.duration end
           end
         end
@@ -310,11 +324,22 @@ function Scan.State(db, auras)
           Scan.confirmed[e.id] = nil
         end
       end
+      -- I kamp: er buffen med kjent nummer borte (slått bort, ladningene brukt opp)? Da er den ute nå.
+      local goneNow = false
+      if not readable and not e.weaponSlot and expires[e.id] and Scan.auraInstance[e.id] then
+        local gone = Scan.AuraGone(Scan.auraInstance[e.id])
+        if db.debug and not db.debug.auraGone then db.debug.auraGone = { answer = tostring(gone) } end
+        if gone then
+          expires[e.id], Scan.auraInstance[e.id], goneNow = nil, nil, true
+        end
+      end
       local exp = expires[e.id]
       local left
       if exp then left = (exp == math.huge) and math.huge or (exp - t) end
       if left and left <= 0 then left = nil end
-      if not readable and not exp and lastStatus[e.id] and lastStatus[e.id].status then
+      if goneNow then
+        s.status = "expired"
+      elseif not readable and not exp and lastStatus[e.id] and lastStatus[e.id].status then
         s.status = lastStatus[e.id].status -- hemmelig og ingenting å telle fra: som sist
       else
         s.status = ns.Rules.auraStatus(left, seen[e.id])

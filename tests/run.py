@@ -229,7 +229,15 @@ C_UnitAuras = { GetAuraDataByIndex = function(unit, i)
   local list = unit == "player" and T.auras or ((T.pa and T.pa[unit]) or T.partyAuras or {})
   local a = list[i]
   if not a then return nil end
-  return { name = S(a[1]), spellId = S(a[2]), expirationTime = S(a[3]), duration = S(a[4]), sourceUnit = S("player") }
+  return { name = S(a[1]), spellId = S(a[2]), expirationTime = S(a[3]), duration = S(a[4]), sourceUnit = S("player"),
+           auraInstanceID = S(a[5] or (500 + i)) }
+end, GetAuraDataByAuraInstanceID = function(unit, inst)
+  -- Finnes buffen med dette nummeret? Svaret er lesbart også i kamp (T.goneSecret = også det er hemmelig)
+  if T.goneSecret then return SECRET end
+  for i, a in ipairs(unit == "player" and T.auras or {}) do
+    if (a[5] or (500 + i)) == inst then return { name = S(a[1]) } end
+  end
+  return nil
 end }
 function UnitExists(u) return T.party[u] ~= nil end
 function UnitName(u) if T.namesSecret then return SECRET end return T.party[u] end -- lesbare i kamp (V9); vernet testes med T.namesSecret

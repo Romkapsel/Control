@@ -66,9 +66,33 @@ end
 
 -- Det store varselet: den «Må ha»-buffen (egen, med tid) som har minst tid igjen under 10 s. Etter at det slås på
 -- under Oppsett, vises det i 3 s med den første «Må ha»-buffen, så du ser hvordan det ser ut.
+-- Per oppføring: var den på sist, og har den fått nedtellingen i denne runden?
+local bigSeen = {}
+local GONE_HOLD = 3
+
+local function firstMustHave()
+  for _, e in ipairs(ns.db.self) do
+    if e.tier == 1 and (e.type == "spell" or e.type == "buffitem") then return e end
+  end
+  return { id = "preview", name = ns.L.BIG_PREVIEW }
+end
+
+-- Test (Daniel 7. okt): /ctrl stort = nedtelling fra 10, /ctrl stort borte = buffen forsvant
+function Core.BigTest(gone)
+  Core.bigTest = { at = GetTime() or 0, gone = gone, entry = firstMustHave() }
+  Core.Draw()
+end
+
 local function bigAlert(model)
   if not ns.Alert.Big then return end
   local now = GetTime() or 0
+  local test = Core.bigTest
+  if test then
+    local dt = now - test.at
+    if test.gone and dt < GONE_HOLD then return ns.Alert.Big(test.entry, 0, iconOf(test.entry), true) end
+    if not test.gone and dt < ns.Alert.BIG_AT then return ns.Alert.Big(test.entry, ns.Alert.BIG_AT - dt, iconOf(test.entry)) end
+    Core.bigTest = nil
+  end
   if Core.bigPreview and now < Core.bigPreview then
     local e = Core.bigPreviewEntry or { id = "preview", name = ns.L.BIG_PREVIEW }
     return ns.Alert.Big(e, ns.Alert.BIG_AT - (now - (Core.bigPreview - 3)), iconOf(e))
@@ -77,10 +101,26 @@ local function bigAlert(model)
   local pick, pickLeft
   for _, e in ipairs(model.self or {}) do
     local s = model.st[e.id]
-    if e.tier == 1 and (e.type == "spell" or e.type == "buffitem") and s and s.left and s.left ~= math.huge
-        and s.left > 0 and s.left <= ns.Alert.BIG_AT and (not pickLeft or s.left < pickLeft) then
-      pick, pickLeft = e, s.left
+    if e.tier == 1 and (e.type == "spell" or e.type == "buffitem") and s then
+      local b = bigSeen[e.id] or {}
+      bigSeen[e.id] = b
+      local on = s.status == "on" or s.status == "expiring"
+      local timed = s.left and s.left ~= math.huge
+      if on and timed and s.left > ns.Alert.BIG_AT + 1 then b.counted = false end -- ny runde
+      if on and timed and s.left > 0 and s.left <= ns.Alert.BIG_AT then
+        b.counted = true
+        if not pickLeft or s.left < pickLeft then pick, pickLeft = e, s.left end
+      end
+      -- Borte før tiden (slått bort, ladningene brukt opp): skrik – men ikke etter en nedtelling (Daniel 7. okt)
+      if b.wasOn and not on and not b.counted then b.goneAt = now end
+      if on then b.goneAt = nil end
+      b.wasOn = on
     end
+  end
+  -- «Borte!» går foran nedtellingen, i 3 sekunder
+  for _, e in ipairs(model.self or {}) do
+    local b = bigSeen[e.id]
+    if b and b.goneAt and now - b.goneAt < GONE_HOLD then return ns.Alert.Big(e, 0, iconOf(e), true) end
   end
   ns.Alert.Big(pick, pickLeft, pick and iconOf(pick))
 end
@@ -802,6 +842,8 @@ SlashCmdList.CONTROL = function(msg)
     ns.db.debug.rangeButton = not ns.db.debug.rangeButton
     Say(ns.db.debug.rangeButton and ns.L.RANGE_ON or ns.L.RANGE_OFF)
     Core.Draw()
+  elseif cmd == "stort" or cmd == "stort borte" then
+    Core.BigTest(cmd == "stort borte")
   elseif raw == "våpen" or raw == "Våpen" or cmd == "vapen" then
     -- Hva spillet sier om våpenet og buffene dine akkurat nå (Daniel 7. okt: Flametongue sto som «Gått ut»)
     local function show(v)
