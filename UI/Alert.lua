@@ -93,3 +93,66 @@ function Alert.Show(where, d, quiet)
     Alert.sounds = (Alert.sounds or 0) + 1
   end
 end
+
+------------------------------------------------------------------------
+-- Stort varsel midt på skjermen (Daniel 7. okt – kompisen: «det må være in your face»). Når en «Må ha»-buff har
+-- 10 sekunder igjen (en shout, en flask …), lyser ikonet opp stort midt på skjermen med navnet og sekundene som
+-- teller ned, og en lyd én gang. Borte når buffen er fornyet eller har gått ut. Av/på under Oppsett (av som standard).
+-- Ingen mus: stjeler aldri et klikk. I kamp teller den fra det Control vet (buffene er hemmelige der).
+------------------------------------------------------------------------
+
+Alert.BIG_AT = 10
+local BIG = 72
+local big
+local soundFor -- id-en det er spilt lyd for i denne runden
+
+local function buildBig()
+  big = CreateFrame("Frame", nil, UIParent)
+  big:SetSize(BIG + 40, BIG + 40)
+  big:SetPoint("CENTER", UIParent, "CENTER", 0, 60)
+  big:SetFrameStrata("HIGH")
+  big:EnableMouse(false)
+  big.glow = Style.Image(big, "glow_btn", BIG * 2, BIG * 2, "BACKGROUND", 0)
+  big.glow:SetVertexColor(C.gold[1], C.gold[2], C.gold[3])
+  big.edge = Style.Rect(big, "BORDER", 0, BIG + 4, BIG + 4, C.gold, 1)
+  big.icon = big:CreateTexture(nil, "ARTWORK")
+  big.icon:SetSize(BIG, BIG)
+  big.icon:SetPoint("CENTER")
+  big.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+  big.time = big:CreateFontString(nil, "OVERLAY")
+  if not big.time:SetFont(Style.FONT_HEAD, 30, "OUTLINE") then big.time:SetFontObject(GameFontNormalHuge) end
+  big.time:SetPoint("CENTER", big.icon, "CENTER", 0, 0)
+  big.time:SetTextColor(1, 1, 1)
+  big.name = big:CreateFontString(nil, "OVERLAY")
+  if not big.name:SetFont(Style.FONT_HEAD, 18, "OUTLINE") then big.name:SetFontObject(GameFontNormalLarge) end
+  big.name:SetPoint("TOP", big.icon, "BOTTOM", 0, -10)
+  big.name:SetTextColor(C.gold[1], C.gold[2], C.gold[3])
+  -- Pulserer: gløden puster, og ikonet vokser litt i takt
+  big:SetScript("OnUpdate", function(self)
+    local p = 0.5 + 0.5 * math.sin((GetTime() or 0) * 6)
+    self.glow:SetAlpha(0.35 + 0.65 * p)
+    self.icon:SetSize(BIG * (1 + 0.06 * p), BIG * (1 + 0.06 * p))
+  end)
+  big:Hide()
+  Alert.big = big
+end
+
+-- e = oppføringen med minst tid igjen (nil = ingen), left = sekunder, icon = ikonet
+function Alert.Big(e, left, icon)
+  if not e then
+    if big then big:Hide() end
+    soundFor = nil
+    return
+  end
+  if not big then buildBig() end
+  if icon then big.icon:SetTexture(icon) else big.icon:SetColorTexture(0.2, 0.2, 0.2, 1) end
+  big.time:SetText(tostring(math.max(1, math.ceil(left or 0))))
+  big.name:SetText(e.name or e.short or "") -- hele navnet: det er god plass
+  big.entry = e
+  big:Show()
+  if soundFor ~= e.id then
+    soundFor = e.id
+    pcall(PlaySound, (SOUNDKIT and SOUNDKIT.RAID_WARNING) or 8959, "Master")
+    Alert.bigSounds = (Alert.bigSounds or 0) + 1
+  end
+end

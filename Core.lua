@@ -59,6 +59,32 @@ end
 local function mbSide() return ns.db.ui.partySide == "right" and "left" or "right" end
 local function pbSide() return mbSide() == "right" and "left" or "right" end
 
+local function iconOf(e)
+  if e.spellId then return select(2, ns.Scan.SpellInfo(e.spellId)) end
+  if e.itemId then return ns.Scan.ItemIcon(e.itemId) end
+end
+
+-- Det store varselet: den «Må ha»-buffen (egen, med tid) som har minst tid igjen under 10 s. Etter at det slås på
+-- under Oppsett, vises det i 3 s med den første «Må ha»-buffen, så du ser hvordan det ser ut.
+local function bigAlert(model)
+  if not ns.Alert.Big then return end
+  local now = GetTime() or 0
+  if Core.bigPreview and now < Core.bigPreview then
+    local e = Core.bigPreviewEntry or { id = "preview", name = ns.L.BIG_PREVIEW }
+    return ns.Alert.Big(e, ns.Alert.BIG_AT - (now - (Core.bigPreview - 3)), iconOf(e))
+  end
+  if ns.db.ui.bigAlert ~= true then return ns.Alert.Big(nil) end
+  local pick, pickLeft
+  for _, e in ipairs(model.self or {}) do
+    local s = model.st[e.id]
+    if e.tier == 1 and (e.type == "spell" or e.type == "buffitem") and s and s.left and s.left ~= math.huge
+        and s.left > 0 and s.left <= ns.Alert.BIG_AT and (not pickLeft or s.left < pickLeft) then
+      pick, pickLeft = e, s.left
+    end
+  end
+  ns.Alert.Big(pick, pickLeft, pick and iconOf(pick))
+end
+
 function Core.Draw()
   if not ns.Medallion.frame then return end
   local model = Core.Model()
@@ -66,6 +92,7 @@ function Core.Draw()
   local view = ns.Rules.render(model, ns.L, { inCombat = inCombat, prevTray = prevTray })
   ns.view, ns.model = view, model
   ns.Medallion.Update(view)
+  if not Core.sample then bigAlert(model) end
   if Core.sample then
     ns.Tray.Layout(mbSide(), {}, {}, ns.L) -- testdata har ingen ekte spells å kaste
     prevTray = nil
@@ -353,6 +380,21 @@ function Actions.RemoveCity(zone)
 end
 
 -- Bytt sider: gruppa og mine buffer bytter plass. Sidemenyene lukkes, alt legges ut på nytt.
+function Actions.ToggleBigAlert()
+  ns.db.ui.bigAlert = not ns.db.ui.bigAlert
+  if ns.db.ui.bigAlert then
+    -- Vis hvordan det ser ut, med den første «Må ha»-buffen
+    Core.bigPreview = (GetTime() or 0) + 3
+    Core.bigPreviewEntry = nil
+    for _, e in ipairs(ns.db.self) do
+      if e.tier == 1 and (e.type == "spell" or e.type == "buffitem") then Core.bigPreviewEntry = e break end
+    end
+  else
+    Core.bigPreview = nil
+  end
+  Core.Draw()
+end
+
 function Actions.ToggleFade()
   ns.db.ui.fadeOk = ns.db.ui.fadeOk == false
   Core.Draw()
@@ -596,6 +638,7 @@ ev:SetScript("OnEvent", function(self, event, arg1, ...)
     ns.Menu.onToggleOpenCore = Actions.ToggleOpenCore
     ns.Menu.onToggleFade = Actions.ToggleFade
     ns.Menu.onFadeLevel = Actions.SetFadeLevel
+    ns.Menu.onToggleBigAlert = Actions.ToggleBigAlert
     ns.Medallion.isBusy = function()
       return ns.Menu.IsOpen() or ns.SideBar.IsOpen("left") or ns.SideBar.IsOpen("right") or false
     end
