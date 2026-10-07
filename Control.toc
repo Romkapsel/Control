@@ -2,7 +2,7 @@
 ## Title: Control
 ## Notes: Viser hva du mangler av buffer og ting, og lar deg fikse det med ett klikk.
 ## Author: Daniel
-## Version: 1.0.2
+## Version: 1.0.3
 ## SavedVariablesPerCharacter: ControlCharDB
 
 Locale\nbNO.lua
