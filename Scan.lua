@@ -29,6 +29,15 @@ function Scan.AurasSecret()
   return false
 end
 
+-- Beskrivelsen av en spell («Imbue the Shaman's weapon with fire …»). nil hvis den ikke er lastet eller lesbar.
+function Scan.SpellDescription(id)
+  local f = (C_Spell and C_Spell.GetSpellDescription) or GetSpellDescription
+  if not f or not id then return nil end
+  local ok, d = pcall(f, id)
+  if ok and type(d) == "string" and not isSecret(d) and d ~= "" then return d end
+  return nil
+end
+
 function Scan.SpellInfo(id)
   if not id then return nil end
   if C_Spell and C_Spell.GetSpellInfo then

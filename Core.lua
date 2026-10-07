@@ -122,7 +122,11 @@ function Core.Resolve(kind, id)
   if kind == "spell" then
     local name = ns.Scan.SpellInfo(id)
     if not name then return nil end
-    return { kind = "spell", spellId = id, name = name }
+    -- Våpenbuff som spell (Daniel 7. okt: Flametongue Weapon sto som manglende selv om den var på): den ligger på
+    -- våpenet, ikke som en buff på deg. Kjennes på navnet («… Weapon») eller beskrivelsen («Imbue … weapon»).
+    local desc = (ns.Scan.SpellDescription(id) or ""):lower()
+    local isWeapon = name:find(" Weapon$") ~= nil or (desc:find("imbue", 1, true) ~= nil and desc:find("weapon", 1, true) ~= nil)
+    return { kind = "spell", spellId = id, name = name, isWeapon = isWeapon, weaponSlot = isWeapon and 16 or nil }
   end
   local name, spell, classID, subClassID = ns.Scan.ItemInfo(id)
   if not name then return nil end
@@ -215,7 +219,7 @@ local function weaponSlot(list, info)
 end
 
 local function findDuplicate(list, info)
-  if info.isWeapon then
+  if info.isWeapon and info.kind == "item" then
     local slot, dup = weaponSlot(list, info)
     info.weaponSlot = slot
     return dup

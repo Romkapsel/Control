@@ -59,9 +59,9 @@ Data.CATEGORIES = { "buffs", "flasks", "food", "potions", "weapon", "scrolls", "
 -- Kategorien for en oppføring, fra typen og itemklassen (0 forbruk: 1 potion, 2 eliksir, 3 flask, 4 scroll,
 -- 5 mat/drikke, 6 våpenforsterkning, 7 bandasje; 2 våpen og 4 rustning = utstyr)
 function Data.CategoryOf(e, classID, subClassID)
+  if e.weaponSlot then return "weapon" end
   if e.type == "spell" or e.type == "partyspell" then return "buffs" end
   if e.type == "partyitem" then return "scrolls" end
-  if e.weaponSlot then return "weapon" end
   if classID == 2 or classID == 4 then return "gear" end
   if classID == 0 then
     if subClassID == 1 then return "potions" end
@@ -197,7 +197,8 @@ function Data.MakeEntry(db, info, tier)
   local e = { id = "e" .. db.nextId, tier = tier or 2 }
   if info.kind == "spell" then
     e.type, e.spellId, e.name = "spell", info.spellId, info.name
-    e.auraNames = Data.AuraNames(info.name)
+    e.weaponSlot = info.weaponSlot -- våpenbuff (Flametongue Weapon …): leses fra våpenet
+    e.auraNames = info.weaponSlot and {} or Data.AuraNames(info.name)
   elseif info.itemSpell then
     e.type, e.itemId, e.name = "buffitem", info.itemId, info.itemName
     e.castName = info.itemSpell
@@ -233,6 +234,18 @@ end
 function Data.Reclassify(db, resolve)
   local lists = selfLists(db)
   for _, list in ipairs(lists) do for _, e in ipairs(list) do
+    -- Våpenbuff som ble lagret feil (Daniel 7. okt): en spell som Flametongue Weapon, eller en gift/olje/slipestein som
+    -- ble lagt til før spillet hadde lastet tooltipen. Gjøres om til våpenbuff: leses fra våpenet, ikke fra auraene.
+    if not e.weaponSlot and (e.type == "spell" or e.type == "buffitem" or e.type == "item") then
+      local info = e.type == "spell" and resolve("spell", e.spellId) or (e.itemId and resolve("item", e.itemId))
+      if info and info.isWeapon and (e.type == "spell" or info.itemSpell) then
+        local used = {}
+        for _, x in ipairs(list) do if x ~= e and x.weaponSlot and x.itemId == e.itemId and x.spellId == e.spellId then used[x.weaponSlot] = true end end
+        e.weaponSlot = used[16] and 17 or 16
+        e.auraNames = {}
+        if e.type ~= "spell" then e.type, e.castName = "buffitem", info.itemSpell end
+      end
+    end
     if e.itemId and not e.weaponSlot and (e.type == "buffitem" or e.type == "item") then
       local info = resolve("item", e.itemId)
       if info then
