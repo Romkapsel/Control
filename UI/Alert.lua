@@ -103,6 +103,7 @@ end
 
 Alert.BIG_AT = 10
 local BIG = 72
+local BIG_IMAGE = 144 -- eget bilde (ControlExtra): dobbelt så stort, tallet ved siden av (Daniel 7. okt)
 local big
 local soundFor -- id-en det er spilt lyd for i denne runden
 
@@ -137,7 +138,8 @@ local function buildBig()
     local now = GetTime() or 0
     local p = 0.5 + 0.5 * math.sin(now * 6)
     self.glow:SetAlpha(0.35 + 0.65 * p)
-    self.icon:SetSize(BIG * (1 + 0.06 * p), BIG * (1 + 0.06 * p))
+    local size = self.size or BIG
+    self.icon:SetSize(size * (1 + 0.06 * p), size * (1 + 0.06 * p))
     local k = math.min(1, (now - (self.popAt or 0)) / 0.3) -- nytt sekund: tallet starter stort og faller på plass
     self.timeFrame:SetScale(1 + 0.7 * (1 - k) * (1 - k))
   end)
@@ -162,8 +164,21 @@ function Alert.Big(e, left, icon, gone, image)
     big.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
   end
   big.icon:SetDesaturated((gone and not image) and true or false)
-  big.edge:SetShown(not image) -- bildet er rundt: ingen firkantet kant
+  big.edge:SetShown(not image) -- bildet har egne runde hjørner: ingen firkantet kant
   big.image = image
+  -- Eget bilde: større, og tallet står til høyre for det i stedet for oppå (ansiktet skal synes)
+  local size = image and BIG_IMAGE or BIG
+  if big.size ~= size then
+    big.size = size
+    big.icon:SetSize(size, size)
+    big.glow:SetSize(size * 2, size * 2)
+    big.timeFrame:ClearAllPoints()
+    if image then
+      big.timeFrame:SetPoint("LEFT", big.icon, "RIGHT", -6, 0)
+    else
+      big.timeFrame:SetPoint("CENTER", big.icon, "CENTER", 0, 0)
+    end
+  end
   local c = gone and C.red or C.gold
   big.glow:SetVertexColor(c[1], c[2], c[3])
   big.edge:SetColorTexture(c[1], c[2], c[3], 1)

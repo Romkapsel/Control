@@ -165,12 +165,15 @@ check(not A.big.shown, "test borte: 3 s")
 -- /ctrl stortest uten ControlExtra: Battle Shout er borte, med vanlig ikon (aldri en bildesti som ikke finnes)
 SlashCmdList.CONTROL("stortest borte")
 check(A.big.shown and A.big.gone and A.big.name.text == "Battle Shout er borte!" and not A.big.image, "stortest uten tillegget: vanlig ikon")
+check(A.big.icon.width == 72 and A.big.timeFrame.points[1][1] == "CENTER", "vanlig ikon: 72 px, tallet midt på")
 tick(3.5)
 -- Med tillegget (privat, ikke på GitHub): bildet i stedet for ikonet
 local IMG = "Interface\\AddOns\\ControlExtra\\Media\\shout"
 ControlExtras = { goneImages = { ["Battle Shout"] = IMG } }
 SlashCmdList.CONTROL("stortest")
 check(A.big.shown and not A.big.gone and A.big.time.text == "10" and A.big.image == IMG, "stortest: nedtelling med bildet")
+eq(A.big.icon.width, 144, "bildet er dobbelt så stort som et ikon")
+check(A.big.timeFrame.points[1][1] == "LEFT" and A.big.timeFrame.points[1][3] == "RIGHT", "tallet står til høyre for bildet, ikke oppå")
 tick(10.5)
 SlashCmdList.CONTROL("stortest borte")
 eq(A.big.image, IMG, "stortest borte: bildet")
