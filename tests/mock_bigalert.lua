@@ -163,21 +163,24 @@ check(not A.big.shown, "test borte: 3 s")
 
 
 -- /ctrl stortest uten ControlExtra: Battle Shout er borte, med vanlig ikon (aldri en bildesti som ikke finnes)
-SlashCmdList.CONTROL("stortest")
+SlashCmdList.CONTROL("stortest borte")
 check(A.big.shown and A.big.gone and A.big.name.text == "Battle Shout er borte!" and not A.big.image, "stortest uten tillegget: vanlig ikon")
 tick(3.5)
 -- Med tillegget (privat, ikke på GitHub): bildet i stedet for ikonet
 local IMG = "Interface\\AddOns\\ControlExtra\\Media\\shout"
 ControlExtras = { goneImages = { ["Battle Shout"] = IMG } }
 SlashCmdList.CONTROL("stortest")
-eq(A.big.image, IMG, "stortest: bildet")
+check(A.big.shown and not A.big.gone and A.big.time.text == "10" and A.big.image == IMG, "stortest: nedtelling med bildet")
+tick(10.5)
+SlashCmdList.CONTROL("stortest borte")
+eq(A.big.image, IMG, "stortest borte: bildet")
 eq(A.big.icon.texture, IMG, "bildet står der ikonet sto")
 check(not A.big.icon.desat and not A.big.edge.shown, "i farger, uten firkantet kant")
 tick(3.5)
 -- Ekte Battle Shout: går ut etter nedtellingen – bildet kommer likevel (bare for buffer med eget bilde)
 T.auras = { { "Battle Shout", 6673, T.now + 9, 120 }, { "Lightning Shield", 324, T.now + 600, 600, 81 } }
 tick()
-check(A.big.shown and not A.big.gone and A.big.entry == shout, "nedtelling for Battle Shout")
+check(A.big.shown and not A.big.gone and A.big.entry == shout and A.big.image == IMG, "nedtelling for Battle Shout: bildet i stedet for ikonet")
 -- Trykk på ikonet: usynlig knapp over det, som kaster Battle Shout (utenfor kamp)
 local cb = A.clickButton
 check(cb and cb.shown and cb:GetAttribute("type") == "spell" and cb:GetAttribute("spell") == "Battle Shout", "ikonet kan trykkes: kaster Battle Shout")
@@ -191,9 +194,15 @@ T.combat = false
 Fire("PLAYER_REGEN_ENABLED")
 T.auras = { { "Lightning Shield", 324, T.now + 600, 600, 81 } }
 tick(9)
-check(A.big.shown and A.big.gone and A.big.image, "gått ut etter nedtellingen: bildet")
+check(not A.big.shown, "gått ut etter nedtellingen: samme regel som andre – ikke et ekstra varsel")
+check(not A.clickButton.shown and not A.clickButton.stateDriver, "ferdig: knappen borte")
+-- Slått bort før tiden: «borte» med bildet
+T.auras = { { "Battle Shout", 6673, T.now + 100, 120 }, { "Lightning Shield", 324, T.now + 600, 600, 81 } }
+tick()
+T.auras = { { "Lightning Shield", 324, T.now + 600, 600, 81 } }
+tick()
+check(A.big.shown and A.big.gone and A.big.image == IMG, "Battle Shout borte før tiden: bildet")
 tick(3.5)
-check(not A.big.shown and not A.clickButton.shown and not A.clickButton.stateDriver, "ferdig: varsel og knapp borte")
 ControlExtras = nil
 
 return n, fails

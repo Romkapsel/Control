@@ -143,7 +143,7 @@ dra et sted ut av lista for å fjerne det.
 | `angre` | Får tilbake det du sist fjernet |
 | `varsel` | Viser byvaktvarselet akkurat nå |
 | `stort` | Prøver det store varselet: nedtelling fra 10 (`stort borte`: en buff som forsvant) |
-| `stortest` | Prøver varselet for Battle Shout som går ut |
+| `stortest` | Prøver det store varselet for Battle Shout (`stortest borte`: når den forsvinner) |
 | `våpen` | Viser hva spillet sier om våpenet og buffene dine (feilsøking) |
 | `nullstill` | Flytter medaljongen tilbake og gir den vanlig størrelse |
 | `tøm` | Tømmer settet du står i |
